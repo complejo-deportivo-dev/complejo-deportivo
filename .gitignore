@@ -141,7 +141,3 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
-
-.gitignore
-capa_diseño_v6.pdf
-Guia_Equipo_Dia_1_Fase_1_Documentacion.pdf
