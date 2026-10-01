@@ -2,13 +2,11 @@
 
 Sistema de Reservas del Complejo Deportivo. Documento de la Fase 1 (Diseño), a cargo de Dev 3.
 
-Aquí se define qué endpoints tiene el sistema, quién puede usarlos y qué responde cada uno. No hay código. Lo que todavía no está decidido queda marcado como **(por confirmar)** y se junta al final, en la sección 6.
+Aquí se define qué endpoints tiene el sistema, quién puede usarlos y qué recibe y responde cada uno. No hay código.
 
-Este documento se basa en la guía del equipo, la capa de diseño y el documento de respuestas del cliente. Si algo aquí choca con esos documentos, mandan ellos.
+Este documento se basa en la guía del equipo, la capa de diseño, las respuestas del cliente y el MER de la base de datos. Los nombres de campos salen del MER. Lo que el MER no define y hubo que suponer está marcado como **(estimación)**. Lo que sigue abierto está marcado como **(por confirmar)** y se junta en la sección 7.
 
 Documentos relacionados: `architecture.md` (Tech Lead), `database.md` (Dev 1), `reservas.md` (Dev 2) e `integraciones.md` (Dev 4).
-
----
 
 ## Contexto rápido del complejo
 
@@ -28,7 +26,9 @@ Hay dos formas de manejar el QR, y de ahí salen varias reglas de la API:
 
 Los acompañantes no son lo mismo que las personas que usan el servicio. Solo las personas que usan el servicio (`quantity`) ocupan cupo. Los acompañantes (máximo 5 por reserva) no ocupan cupo.
 
----
+**Tipos de ID según el MER:** `users` usa UUID. `categories`, `services` y `time_slots` usan número entero pequeño (`smallint`). `reservations`, `qr_codes`, `payments` y `access_logs` usan número entero (`int`). Por eso, en los endpoints, todos los IDs son números, menos el del usuario.
+
+
 
 ## 1. Formato estándar de respuesta
 
@@ -63,7 +63,7 @@ El mensaje va en español y se entiende sin ser técnico. No muestra detalles in
 | 409 | Choque con el estado actual (por ejemplo, un QR ya usado) |
 | 500 | Falla inesperada del servidor |
 
-**Roles**
+**Roles** (columna `users.role` del MER)
 
 | Rol | Quién es |
 |---|---|
@@ -74,7 +74,7 @@ El mensaje va en español y se entiende sin ser técnico. No muestra detalles in
 
 Los roles no se heredan. Cada endpoint dice exactamente quién lo puede usar.
 
----
+
 
 ## 2. Lista de endpoints
 
@@ -125,33 +125,35 @@ Cada endpoint de la sección 3 sigue esta plantilla:
 - Validaciones:
 ```
 
----
+
 
 ## 3. Endpoints por módulo
 
 ### 3.1 Autenticación
 
-Supabase Auth se encarga del registro, el login, Google OAuth y la recuperación de contraseña. Estos endpoints son la entrada desde el frontend. Cómo se guarda la sesión se define en `architecture.md` e `integraciones.md`.
+Supabase Auth se encarga del registro, el login, Google OAuth y la recuperación de contraseña. Estos endpoints son la entrada desde el frontend. Cómo se guarda la sesión se define en `architecture.md` e `integraciones.md`. El usuario vive en la tabla `users`, y su `id` es el mismo de Supabase Auth.
 
 #### POST /api/auth/register
-- **Propósito:** Crear una cuenta nueva de cliente.
+- **Propósito:** Crear una cuenta nueva de cliente y su fila en `users`.
 - **Rol:** Público
-- **Body (entrada):** `{ full_name, email, password }`
+- **Body (entrada):** `{ name, email, password, number_document? }`
+  - `number_document` es la cédula. Es opcional aquí porque también se puede pedir al reservar (ver `POST /api/reservations`).
 - **Respuesta OK:** `201` `{ data: { user_id, email } }`
 - **Errores:**
   - `400` "Datos inválidos"
   - `400` "El correo ya está registrado"
 - **Validaciones:**
-  - El correo tiene formato válido
+  - `email` tiene formato válido y máximo 100 caracteres
+  - `name` no está vacío y tiene máximo 50 caracteres
+  - `number_document`, si viene, tiene máximo 20 caracteres
   - La contraseña cumple el mínimo que pide Supabase Auth
-  - `full_name` no está vacío
   - El rol siempre es `client`. El usuario no lo puede elegir.
 
 #### POST /api/auth/login
 - **Propósito:** Iniciar sesión con correo y contraseña.
 - **Rol:** Público
 - **Body (entrada):** `{ email, password }`
-- **Respuesta OK:** `200` `{ data: { user: { id, email, role } } }`
+- **Respuesta OK:** `200` `{ data: { user: { id, name, email, role } } }`
 - **Errores:**
   - `400` "Correo y contraseña son obligatorios"
   - `401` "Correo o contraseña incorrectos"
@@ -160,7 +162,7 @@ Supabase Auth se encarga del registro, el login, Google OAuth y la recuperación
   - El mensaje de error es el mismo falle el correo o la contraseña, para no dar pistas
 
 #### GET /api/auth/callback
-- **Propósito:** Recibir la respuesta de Google y crear la sesión.
+- **Propósito:** Recibir la respuesta de Google y crear la sesión. Si es la primera vez, crea la fila en `users` con rol `client`.
 - **Rol:** Público
 - **Body (entrada):** No lleva. Google manda un `code` en la URL.
 - **Respuesta OK:** Redirige a la pantalla inicial según el rol.
@@ -202,9 +204,11 @@ Supabase Auth se encarga del registro, el login, Google OAuth y la recuperación
   - El enlace de recuperación sigue vigente
   - La contraseña cumple el mínimo
 
----
+
 
 ### 3.2 Servicios (público / cliente)
+
+Tablas: `categories`, `services`, `time_slots`.
 
 #### GET /api/categories
 - **Propósito:** Listar las categorías del complejo (Canchas, Piscinas, Zonas húmedas y Gimnasio).
@@ -212,33 +216,33 @@ Supabase Auth se encarga del registro, el login, Google OAuth y la recuperación
 - **Body (entrada):** Ninguno
 - **Respuesta OK:** `200` `{ data: [ { id, name } ] }`
 - **Errores:** `500` "Error al obtener las categorías"
-- **Validaciones:** Ninguna. Solo devuelve las categorías activas.
+- **Validaciones:** Ninguna.
 
 #### GET /api/services
 - **Propósito:** Listar los servicios disponibles.
 - **Rol:** Público
 - **Body (entrada):** No lleva. Opcional en la URL: `category_id`.
-- **Respuesta OK:** `200` `{ data: [ { id, name, description, category_id, price, qr_type } ] }`
+- **Respuesta OK:** `200` `{ data: [ { id, name, category_id, hour_price, capacity, max_companions, qr_type } ] }`
 - **Errores:**
   - `400` "category_id inválido"
   - `500` "Error al obtener los servicios"
-- **Validaciones:** Si viene `category_id`, tiene que tener un formato válido. Solo devuelve servicios activos.
+- **Validaciones:** Si viene `category_id`, tiene que ser un número. Solo devuelve servicios con `is_active = true`.
 
 #### GET /api/services/:id
 - **Propósito:** Ver el detalle de un servicio.
 - **Rol:** Público
 - **Body (entrada):** Ninguno
-- **Respuesta OK:** `200` `{ data: { id, name, description, category_id, price, qr_type, max_companions } }`
+- **Respuesta OK:** `200` `{ data: { id, name, category_id, hour_price, capacity, max_companions, qr_type } }`
 - **Errores:** `404` "Servicio no encontrado"
-- **Validaciones:** El `id` tiene un formato válido.
+- **Validaciones:** El `id` es un número. El servicio está activo.
 
-`qr_type` puede ser `group` (un QR para todo el grupo) o `individual` (un QR por persona). Con eso el frontend sabe si tiene que pedir la cantidad de personas. `max_companions` es el máximo de acompañantes (5) y los acompañantes no cuentan en el cupo.
+`qr_type` puede ser `group` (un QR para todo el grupo) o `individual` (un QR por persona). Con eso el frontend sabe si tiene que pedir la cantidad de personas. `max_companions` es el máximo de acompañantes (5) y los acompañantes no cuentan en el cupo. `hour_price` es el precio por hora.
 
 #### GET /api/services/:id/slots
-- **Propósito:** Ver las franjas disponibles de un servicio en una fecha.
+- **Propósito:** Ver las franjas de un servicio en una fecha y si están disponibles.
 - **Rol:** Público
 - **Body (entrada):** No lleva. Obligatorio en la URL: `date` (`YYYY-MM-DD`).
-- **Respuesta OK:** `200` `{ data: [ { time_slot_id, start_time, end_time, available } ] }`
+- **Respuesta OK:** `200` `{ data: [ { time_slot_id, time_start, time_end, available } ] }`
   Si el servicio es `individual`, cada franja trae también `remaining_capacity` (cupos que quedan).
 - **Errores:**
   - `400` "La fecha es obligatoria o tiene un formato inválido"
@@ -248,23 +252,35 @@ Supabase Auth se encarga del registro, el login, Google OAuth y la recuperación
 - **Validaciones:**
   - La fecha no es pasada
   - La fecha no pasa de hoy + 15 días
-  - Una franja bloqueada por otro cliente (10 minutos) aparece como no disponible
 
----
+**Cómo se calcula la disponibilidad (estimación).** En el MER, `time_slots` solo tiene hora de inicio y de fin, sin fecha. Eso quiere decir que las franjas de un servicio se repiten todos los días. La fecha vive en `reservations.reservation_date`. Para una fecha dada, una franja cuenta como ocupada cuando existe una reserva de esa fecha que la usa (a través de `reservations_slots`) y que está en uno de estos casos:
+
+- `confirmed` o `completed`
+- `pending` con `expires_at` todavía en el futuro (el bloqueo de 10 minutos)
+
+Para servicios `group`, una reserva ocupada deja la franja no disponible. Para servicios `individual`, `remaining_capacity = capacity - suma de quantity` de esas reservas, y `available` es verdadero si queda cupo. Si la fecha es hoy, las franjas que ya empezaron aparecen como no disponibles.
+
+
 
 ### 3.3 Reservas (cliente)
 
+Tablas: `reservations`, `reservations_slots`, `time_slots`, `services`, `users`.
+
+Una reserva no guarda el servicio directamente. Se llega al servicio a través de sus franjas: `reservations` → `reservations_slots` → `time_slots` → `services`. Por eso una reserva puede tener varias franjas seguidas, y todas tienen que ser del mismo servicio.
+
 #### POST /api/reservations
-- **Propósito:** Crear una reserva en estado `pending` y bloquear la franja por 10 minutos.
+- **Propósito:** Crear una reserva en estado `pending` y bloquear las franjas por 10 minutos.
 - **Rol:** Cliente con sesión
-- **Body (entrada):** `{ service_id, time_slot_id, holder_document, holder_name?, quantity? }`
-  - `holder_document` es la cédula del titular. Es obligatoria, porque es lo que permite encontrar la reserva si el cliente llega sin QR.
-  - `holder_name` es opcional. Se manda cuando la reserva es a nombre de otra persona. Si no viene, se usa el nombre del cliente.
+- **Body (entrada):** `{ service_id, time_slot_ids, reservation_date, quantity?, number_document? }`
+  - `time_slot_ids` es una lista con una o más franjas. Para franjas seguidas se mandan varias (por ejemplo 5-6pm y 6-7pm).
+  - `reservation_date` es la fecha de la reserva (`YYYY-MM-DD`).
   - `quantity` solo se manda cuando el servicio es `individual`.
+  - `number_document` es la cédula. Solo es obligatoria si el usuario todavía no la tiene guardada en su perfil. Se guarda en `users.number_document` **(estimación)**.
 - **Respuesta OK:** `201` `{ data: { reservation_id, expires_at, amount } }`
 - **Errores:**
-  - `400` "La cédula del titular es obligatoria"
+  - `400` "Debes indicar tu cédula para reservar"
   - `400` "Franja no disponible"
+  - `400` "Las franjas deben ser del mismo servicio y seguidas"
   - `400` "Conflicto de horario: ya tienes una reserva en esa franja"
   - `400` "No se permiten reservas en fechas pasadas"
   - `400` "No se puede reservar con más de 15 días de anticipación"
@@ -274,33 +290,36 @@ Supabase Auth se encarga del registro, el login, Google OAuth y la recuperación
   - `404` "Servicio o franja no encontrados"
 - **Validaciones:**
   - Hay sesión y el rol es `client`
-  - `holder_document` viene y no está vacío
-  - La franja es del servicio que se pidió
+  - `service_id` y cada `time_slot_id` existen, y todas las franjas son de ese servicio, que está activo
+  - Las franjas son seguidas: la hora de fin de una es la hora de inicio de la siguiente **(estimación)**
   - La fecha no es pasada ni pasa de hoy + 15 días
-  - La franja está libre. Si dos clientes piden la misma al mismo tiempo, solo uno la consigue y el otro recibe "Franja no disponible".
-  - El cliente no tiene otra reserva en ese mismo horario. Puede tener las que quiera en horarios distintos, sin límite. (Ojo con la excepción de la cancha, está en los pendientes.)
-  - Franjas seguidas (por ejemplo 5-6pm y 6-7pm) sí se permiten mientras estén libres, y no cuentan como choque de horario
-  - Si el servicio es `individual`: `quantity` es obligatorio, un número entero mayor que 0 y no puede pasar del cupo que queda en la franja
-  - Si el servicio es `group`: se ignora `quantity`
-  - `expires_at` lo calcula el servidor (ahora + 10 minutos). El cliente no lo manda.
+  - Todas las franjas están libres para esa fecha. Si dos clientes piden la misma al mismo tiempo, solo uno la consigue y el otro recibe "Franja no disponible".
+  - El cliente no tiene otra reserva activa que se cruce en horario ese día. Puede tener las que quiera en horarios distintos, sin límite. (Ojo con la excepción de la cancha, está en los pendientes.)
+  - Si el servicio es `individual`: `quantity` es obligatorio, un número entero mayor que 0 y no puede pasar del cupo que queda
+  - Si el servicio es `group`: se ignora `quantity` y se guarda 1 **(estimación)**
+  - `number_document` tiene máximo 20 caracteres
+- **Qué se guarda:** una fila en `reservations` con `status = pending` y `expires_at = ahora + 10 minutos` (lo calcula el servidor), y una fila en `reservations_slots` por cada franja.
+- **Cómo se calcula `amount` (estimación):** `hour_price` × horas totales de las franjas, y se multiplica por `quantity` si el servicio es `individual`. La tabla `reservations` no guarda el monto. Se calcula aquí y se guarda en `payments.amount` al crear el pago.
 
 #### GET /api/reservations
 - **Propósito:** Listar las reservas del cliente que tiene la sesión iniciada.
 - **Rol:** Cliente
 - **Body (entrada):** No lleva. Opcional en la URL: `status`.
-- **Respuesta OK:** `200` `{ data: [ { reservation_id, service_name, holder_name, date, start_time, end_time, status, quantity, amount } ] }`
+- **Respuesta OK:** `200` `{ data: [ { reservation_id, service: { id, name }, reservation_date, slots: [ { time_slot_id, time_start, time_end } ], status, quantity, amount, expires_at } ] }`
+  - `amount` sale de `payments.amount` cuando ya hay pago. Si no, se calcula igual que al crear la reserva.
 - **Errores:**
   - `400` "Estado inválido"
   - `401` "No autenticado"
 - **Validaciones:**
-  - Solo devuelve las reservas del usuario de la sesión. Nunca se acepta un `user_id` por parámetro.
+  - Solo devuelve las reservas del usuario de la sesión (`reservations.id_user`). Nunca se acepta un `user_id` por parámetro.
   - `status` tiene que ser uno de estos: `pending`, `confirmed`, `failed`, `expired`, `completed`
 
 #### GET /api/reservations/:id
 - **Propósito:** Ver el detalle de una reserva. Si ya está confirmada, incluye sus códigos QR.
 - **Rol:** Cliente
 - **Body (entrada):** Ninguno
-- **Respuesta OK:** `200` `{ data: { reservation_id, service, holder_name, holder_document, date, start_time, end_time, status, quantity, amount, expires_at, qr_codes: [ { qr_id, token, used } ] } }`
+- **Respuesta OK:** `200` `{ data: { reservation_id, service: { id, name }, reservation_date, slots: [ { time_slot_id, time_start, time_end } ], status, quantity, amount, expires_at, qr_codes: [ { qr_id, token, used } ] } }`
+  - `used` es verdadero cuando `qr_codes.used_at` tiene fecha.
   - Servicio `group`: `qr_codes` trae 1 QR.
   - Servicio `individual`: trae N QR, uno por persona.
   - Si la reserva no está `confirmed`, `qr_codes` viene vacío.
@@ -310,11 +329,11 @@ Supabase Auth se encarga del registro, el login, Google OAuth y la recuperación
 - **Validaciones:**
   - La reserva es del usuario de la sesión. Si es de otra persona, responde `404` y no `403`, para no confirmar que existe.
 
----
+
 
 ### 3.4 Pagos
 
-El pago es solo en línea. No se puede pagar en el lugar.
+Tablas: `payments`, `reservations`, `qr_codes`. El pago es solo en línea. No se puede pagar en el lugar.
 
 #### POST /api/payments/create-intent
 - **Propósito:** Crear el PaymentIntent de Stripe para pagar una reserva pendiente.
@@ -332,9 +351,10 @@ El pago es solo en línea. No se puede pagar en el lugar.
   - Está en estado `pending`
   - `expires_at` todavía no pasó (bloqueo de 10 minutos)
   - El monto lo calcula el servidor. Nunca se recibe del cliente.
+- **Qué se guarda:** una fila en `payments` con `status = pending`, el `stripe_payment_intent_id` y el `amount`. Si la reserva ya tiene un pago `pending`, se reutiliza en vez de crear otro **(estimación)**.
 
 #### POST /api/webhooks/stripe
-- **Propósito:** Recibir de Stripe el resultado del pago (`payment_intent.succeeded` y `payment_intent.payment_failed`) y actualizar la reserva.
+- **Propósito:** Recibir de Stripe el resultado del pago (`payment_intent.succeeded` y `payment_intent.payment_failed`) y actualizar el pago y la reserva.
 - **Rol:** Solo Stripe. No usa sesión de usuario, se valida con la firma del webhook.
 - **Body (entrada):** El evento de Stripe (cuerpo sin modificar) y la cabecera `stripe-signature`.
 - **Respuesta OK:** `200` `{ data: { received: true } }`
@@ -343,30 +363,37 @@ El pago es solo en línea. No se puede pagar en el lugar.
   - `500` "Error al procesar el evento" (Stripe lo vuelve a intentar)
 - **Validaciones:**
   - La firma del evento es válida
-  - El evento no se procesó antes (se guarda el id del evento para no repetirlo)
-  - Pago exitoso y `expires_at` vigente: la reserva pasa a `confirmed` y se generan los QR (1 si el servicio es `group`, N si es `individual`, según `services.qr_type`)
-  - Pago exitoso pero **fuera de tiempo** (más de 10 minutos): se rechaza, la reserva no se confirma y la franja queda libre. Se responde `200` para que Stripe no insista, y el rechazo se registra.
-  - Si llegan dos pagos para la misma franja, el segundo se rechaza
-  - Pago fallido: la reserva pasa a `failed` y la franja se libera
+  - El pago se busca por `stripe_payment_intent_id`. Si no existe en `payments`, se ignora.
+  - Si el pago ya estaba en `succeeded`, el evento repetido no hace nada. El MER no guarda el id del evento, así que esa fila de `payments` es lo que evita procesarlo dos veces **(estimación)**.
+  - Pago exitoso y `expires_at` vigente: `payments.status = succeeded`, la reserva pasa a `confirmed` y se crean los QR en `qr_codes` (1 si el servicio es `group`, `quantity` si es `individual`, según `services.qr_type`)
+  - Pago exitoso pero **fuera de tiempo** (más de 10 minutos): la reserva no se confirma (queda `expired`) y la franja queda libre. Se responde `200` para que Stripe no insista, y el caso queda registrado. El dinero ya cobrado es un tema por confirmar.
+  - Si llegan dos pagos para la misma franja y fecha, el segundo se rechaza: no se confirma esa reserva
+  - Pago fallido: `payments.status = failed`, la reserva pasa a `failed` y la franja se libera
   - Al confirmar se mandan los QR por correo (ver `integraciones.md`)
 
----
+
 
 ### 3.5 QR y control de acceso (empleado)
+
+Tablas: `qr_codes`, `access_logs`, `reservations`, `users`.
 
 El empleado solo valida. No cuenta personas al escanear. Varios empleados pueden escanear al mismo tiempo desde distintas zonas, así que cada validación tiene que resolverse sin chocar con las demás (ver sección 4).
 
 Sobre los acompañantes: en servicios grupales (cancha) no pueden entrar si el titular no está, y esperan al titular en una zona establecida. En los demás servicios se revisa que la información sea coherente. Esto lo controla el empleado en la puerta. La API no tiene cómo comprobar quién está presente.
 
+Cada validación guarda una fila en `access_logs` con el empleado (`id_employee`), la reserva, el resultado (`granted` o `denied`) y la hora (`scanned_at`).
+
 #### POST /api/access/validate-qr
 - **Propósito:** Validar un QR escaneado y registrar el ingreso.
 - **Rol:** Empleado
 - **Body (entrada):** `{ token }`
-- **Respuesta OK:** `200` `{ data: { valid: true, reservation_id, service_name, holder_name, start_time, end_time, quantity } }`
+- **Respuesta OK:** `200` `{ data: { valid: true, reservation_id, service_name, holder_name, reservation_date, time_start, time_end, quantity } }`
+  - `holder_name` es `users.name` del dueño de la reserva.
+  - `time_start` y `time_end` van desde el inicio de la primera franja hasta el fin de la última.
 - **Errores:**
   - `400` "El código QR es obligatorio"
   - `400` "La reserva no está confirmada"
-  - `400` "El código no corresponde a la franja de hoy"
+  - `400` "El código no corresponde a la fecha de hoy"
   - `401` "No autenticado"
   - `403` "No tienes permiso para validar accesos"
   - `404` "Código QR no reconocido"
@@ -374,16 +401,16 @@ Sobre los acompañantes: en servicios grupales (cancha) no pueden entrar si el t
 - **Validaciones:**
   - El rol es `employee`
   - El QR existe y la reserva está `confirmed`
-  - El QR se usa una sola vez. El primer escaneo lo invalida y activa la reserva.
+  - El QR se usa una sola vez. El primer escaneo guarda `used_at` y `used_by` (el empleado) en `qr_codes`.
   - Si dos empleados escanean el mismo QR a la vez, solo uno recibe éxito y el otro recibe `409`
-  - La franja es de hoy. Si alguien del grupo llega tarde, se permite mientras los datos coincidan con la reserva (servicio, franja y titular).
-  - Cada escaneo queda guardado en `access_logs`
+  - `reservation_date` es hoy. Si alguien del grupo llega tarde, se permite mientras los datos coincidan con la reserva (servicio, franja y titular).
+  - Los intentos rechazados de un QR conocido (ya usado, otra fecha, reserva sin confirmar) se guardan en `access_logs` con `result = denied`. Un token que no existe no se puede guardar, porque `access_logs` pide un QR **(estimación)**.
 
 #### GET /api/access/search
 - **Propósito:** Buscar reservas para validar a mano (reingreso o cliente sin QR).
 - **Rol:** Empleado
-- **Body (entrada):** No lleva. En la URL, al menos uno de: `holder_name`, `document` (cédula) o `reservation_id`.
-- **Respuesta OK:** `200` `{ data: [ { reservation_id, holder_name, document, service_name, start_time, end_time, status } ] }`
+- **Body (entrada):** No lleva. En la URL, al menos uno de: `holder_name`, `number_document` (cédula) o `reservation_id`.
+- **Respuesta OK:** `200` `{ data: [ { reservation_id, holder_name, number_document, service_name, reservation_date, time_start, time_end, status } ] }`
 - **Errores:**
   - `400` "Debes enviar nombre, cédula o número de reserva"
   - `401` "No autenticado"
@@ -391,13 +418,14 @@ Sobre los acompañantes: en servicios grupales (cancha) no pueden entrar si el t
 - **Validaciones:**
   - El rol es `employee`
   - Viene al menos un criterio de búsqueda
-  - Solo devuelve reservas `confirmed` (o ya activadas) con franja de hoy
+  - `holder_name` busca coincidencias parciales en `users.name`. `number_document` busca en `users.number_document`.
+  - Solo devuelve reservas `confirmed` (o `completed` el mismo día) con `reservation_date` de hoy
 
 #### POST /api/access/validate-document
 - **Propósito:** Dar acceso con la cédula física cuando el cliente no tiene el QR a la mano.
 - **Rol:** Empleado
-- **Body (entrada):** `{ reservation_id, document }`
-- **Respuesta OK:** `200` `{ data: { valid: true, reservation_id, holder_name, service_name, start_time, end_time } }`
+- **Body (entrada):** `{ reservation_id, number_document }`
+- **Respuesta OK:** `200` `{ data: { valid: true, reservation_id, holder_name, service_name, time_start, time_end } }`
 - **Errores:**
   - `400` "Reserva y cédula son obligatorias"
   - `400` "La cédula no coincide con el titular de la reserva"
@@ -407,10 +435,10 @@ Sobre los acompañantes: en servicios grupales (cancha) no pueden entrar si el t
   - `404` "Reserva no encontrada"
 - **Validaciones:**
   - El rol es `employee`
-  - La cédula coincide con la que el titular registró al reservar
-  - La reserva está `confirmed` y la franja es de hoy
+  - `number_document` coincide con `users.number_document` del dueño de la reserva
+  - La reserva está `confirmed` y su fecha es hoy
   - Los datos coinciden con la reserva (servicio, franja y titular)
-  - Queda en `access_logs` como ingreso manual por cédula
+  - Queda en `access_logs` como ingreso manual. Esta tabla no tiene una columna para distinguirlo de un ingreso con QR (ver pendientes).
 
 #### POST /api/access/reentry
 - **Propósito:** Registrar un reingreso dentro de la misma franja, validado a mano por el empleado (nombre del titular, servicio y franja).
@@ -420,30 +448,31 @@ Sobre los acompañantes: en servicios grupales (cancha) no pueden entrar si el t
 - **Errores:**
   - `400` "El número de reserva es obligatorio"
   - `400` "La franja de esta reserva ya terminó"
+  - `400` "Esta reserva todavía no tiene un primer ingreso"
   - `401` "No autenticado"
   - `403` "No tienes permiso"
   - `404` "Reserva no encontrada"
 - **Validaciones:**
   - El rol es `employee`
-  - La reserva ya tuvo un primer ingreso
-  - La hora actual sigue dentro de la misma franja
+  - Ya existe un ingreso `granted` de esa reserva en `access_logs`
+  - La hora actual está entre el inicio de la primera franja y el fin de la última
   - Queda en `access_logs` como reingreso
 
----
+
 
 ### 3.6 Admin
 
 Todos los endpoints de este módulo son solo para `admin`. Sin sesión responden `401`. Con otro rol responden `403` "No tienes permiso".
 
-Los campos de cada recurso tienen que coincidir con las columnas de `database.md`.
+Los campos son los del MER (`database.md`). El MER no tiene `is_active` en `categories`, `time_slots` ni `users`, así que esos recursos solo se pueden crear, editar y borrar.
 
 #### Categorías
 
 ##### GET /api/admin/categories
-- **Propósito:** Listar todas las categorías, activas o no.
+- **Propósito:** Listar todas las categorías.
 - **Rol:** Admin
 - **Body (entrada):** Ninguno
-- **Respuesta OK:** `200` `{ data: [ { id, name, active } ] }`
+- **Respuesta OK:** `200` `{ data: [ { id, name } ] }`
 - **Errores:** `401`, `403`
 - **Validaciones:** El rol es `admin`
 
@@ -456,18 +485,18 @@ Los campos de cada recurso tienen que coincidir con las columnas de `database.md
   - `400` "El nombre es obligatorio"
   - `400` "Ya existe una categoría con ese nombre"
   - `401`, `403`
-- **Validaciones:** El nombre no está vacío y no se repite
+- **Validaciones:** El nombre no está vacío, tiene máximo 200 caracteres y no se repite (`name` es único en el MER)
 
 ##### PATCH /api/admin/categories/:id
 - **Propósito:** Editar una categoría.
 - **Rol:** Admin
-- **Body (entrada):** `{ name?, active? }`
-- **Respuesta OK:** `200` `{ data: { id, name, active } }`
+- **Body (entrada):** `{ name }`
+- **Respuesta OK:** `200` `{ data: { id, name } }`
 - **Errores:**
   - `400` "Datos inválidos"
   - `404` "Categoría no encontrada"
   - `401`, `403`
-- **Validaciones:** Viene al menos un campo. Si cambia el nombre, no puede repetirse.
+- **Validaciones:** El nombre no está vacío y no se repite
 
 ##### DELETE /api/admin/categories/:id
 - **Propósito:** Eliminar una categoría.
@@ -486,29 +515,30 @@ Los campos de cada recurso tienen que coincidir con las columnas de `database.md
 - **Propósito:** Listar todos los servicios, activos o no.
 - **Rol:** Admin
 - **Body (entrada):** Ninguno. Opcional en la URL: `category_id`.
-- **Respuesta OK:** `200` `{ data: [ { id, name, description, category_id, price, capacity, qr_type, max_companions, active } ] }`
+- **Respuesta OK:** `200` `{ data: [ { id, name, category_id, capacity, max_companions, qr_type, is_active, hour_price } ] }`
 - **Errores:** `401`, `403`
 - **Validaciones:** El rol es `admin`
 
 ##### POST /api/admin/services
 - **Propósito:** Crear un servicio.
 - **Rol:** Admin
-- **Body (entrada):** `{ name, description, category_id, price, capacity, qr_type, max_companions? }`
+- **Body (entrada):** `{ name, category_id, capacity, max_companions?, qr_type, hour_price, is_active? }`
 - **Respuesta OK:** `201` `{ data: { id, name, qr_type } }`
 - **Errores:**
   - `400` "Datos inválidos"
   - `404` "Categoría no encontrada"
   - `401`, `403`
 - **Validaciones:**
-  - `name` no está vacío
-  - `price` es 0 o más
+  - `name` no está vacío y tiene máximo 50 caracteres
+  - `hour_price` es 0 o más, con máximo 2 decimales
   - `capacity` es un entero mayor que 0
   - `qr_type` es `group` o `individual`
   - `max_companions` es un entero de 0 o más (por defecto 5)
+  - `is_active` es verdadero o falso (por defecto verdadero)
   - La categoría existe
 
 ##### PATCH /api/admin/services/:id
-- **Propósito:** Editar un servicio.
+- **Propósito:** Editar un servicio, o activarlo y desactivarlo con `is_active`.
 - **Rol:** Admin
 - **Body (entrada):** Cualquier campo del POST, todos opcionales.
 - **Respuesta OK:** `200` `{ data: { id, ... } }`
@@ -520,23 +550,28 @@ Los campos de cada recurso tienen que coincidir con las columnas de `database.md
 - **Validaciones:** Las mismas reglas del POST. `qr_type` no se puede cambiar si hay reservas activas.
 
 ##### DELETE /api/admin/services/:id
-- **Propósito:** Eliminar (o desactivar) un servicio.
+- **Propósito:** Quitar un servicio.
 - **Rol:** Admin
 - **Body (entrada):** Ninguno
-- **Respuesta OK:** `200` `{ data: null }`
+- **Respuesta OK:** `200` `{ data: { deleted: true } }` si se eliminó, o `{ data: { deactivated: true } }` si solo se desactivó
 - **Errores:**
   - `404` "Servicio no encontrado"
-  - `409` "El servicio tiene reservas asociadas"
+  - `409` "El servicio tiene reservas activas"
   - `401`, `403`
-- **Validaciones:** No tiene reservas activas. Si tiene historial, se desactiva en vez de borrarse (por confirmar).
+- **Validaciones (estimación):**
+  - Con reservas activas (pendientes vigentes o confirmadas a futuro): se rechaza con `409`
+  - Con reservas pasadas solamente: se desactiva (`is_active = false`) para no perder el historial
+  - Sin ninguna reserva: se elimina junto con sus franjas
 
 #### Horarios (franjas)
+
+Las franjas son horas del día que se repiten todos los días. No llevan fecha.
 
 ##### GET /api/admin/time-slots
 - **Propósito:** Listar las franjas de un servicio.
 - **Rol:** Admin
-- **Body (entrada):** No lleva. En la URL: `service_id` (obligatorio) y `date` (opcional).
-- **Respuesta OK:** `200` `{ data: [ { id, service_id, date, start_time, end_time, active } ] }`
+- **Body (entrada):** No lleva. Obligatorio en la URL: `service_id`.
+- **Respuesta OK:** `200` `{ data: [ { id, service_id, time_start, time_end } ] }`
 - **Errores:**
   - `400` "service_id es obligatorio"
   - `401`, `403`
@@ -545,8 +580,8 @@ Los campos de cada recurso tienen que coincidir con las columnas de `database.md
 ##### POST /api/admin/time-slots
 - **Propósito:** Crear una franja horaria para un servicio.
 - **Rol:** Admin
-- **Body (entrada):** `{ service_id, date, start_time, end_time }`
-- **Respuesta OK:** `201` `{ data: { id, service_id, date, start_time, end_time } }`
+- **Body (entrada):** `{ service_id, time_start, time_end }` (horas en formato `HH:MM`)
+- **Respuesta OK:** `201` `{ data: { id, service_id, time_start, time_end } }`
 - **Errores:**
   - `400` "Datos inválidos"
   - `400` "La hora de fin debe ser mayor que la de inicio"
@@ -555,20 +590,20 @@ Los campos de cada recurso tienen que coincidir con las columnas de `database.md
   - `401`, `403`
 - **Validaciones:**
   - El servicio existe
-  - `end_time` es mayor que `start_time`
+  - `time_end` es mayor que `time_start`
   - No se cruza con otra franja del mismo servicio
 
 ##### PATCH /api/admin/time-slots/:id
 - **Propósito:** Editar una franja.
 - **Rol:** Admin
-- **Body (entrada):** `{ start_time?, end_time?, active? }`
-- **Respuesta OK:** `200` `{ data: { id, ... } }`
+- **Body (entrada):** `{ time_start?, time_end? }`
+- **Respuesta OK:** `200` `{ data: { id, service_id, time_start, time_end } }`
 - **Errores:**
   - `400` "Datos inválidos"
   - `404` "Franja no encontrada"
-  - `409` "La franja tiene reservas activas"
+  - `409` "La franja tiene reservas asociadas"
   - `401`, `403`
-- **Validaciones:** Las mismas del POST. No se cambian las horas si la franja tiene reservas activas.
+- **Validaciones:** Las mismas del POST. No se cambian las horas si la franja ya está en alguna reserva activa.
 
 ##### DELETE /api/admin/time-slots/:id
 - **Propósito:** Eliminar una franja.
@@ -579,34 +614,36 @@ Los campos de cada recurso tienen que coincidir con las columnas de `database.md
   - `404` "Franja no encontrada"
   - `409` "La franja tiene reservas asociadas"
   - `401`, `403`
-- **Validaciones:** No tiene reservas activas
+- **Validaciones:** La franja no aparece en `reservations_slots`. Con historial no se puede borrar, porque el MER no tiene forma de desactivarla.
 
 #### Empleados
+
+Los empleados son filas de `users` con `role = employee`.
 
 ##### GET /api/admin/employees
 - **Propósito:** Listar los empleados.
 - **Rol:** Admin
 - **Body (entrada):** Ninguno
-- **Respuesta OK:** `200` `{ data: [ { id, full_name, email, active } ] }`
+- **Respuesta OK:** `200` `{ data: [ { id, name, email, number_document } ] }`
 - **Errores:** `401`, `403`
 - **Validaciones:** El rol es `admin`
 
 ##### POST /api/admin/employees
 - **Propósito:** Crear un usuario con rol `employee`.
 - **Rol:** Admin
-- **Body (entrada):** `{ full_name, email }`
-- **Respuesta OK:** `201` `{ data: { id, full_name, email } }`
+- **Body (entrada):** `{ name, email, number_document? }`
+- **Respuesta OK:** `201` `{ data: { id, name, email } }`
 - **Errores:**
   - `400` "Datos inválidos"
   - `400` "El correo ya está registrado"
   - `401`, `403`
-- **Validaciones:** El correo es válido y no se repite. El rol lo pone el servidor como `employee`. Cómo se le entrega la contraseña inicial queda por confirmar.
+- **Validaciones:** El correo es válido, tiene máximo 100 caracteres y no se repite. `name` tiene máximo 50. El rol lo pone el servidor como `employee`. Cómo se le entrega la contraseña inicial queda por confirmar.
 
 ##### PATCH /api/admin/employees/:id
-- **Propósito:** Editar o desactivar a un empleado.
+- **Propósito:** Editar los datos de un empleado.
 - **Rol:** Admin
-- **Body (entrada):** `{ full_name?, active? }`
-- **Respuesta OK:** `200` `{ data: { id, full_name, email, active } }`
+- **Body (entrada):** `{ name?, number_document? }`
+- **Respuesta OK:** `200` `{ data: { id, name, email, number_document } }`
 - **Errores:**
   - `400` "Datos inválidos"
   - `404` "Empleado no encontrado"
@@ -622,15 +659,19 @@ Los campos de cada recurso tienen que coincidir con las columnas de `database.md
   - `404` "Empleado no encontrado"
   - `409` "El empleado tiene registros de acceso asociados"
   - `401`, `403`
-- **Validaciones:** Tiene rol `employee`. Si ya validó ingresos, se desactiva en vez de borrarse (por confirmar).
+- **Validaciones:** Tiene rol `employee` y no aparece en `access_logs.id_employee` ni en `qr_codes.used_by`. Si ya validó ingresos no se puede borrar, porque `users` no tiene `is_active` (ver pendientes).
 
 #### Métricas
 
 ##### GET /api/admin/metrics
 - **Propósito:** Mostrar los números principales para el dashboard del admin.
 - **Rol:** Admin
-- **Body (entrada):** No lleva. Opcional en la URL: `from` y `to` (`YYYY-MM-DD`).
-- **Respuesta OK:** `200` `{ data: { total_reservations, by_status, total_revenue, by_service, occupancy } }`
+- **Body (entrada):** No lleva. Opcional en la URL: `from` y `to` (`YYYY-MM-DD`), que se aplican sobre `reservation_date`.
+- **Respuesta OK:** `200` `{ data: { total_reservations, by_status, total_revenue, by_service, entries } }`
+  - `by_status`: cantidad de reservas por cada estado
+  - `total_revenue`: suma de `payments.amount` con `status = succeeded` (estimación)
+  - `by_service`: lista con `service_id`, `name`, cantidad de reservas e ingresos
+  - `entries`: cantidad de `granted` y `denied` en `access_logs`
 - **Errores:**
   - `400` "Rango de fechas inválido"
   - `401`, `403`
@@ -638,9 +679,9 @@ Los campos de cada recurso tienen que coincidir con las columnas de `database.md
   - `from` no es mayor que `to`
   - Si no vienen fechas, se usa un rango por defecto (por confirmar)
 
-Los indicadores exactos están por confirmar con el cliente. Lo de arriba es una propuesta.
+Los indicadores exactos están por confirmar con el cliente. Lo de arriba es una propuesta que se puede calcular con las tablas del MER.
 
----
+
 
 ## 4. Reglas que aplican a varios endpoints
 
@@ -648,23 +689,59 @@ Los indicadores exactos están por confirmar con el cliente. Lo de arriba es una
 
 **Anticipación máxima.** No se puede reservar en fechas pasadas ni con más de 15 días de anticipación. Se revisa en `GET /api/services/:id/slots` y en `POST /api/reservations`.
 
-**Un cliente, un horario.** Un cliente no puede tener dos reservas al mismo horario. En horarios distintos puede tener todas las que quiera. Se revisa en `POST /api/reservations`.
+**Franjas sin fecha.** Las franjas se repiten todos los días. La fecha de una reserva está en `reservations.reservation_date`, y la disponibilidad se calcula cruzando fecha y franja.
+
+**Un cliente, un horario.** Un cliente no puede tener dos reservas que se crucen en horario el mismo día. En horarios distintos puede tener todas las que quiera. Se revisa en `POST /api/reservations`.
 
 **Dos clientes, la misma franja.** Si dos clientes piden la misma franja al mismo tiempo, solo uno la consigue y el otro recibe `400` "Franja no disponible". Cómo se logra por dentro lo definen `reservas.md` y `database.md`. A la API le toca devolver el error correcto.
 
-**Varios empleados escaneando.** Hay varios empleados en distintas zonas escaneando a la vez. La validación de un QR se hace en un solo paso: marcarlo como usado solo si todavía no lo está. No se hace "primero leo y después actualizo", porque en ese espacio otro empleado podría escanear el mismo código. Así, si dos empleados escanean el mismo QR, uno entra y el otro recibe `409`.
+**Varios empleados escaneando.** Hay varios empleados en distintas zonas escaneando a la vez. La validación de un QR se hace en un solo paso: marcarlo como usado solo si `used_at` todavía está vacío. No se hace "primero leo y después actualizo", porque en ese espacio otro empleado podría escanear el mismo código. Así, si dos empleados escanean el mismo QR, uno entra y el otro recibe `409`.
 
 **Webhook de Stripe.** Si llegan dos pagos para la misma franja, el segundo se rechaza. Además, un mismo evento de Stripe nunca se procesa dos veces.
 
-**Cédula del titular.** Se pide al reservar y queda guardada. Es lo que permite encontrar la reserva cuando el cliente no tiene el QR.
+**Cédula del titular.** Vive en `users.number_document`. Se pide al reservar si el usuario todavía no la tiene, y es lo que permite encontrar la reserva cuando el cliente no tiene el QR.
 
 **Seguridad básica.** El rol y el `user_id` siempre salen de la sesión, nunca del body. El monto de un pago siempre lo calcula el servidor. Los mensajes de error no muestran detalles internos.
 
 **Sin cancelaciones ni reembolsos.** No hay endpoints para eso. El no-show se cobra.
 
----
 
-## 5. De dónde viene cada regla
+
+## 5. Cómo se conecta con el MER
+
+Tablas que usa cada módulo:
+
+| Módulo | Tablas |
+|---|---|
+| Autenticación | `users` (más Supabase Auth) |
+| Servicios | `categories`, `services`, `time_slots`, `reservations_slots`, `reservations` |
+| Reservas | `reservations`, `reservations_slots`, `time_slots`, `services`, `users` |
+| Pagos | `payments`, `reservations`, `qr_codes` |
+| QR y acceso | `qr_codes`, `access_logs`, `reservations`, `users` |
+| Admin | `categories`, `services`, `time_slots`, `users`, `payments`, `access_logs` |
+
+Campos del MER que usa la API:
+
+| Tabla | Campos |
+|---|---|
+| `users` | `id` (UUID), `name` (50), `email` (100, único), `number_document` (20), `role` (`client`, `admin`, `employee`), `created_at` |
+| `categories` | `id`, `name` (200, único), `created_at` |
+| `services` | `id`, `name` (50), `id_category`, `capacity`, `max_companions`, `qr_type` (`group`, `individual`), `is_active`, `hour_price` (8,2), `created_at` |
+| `time_slots` | `id`, `id_service`, `time_start`, `time_end`, `created_at` |
+| `reservations` | `id`, `id_user`, `quantity`, `reservation_date`, `expires_at`, `status` (`pending`, `confirmed`, `failed`, `expired`, `completed`), `created_at` |
+| `reservations_slots` | `id`, `id_time_slot`, `id_reservation`, `created_at` |
+| `payments` | `id`, `id_reservation`, `stripe_payment_intent_id` (único), `status` (`pending`, `succeeded`, `failed`), `amount` (10,2), `created_at` |
+| `qr_codes` | `id`, `id_reservation`, `token`, `used_at`, `used_by` (UUID del empleado), `created_at` |
+| `access_logs` | `id`, `id_reservation`, `id_employee`, `id_QR_code`, `result` (`granted`, `denied`), `scanned_at` |
+
+En el JSON de la API las llaves foráneas se escriben como `service_id`, `category_id`, `user_id`, `reservation_id` y `time_slot_id`. Los demás campos usan el mismo nombre que en el MER.
+
+## Diseño MER
+
+<img width="1024" height="532" alt="image" src="https://github.com/user-attachments/assets/9e926852-2e76-4286-a636-36951e83ecbd" />
+
+
+## 6. De dónde viene cada regla
 
 El documento del cliente pide dejar claro si una regla la dio el cliente o la decidió el equipo.
 
@@ -688,22 +765,26 @@ El documento del cliente pide dejar claro si una regla la dio el cliente o la de
 | Pago solo en línea, sin pago presencial | Equipo |
 | El no-show se cobra igual, sin reembolso | Equipo |
 
----
 
-## 6. Pendientes por confirmar
+
+## 7. Pendientes por confirmar
 
 Puntos donde este documento asume algo o depende de otra área. Se llevan a `#bloqueos` o al cierre de la Fase 1.
 
-1. **Cédula del titular (Dev 1).** Ya se sabe que se pide al reservar y que sirve para buscar la reserva, y por eso `POST /api/reservations` la recibe. Falta definir dónde se guarda (`users` o `reservations`) y confirmar que, cuando se reserva a nombre de otra persona, la cédula que se pide es la de esa persona.
-2. **Excepción de la cancha en reservas simultáneas (Dev 2 y Tech Lead).** El cliente dice que no se permiten dos reservas al mismo horario, salvo la cancha de fútbol, pero lo que explica es solo lo del QR de grupo. No queda claro si un cliente puede reservar una cancha y otro servicio a la misma hora. Aquí se asume que no.
-3. **Franjas seguidas (Dev 2).** Ya se confirmó que se permiten. Falta decidir cómo se hace: una reserva por franja o una lista `time_slot_ids` en una sola petición. También define si se paga una vez o varias.
-4. **Acompañantes (Dev 2).** Se sabe que el máximo es 5 y que no ocupan cupo. Falta saber si el número de acompañantes se manda en el body y se guarda, o si solo es un límite.
-5. **Canchas y cupo (Dev 2).** El cliente habló de la cancha de fútbol con QR de grupo. Falta confirmar si la cancha de polideportivo también va con QR de grupo. Además, aquí se asume que una reserva `group` ocupa la franja completa.
-6. **Pago tardío (Tech Lead y cliente).** Ya se sabe que si el pago llega pasados los 10 minutos se rechaza y la franja se libera. Falta definir qué pasa con el dinero que Stripe ya cobró, porque no hay reembolsos.
-7. **Estado tras el primer escaneo (Dev 2).** El primer escaneo "activa la reserva", pero los estados definidos son `pending`, `confirmed`, `failed`, `expired` y `completed`. Falta confirmar a cuál pasa la reserva al escanear.
-8. **Llegada antes o después de la franja.** Se permite que alguien llegue tarde si los datos son coherentes, pero no está definido cuánto antes o después de la franja se acepta el ingreso.
-9. **Horarios (Dev 1 y cliente).** Falta definir si el admin crea las franjas una por una, por fecha, o si arma una plantilla semanal que las genera.
-10. **Empleados (Dev 4).** Cómo recibe el empleado su contraseña inicial (invitación por correo con Resend, contraseña temporal, etc.).
-11. **Borrado.** Para servicios y empleados con historial, decidir entre eliminar o desactivar.
-12. **Métricas.** Confirmar con el cliente qué números quiere ver.
-13. **QR por correo (Dev 4).** El documento del cliente habla de un envío múltiple de QR por correo. Falta definir si los QR de un servicio `individual` van todos en un solo correo o en uno por persona. Afecta lo que hace el webhook al confirmar.
+1. **Reserva a nombre de otra persona (Dev 1 y Dev 2).** El cliente dijo que sí se puede, pero `reservations` solo guarda `id_user`, sin nombre ni cédula del titular. Con el MER actual, la reserva siempre queda a nombre del usuario que la hace. Si se quiere soportar, hay que agregar campos de titular (por ejemplo nombre y cédula) en `reservations`, y `POST /api/reservations` los recibiría en el body.
+2. **Cédula al registrarse o al reservar (Dev 1 y Dev 4).** La cédula está en `users.number_document`. Aquí se pide al reservar si falta, porque con Google OAuth no llega. Falta confirmar si debe ser obligatoria desde el registro.
+3. **Excepción de la cancha en reservas simultáneas (Dev 2 y Tech Lead).** El cliente dice que no se permiten dos reservas al mismo horario, salvo la cancha de fútbol, pero lo que explica es solo lo del QR de grupo. No queda claro si un cliente puede reservar una cancha y otro servicio a la misma hora. Aquí se asume que no.
+4. **Reglas de franjas seguidas (Dev 2).** El MER resuelve que una reserva puede tener varias franjas (`reservations_slots`). Aquí se asume que deben ser del mismo servicio, del mismo día y sin huecos. Falta confirmar si hay un máximo de franjas por reserva.
+5. **Cómo se calcula el monto (Dev 2, Tech Lead y cliente).** El MER solo tiene `hour_price`. Aquí se asume `hour_price` × horas, multiplicado por `quantity` en servicios `individual`. Falta confirmar si el precio es por persona o por reserva, y qué pasa si una franja no dura una hora.
+6. **Acompañantes (Dev 1 y Dev 2).** `max_companions` existe, pero `reservations` no tiene dónde guardar cuántos acompañantes vienen. Si solo es un límite que revisa el empleado, no hace falta nada. Si se quiere registrar el número, falta una columna.
+7. **Canchas y cupo (Dev 2).** El cliente habló de la cancha de fútbol con QR de grupo. Falta confirmar si la cancha de polideportivo también va con QR de grupo. Aquí se asume que una reserva `group` ocupa la franja completa.
+8. **Pago tardío (Tech Lead y cliente).** Ya se sabe que si el pago llega pasados los 10 minutos se rechaza y la franja se libera. Falta definir qué pasa con el dinero que Stripe ya cobró, porque no hay reembolsos. Hoy el pago queda como `succeeded` y la reserva como `expired`.
+9. **Estado tras el primer escaneo (Dev 2).** El primer escaneo "activa la reserva", pero los estados del MER no incluyen uno de "activa". Aquí el escaneo solo llena `used_at` y `used_by` en `qr_codes` y no cambia el estado de la reserva. Falta confirmar si debe pasar a otro estado.
+10. **Registro de accesos (Dev 1).** `access_logs` no distingue entre ingreso con QR, ingreso por cédula y reingreso, y pide siempre un `id_QR_code`. Los ingresos manuales no tienen QR. Hay que permitir que ese campo quede vacío y agregar una columna con el tipo de acceso.
+11. **Llegada antes o después de la franja.** Se permite que alguien llegue tarde si los datos son coherentes, pero no está definido cuánto antes o después de la franja se acepta el ingreso.
+12. **Días cerrados (Dev 1 y cliente).** Como las franjas no tienen fecha, no hay forma de cerrar un servicio un día en particular (mantenimiento, festivos). Falta definir si se necesita y cómo se guardaría.
+13. **Desactivar en vez de borrar (Dev 1).** Solo `services` tiene `is_active`. `categories`, `time_slots` y `users` no, así que con historial no se pueden quitar. Para empleados es lo más importante: sin `is_active` no se les puede quitar el acceso sin borrarlos.
+14. **Empleados (Dev 4).** Cómo recibe el empleado su contraseña inicial (invitación por correo con Resend, contraseña temporal, etc.).
+15. **Métricas.** Confirmar con el cliente qué números quiere ver.
+16. **QR por correo (Dev 4).** El documento del cliente habla de un envío múltiple de QR por correo. Falta definir si los QR de un servicio `individual` van todos en un solo correo o en uno por persona. Afecta lo que hace el webhook al confirmar.
+17. **Nombres en el MER (Dev 1).** La imagen dice `acccess_logs` (con tres c) y el campo `aumont` en `payments`. Aquí se usan `access_logs` y `amount`. Conviene corregirlo en el diagrama antes de crear las tablas.
