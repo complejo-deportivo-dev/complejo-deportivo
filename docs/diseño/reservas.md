@@ -4,11 +4,11 @@
 
 El ciclo de vida de una reserva está gestionado por un autómata de estados finitos que garantiza la consistencia del sistema. Los estados definidos son los siguientes:
 
-- **`pending`**: El cliente ha seleccionado una franja horaria disponible y la reserva ha sido registrada en el sistema. En este estado se activa el bloqueo temporal del cupo. El estado es asignado por el **Sistema Backend** cuando el cliente inicia la reserva y permanece hasta que se complete el pago o expire el tiempo límite.
-- **`confirmed`**: El pago fue procesado exitosamente por la pasarela. La reserva queda garantizada y el código QR de acceso es generado y enviado al cliente. Este estado es actualizado por el **Sistema Backend (vía Webhook de Stripe)** inmediatamente al recibir la confirmación del evento de pago exitoso.
-- **`failed`**: El proceso de pago fue rechazado por la pasarela, cancelado o abandonado por el usuario. La reserva queda invalidada y la franja horaria se libera inmediatamente para otros usuarios. Este estado es establecido por el **Sistema Backend / Webhook de Stripe** o por las validaciones de fallo de pago.
-- **`expired`**: Transcurrió el tiempo límite de bloqueo temporal sin que el cliente realizara el pago. La franja horaria es liberada automáticamente. Este estado lo asigna un **Job programado (`pg_cron` en BD)** que monitorea y limpia periódicamente las reservas en `pending` vencidas.
-- **`completed`**: El cliente se presentó en las instalaciones dentro del horario correspondiente y el empleado validó su ingreso mediante el escaneo del código QR. El estado es actualizado por el **Empleado** tras escanear el QR y pulsar explícitamente el botón "Dar acceso".
+- **`pending`**: El cliente ha seleccionado una franja horaria disponible (y la cantidad de personas en servicios individuales) y la reserva ha sido registrada en el sistema. En este estado se activa el bloqueo temporal creando los registros en `reservation_slots` (`is_active = true`) y estableciendo `reservations.expires_at`. El estado es asignado por el **Sistema Backend** cuando el cliente inicia la reserva y permanece hasta que se complete el pago o expire el tiempo límite de 10 minutos.
+- **`confirmed`**: El pago fue procesado exitosamente por la pasarela (Stripe). La reserva queda garantizada y se generan los códigos QR de acceso (guardados en `qr_codes` y enviados al cliente). Este estado es actualizado por el **Sistema Backend (vía Webhook de Stripe)** inmediatamente al recibir la confirmación del evento de pago exitoso.
+- **`failed`**: El proceso de pago fue rechazado o declinado por la pasarela (Stripe). La reserva queda invalidada y sus franjas en `reservation_slots` se liberan inmediatamente marcando `is_active = false`. Este estado es establecido por el **Sistema Backend / Webhook de Stripe** ante un fallo explícito en el cobro.
+- **`expired`**: Transcurrió el tiempo límite de bloqueo temporal (10 minutos) sin que el cliente realizara el pago (por ejemplo, abandono del checkout). La reserva queda invalidada y sus franjas en `reservation_slots` son liberadas marcando `is_active = false`. Este estado lo asigna un **Job programado (`pg_cron` en BD)** que monitorea y limpia periódicamente las reservas en `pending` vencidas.
+- **`completed`**: El cliente (o los asistentes) se presentó en las instalaciones dentro del horario correspondiente y el empleado validó su ingreso mediante el escaneo del código QR. El estado es actualizado por el **Empleado** tras escanear el QR y pulsar explícitamente el botón "Dar acceso".
 
 ---
 
@@ -17,12 +17,14 @@ El ciclo de vida de una reserva está gestionado por un autómata de estados fin
 El flujo de una reserva abarca desde la selección inicial hasta el ingreso del usuario a las instalaciones:
 
 1. **Selección de Franja Horaria**: El cliente navega por el catálogo de categorías y servicios, elige la fecha deseada y consulta las franjas horarias disponibles.
-2. **Validación de Disponibilidad e Inserción en `pending`**: El cliente solicita reservar una franja. El sistema valida en la base de datos que el horario esté libre y que el cliente no posea reservas simultáneas. Se crea el registro de reserva en estado `pending` y se asigna la fecha límite en `reservations.expires_at`.
-3. **Bloqueo Temporal y Redirección a Pago**: La franja horaria queda bloqueada temporalmente para otros usuarios mientras el cliente es redirigido a la pasarela de pago (Stripe).
-4. **Procesamiento del Pago**: 
-   - **Caso Exitoso**: Stripe procesa el pago e impacta el backend mediante un Webhook asíncrono. El sistema cambia el estado a `confirmed`, genera un token QR único de acceso y envía un correo electrónico de confirmación con el QR adjunto.
-   - **Caso Fallido o Abandonado**: Si Stripe reporta fallo en el pago o transcurre el tiempo límite de `expires_at`, la reserva pasa a `failed` o `expired` y la franja queda libre para la comunidad.
-5. **Ingreso y Validación en las Instalaciones**: El cliente acude al complejo deportivo y presenta su código QR desde su dispositivo móvil. El empleado abre la aplicación en vista de escaneo, lee el código QR con la cámara de su celular y el sistema valida en tiempo real la vigencia, horario y estado del QR. Al presionar el botón "Dar acceso", la reserva se marca como `completed` y el QR se inhabilita para futuros accesos.
+2. **Selección de Cantidad de Personas**: En servicios de tipo `individual` (ej. piscina, gimnasio), el cliente selecciona la cantidad de personas o cupos a reservar ($N = \text{quantity}$). En servicios de tipo `group` (ej. canchas deportivas), el alquiler cubre la franja completa para el grupo y la cantidad es 1.
+3. **Validación de Disponibilidad e Inserción en `pending`**: El cliente solicita reservar. El sistema valida en la base de datos que haya disponibilidad suficiente para la cantidad solicitada y que el cliente no posea reservas simultáneas. Se crea el registro de reserva en estado `pending`, se asocian las franjas en `reservation_slots` (`is_active = true`) y se asigna la fecha límite en `reservations.expires_at` (10 minutos).
+4. **Bloqueo Temporal y Redirección a Pago**: La franja horaria (o los cupos correspondientes) queda bloqueada temporalmente para otros usuarios mientras el cliente es redirigido a la pasarela de pago (Stripe Checkout).
+5. **Procesamiento del Pago**: 
+   - **Caso Exitoso**: Stripe procesa el pago e impacta el backend mediante un Webhook asíncrono (`POST /api/webhooks/stripe`). El sistema cambia el estado de la reserva a `confirmed`, genera los tokens QR opacos en la tabla `qr_codes` (1 QR para servicios `group`, $N$ QRs para servicios `individual`) y envía un correo electrónico de confirmación con los códigos QR adjuntos.
+   - **Caso Pago Rechazado (`failed`)**: Si Stripe rechaza la transacción (fondos insuficientes, tarjeta declinada, etc.), el Webhook notifica el fallo, el sistema pasa la reserva a `failed` y libera inmediatamente las franjas en `reservation_slots` marcando `is_active = false`.
+   - **Caso Abandono / Tiempo Vencido (`expired`)**: Si el cliente abandona el proceso o no completa el pago antes de que venza `expires_at`, el job de `pg_cron` cambia el estado de la reserva a `expired` y libera las franjas en `reservation_slots` marcando `is_active = false`.
+6. **Ingreso y Validación en las Instalaciones**: El cliente o asistentes acuden al complejo deportivo y presentan su código QR desde su dispositivo móvil. El empleado abre la aplicación en vista de escaneo, lee el código QR con la cámara de su celular y el servidor busca el token opaco en la tabla `qr_codes` para resolver la reserva y validar en tiempo real la vigencia, horario y estado. Al presionar el botón "Dar acceso", el QR se marca como usado (`used = true`), la reserva se actualiza a `completed` y el QR queda inhabilitado para futuros accesos.
 
 ---
 
@@ -30,16 +32,20 @@ El flujo de una reserva abarca desde la selección inicial hasta el ingreso del 
 
 Para evitar el sobrecupo y garantizar una reserva justa durante la transacción de pago, se implementa un mecanismo de bloqueo temporal:
 
-- **Cómo se bloquea**: Se ejecuta mediante un campo en la tabla de la base de datos denominado `reservations.expires_at`. Al momento de crear la reserva en estado `pending`, este campo se llena con la fecha y hora exacta en que finalizará la ventana de oportunidad para pagar (`NOW() + intervalo_duracion`).
+- **Cómo se bloquea**: Se ejecuta mediante la creación de registros en la tabla `reservation_slots` con `is_active = true` y el campo `reservations.expires_at`. Al momento de crear la reserva en estado `pending`, este campo se llena con la fecha y hora exacta en que finalizará la ventana de oportunidad para pagar (`NOW() + INTERVAL '10 minutes'`).
 - **Cuánto dura**: La ventana de bloqueo temporal está fijada en **10 minutos**.
-- **Quién lo libera**: Si no se registra el pago en el tiempo estipulado, la liberación es gestionada de manera automática por procesos de base de datos (`pg_cron`) o por validaciones al consultar la disponibilidad en tiempo real.
+- **Quién lo libera**: 
+  - Si el cliente abandona el flujo y transcurre el tiempo límite, la liberación la realiza automáticamente el job de base de datos (`pg_cron`), pasando la reserva a `expired` y marcando `is_active = false` en `reservation_slots`.
+  - Si la pasarela de pago rechaza la transacción, el webhook de Stripe marca la reserva como `failed` y libera las franjas marcando `is_active = false` en `reservation_slots`.
 
 ---
 
 ## 4. Expiración automática
 
-- **Qué pasa si no se paga a tiempo**: La reserva pierde toda validez, su estado pasa a `expired` y la franja horaria queda nuevamente abierta a consulta pública.
-- **Cómo se libera (Job/Cron)**: Se utiliza la extensión de PostgreSQL **`pg_cron`** configurada directamente en la base de datos Supabase. El job ejecuta una función almacenada que identifica todas las reservas cuya condición cumpla `status = 'pending' AND expires_at < NOW()`, actualizando su estado a `expired` y liberando la disponibilidad del cupo.
+- **Qué pasa si no se paga a tiempo (Abandono)**: La reserva pierde toda validez, su estado pasa a `expired` y la franja horaria queda nuevamente libre para otros usuarios.
+- **Cómo se libera (Job/Cron)**: Se utiliza la extensión de PostgreSQL **`pg_cron`** configurada directamente en la base de datos Supabase. El job ejecuta una función almacenada periódica que identifica todas las reservas cuya condición cumpla `status = 'pending' AND expires_at < NOW()`. Al procesar cada reserva vencida:
+  1. Actualiza el estado de la reserva a `expired`.
+  2. Actualiza los registros asociados en `reservation_slots` marcando **`is_active = false`** para liberar de forma efectiva los cupos y la disponibilidad de las franjas.
 - **Cada cuánto corre el job**: El job programado se ejecuta de manera continua **cada 1 minuto** para garantizar una rápida liberación de franjas bloqueadas ineficientemente.
 
 ---
@@ -49,26 +55,28 @@ Para evitar el sobrecupo y garantizar una reserva justa durante la transacción 
 - **Cómo llega la confirmación de Stripe**: La confirmación no depende de la navegación del usuario en el frontend, sino de una llamada directa servidor a servidor enviada por Stripe a través de un Webhook seguro (`POST /api/webhooks/stripe`) firmado criptográficamente.
 - **Qué cambia en el sistema al confirmar**: 
   1. El estado de la reserva cambia de `pending` a `confirmed`.
-  2. Se genera un token criptográfico único asociado a la reserva y se guarda su representación en código QR.
-  3. Se dispara una tarea asíncrona que envía un correo electrónico de confirmación al cliente (vía Resend/SendGrid) con los detalles de la reserva y el código QR de ingreso.
-- **Qué pasa si el pago falla**: Si la transacción es declinada o falla en la pasarela, Stripe notifica el evento de fallo. El sistema cambia el estado a `failed` y libera inmediatamente la franja horaria reservada.
+  2. Se generan los tokens QR opacos (UUIDs aleatorios generados con `crypto.randomBytes(32)`), registrándolos en la tabla `qr_codes`:
+     - 1 código QR para servicios `group` (cancha completa).
+     - $N$ códigos QR para servicios `individual` (donde $N = \text{reservation.quantity}$).
+  3. Se dispara una tarea asíncrona que envía un correo electrónico de confirmación al cliente (vía Resend/SendGrid) con los detalles de la reserva y los códigos QR adjuntos.
+- **Qué pasa si el pago falla**: Si la transacción es declinada o rechazada por la pasarela, Stripe notifica el evento de fallo. El sistema cambia el estado a `failed` y libera inmediatamente las franjas horarias marcando `is_active = false` en `reservation_slots`.
 
 ---
 
 ## 6. Control de concurrencia
 
-- **Cómo se evita que dos clientes confirmen la misma franja**: Para prevenir que dos o más usuarios intenten reservar o confirmar la misma franja de forma paralela, el sistema emplea transacciones con bloqueos explícitos (*locks* / transacciones SQL) en la base de datos.
-- **Diferencia entre servicios de cupo 1 y cupo N**: 
-  - **Servicios de Cupo 1 (Canchas individuales)**: Una franja horaria solo admite **1 reserva confirmada o pendiente activa** por instancia física (ej. Cancha 1).
-  - **Servicios de Cupo N (Servicios grupales / Piscinas / Gimnasios)**: Permite múltiples reservas concurrentes sobre la misma franja siempre que la suma de cupos activos (`pending` + `confirmed`) no exceda la capacidad máxima (`capacity`) parametrizada para la instancia.
+- **Cómo se evita que dos clientes confirmen la misma franja**: Para prevenir que dos o más usuarios intenten reservar o confirmar la misma franja de forma paralela, el sistema emplea transacciones con bloqueos explícitos (*locks* / transacciones SQL) en la base de datos sobre la tabla `reservation_slots`.
+- **Diferencia entre servicios `group` y servicios `individual`**: 
+  - **Servicios `group` (Canchas / Reserva de espacio completo)**: Una franja horaria solo admite **1 reserva activa** (`pending` no expirada o `confirmed` con `is_active = true` en `reservation_slots`) por instancia física (ej. Cancha 1).
+  - **Servicios `individual` (Cupo por persona / Piscina / Gimnasio)**: Permite múltiples reservas concurrentes sobre la misma franja siempre que la suma de cupos activos (`quantity` de reservas `pending` no expiradas + `confirmed` con `is_active = true` en `reservation_slots`) no exceda la capacidad máxima (`capacity`) parametrizada para la instancia.
 - **Dónde vive la validación**: Toda la lógica y control de concurrencia habita estrictamente a nivel de **Base de Datos** (mediante constraints, funciones almacenadas SQL y transacciones). No se confía en el código de la aplicación frontend o backend Next.js para evitar condiciones de carrera (*race conditions*) bajo alta carga.
 
 ---
 
 ## 7. Control de capacidad
 
-- **Cómo se valida el cupo máximo en servicios grupales**: Al intentar reservar un servicio grupal, el sistema calcula en tiempo real la capacidad ocupada mediante la consulta de reservas activas en la franja (`status IN ('pending', 'confirmed') AND (expires_at > NOW() OR status = 'confirmed')`). Si la cantidad total es menor a la `capacity` máxima configurada por el administrador, se permite el bloqueo del cupo.
-- **Qué pasa cuando la franja está llena**: Cuando la suma de reservas alcanza el límite de capacidad, la franja se marca automáticamente como **"no disponible"** o **"sin cupo"** en la interfaz del usuario y la BD rechaza de forma atómica cualquier intento adicional de reserva en ese horario.
+- **Cómo se valida el cupo máximo en servicios individuales (`individual`)**: Al intentar reservar un servicio individual, el sistema calcula en tiempo real la capacidad ocupada mediante la consulta de cupos activos en la franja (`reservation_slots` con `is_active = true` asociadas a reservas con `status IN ('pending', 'confirmed') AND (expires_at > NOW() OR status = 'confirmed')`). Si `cupos_ocupados + cantidad_solicitada <= capacity`, se permite el registro en `pending`.
+- **Qué pasa cuando la franja está llena**: Cuando la suma de cupos alcanza el límite de capacidad, la franja se marca automáticamente como **"no disponible"** o **"sin cupo"** en la interfaz del usuario y la BD rechaza de forma atómica cualquier intento adicional de reserva en ese horario.
 
 ---
 
@@ -84,16 +92,19 @@ Las siguientes reglas de negocio (RN) se aplican rigurosamente en toda la plataf
 
 ## 9. Sistema QR
 
-- **Cuándo se genera**: El código QR se genera de forma única e instantánea en cuanto la reserva cambia al estado `confirmed` tras el webhook exitoso de pago.
-- **Qué contiene el token**: El token embebido en el QR contiene un identificador firmado único e infalsificable (UUID/JWT) que vincula el ID de reserva, el ID de cliente, la instancia del servicio y el rango de la franja horaria.
+- **Cuándo se genera**: El código QR se genera de forma instantánea en cuanto la reserva cambia al estado `confirmed` tras procesar el webhook exitoso de pago de Stripe.
+- **Qué contiene el token**: El token embebido en el QR es un **UUID / token opaco aleatorio seguro** (generado con `crypto.randomBytes(32)`). **No contiene datos personales, IDs de usuario, franjas ni información interna de la reserva**. Es un identificador opaco que no expone información sensible.
 - **Cómo se valida al escanear**: 
   1. El empleado escanea el código QR utilizando la cámara de su teléfono móvil.
-  2. El sistema decodifica el token y valida tres condiciones indispensables: 
-     - Que la reserva exista y su estado sea `confirmed`.
-     - Que la fecha y hora actual correspondan exactamente a la franja horaria reservada.
-     - Que la reserva no haya sido utilizada previamente (`used = false`).
-  3. Si la validación es exitosa, se muestran los datos del servicio y cliente, permitiendo al empleado pulsar el botón explícito **"Dar acceso"**.
-- **Hasta cuándo es válido (Uso único, RN-05, RN-06)**: El QR es de **un solo uso**. Al presionar "Dar acceso", el sistema actualiza la reserva a estado `completed` y marca el código como usado, quedando inhabilitado para reutilización. Asimismo, expirada la franja horaria, el QR queda automáticamente vencido e inservible.
-- **Qué pasa con accesos grupales**: En servicios grupales, cada reserva individual o cupo adquirido emite su correspondiente token QR único de ingreso, garantizando el control de acceso individualizado por cada persona o cupo reservado.
+  2. La aplicación envía el token opaco al servidor.
+  3. El servidor busca el token en la tabla `qr_codes` y resuelve la reserva asociada (`reservation_id`), validando en tiempo real las siguientes condiciones:
+     - Que el token exista en `qr_codes` y la reserva asociada esté en estado `confirmed`.
+     - Que la fecha y hora actual correspondan exactamente a la franja horaria reservada (`reservation_slots`).
+     - Que el código QR no haya sido utilizado previamente (`used = false` en `qr_codes`).
+  4. Si la validación es exitosa, el servidor retorna los datos del servicio y cliente para su visualización en pantalla, permitiendo al empleado pulsar el botón explícito **"Dar acceso"**.
+- **Hasta cuándo es válido (Uso único, RN-05, RN-06)**: Cada QR es de **un solo uso**. Al presionar "Dar acceso", el sistema marca el código como usado (`qr_codes.used = true`), actualiza la reserva a estado `completed` y queda inhabilitado para reutilización. Asimismo, expirada la franja horaria, el QR queda automáticamente vencido e inservible.
+- **Accesos según tipo de servicio**:
+  - **Servicios `group` (Canchas de fútbol, tenis, pádel, etc.)**: Se genera **1 solo código QR** para todo el grupo que reservó la cancha.
+  - **Servicios `individual` (Piscina, gimnasio, etc.)**: Se generan **$N$ códigos QR únicos**, uno por cada persona ($N = \text{reservation.quantity}$), permitiendo el acceso individualizado por cada cupo adquirido.
 
 ---
