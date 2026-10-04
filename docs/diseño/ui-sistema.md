@@ -43,16 +43,17 @@ Este documento define las reglas visuales que garantizan que la aplicación se v
 
 ## 3. Paleta de colores
 
-Paleta original basada en **azul agua + naranja energía**: el azul transmite confianza y remite a las piscinas; el naranja aporta energía y contraste cálido; los neutros azulados mantienen la misma temperatura de marca. Cada color tiene un nombre de token semántico (ver [11. Design Tokens](#11-design-tokens)).
+Paleta basada en **dark mode principal** con **azul agua + naranja energía**: el azul transmite confianza y remite a las piscinas; el naranja aporta energía y contraste cálido; los neutros azulados mantienen la temperatura de marca. Cada color tiene un nombre de token semántico (ver [11. Design Tokens](#11-design-tokens)).
 
-> Esta versión solo define el modo claro. El modo oscuro queda fuera del alcance de la v1.0.
+> **Modo principal: Dark Mode.** El modo claro se implementará después si hay tiempo. Todos los componentes y vistas se construyen sobre la paleta dark.
 
 ### 3.1 Fondos y superficies
 
-| Color | HEX | Uso recomendado | Justificación |
+| Color | Valor | Uso recomendado | Justificación |
 |---|---|---|---|
-| Canvas | `#F8FAFC` | Fondo base de toda la aplicación | Blanco frío ligeramente azulado; reduce el brillo del blanco puro y mantiene la temperatura de marca. |
-| White | `#FFFFFF` | Cards, inputs, modales y demás superficies | Primera capa sobre el fondo; resalta el contenido con bordes suaves. |
+| Background | `#0A0F1E` | Fondo base de toda la aplicación | Azul muy oscuro; reduce el cansancio visual en sesiones largas y resalta los colores de marca. |
+| Surface | `rgba(255,255,255,0.06)` | Cards, inputs, modales (con backdrop-blur 20px) | Capa traslúcida que genera profundidad; base del efecto glassmorphism. |
+| Surface Elevated | `rgba(255,255,255,0.10)` | Modales y elementos elevados | Capa más opaca para elementos que requieren más contraste. |
 
 ### 3.2 Colores de marca
 
