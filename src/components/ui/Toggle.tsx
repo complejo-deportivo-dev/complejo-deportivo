@@ -1,7 +1,6 @@
 "use client";
 
 import { useId } from "react";
-import { Power } from "lucide-react";
 
 interface ToggleProps {
   checked: boolean;
@@ -26,7 +25,7 @@ export default function Toggle({
       <input
         id={id}
         type="checkbox"
-        className="sr-only"
+        className="peer sr-only"
         checked={checked}
         disabled={disabled}
         onChange={(e) => onChange(e.target.checked)}
@@ -35,22 +34,30 @@ export default function Toggle({
       />
       <label
         htmlFor={id}
-        className={`cursor-pointer transition-colors duration-200 ${
+        className={`relative inline-flex shrink-0 cursor-pointer rounded-full ${
+          size === "sm" ? "h-[18px] w-8" : "h-6 w-11"
+        } ${
           disabled ? "cursor-not-allowed opacity-50" : ""
-        }`}
+        } peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary`}
       >
-        <Power
-          className={`${size === "sm" ? "w-5 h-5" : "w-6 h-6"} ${
-            checked && !disabled ? "text-success" : "text-text-secondary"
+        <span
+          className={`absolute inset-0 rounded-full bg-border transition-colors duration-200 ease-in-out ${
+            checked ? "bg-primary" : ""
           }`}
-          strokeWidth={2}
+        />
+        <span
+          className={`absolute left-0.5 top-0.5 rounded-full bg-text-secondary transition-all duration-200 ease-in-out ${
+            size === "sm"
+              ? `h-[14px] w-[14px] ${checked ? "translate-x-[14px]" : ""}`
+              : `h-5 w-5 ${checked ? "translate-x-5" : ""}`
+          } ${checked ? "bg-white" : ""}`}
         />
       </label>
       {label && (
         <label
           htmlFor={id}
-          className={`cursor-pointer text-sm font-medium text-text-primary ${
-            disabled ? "cursor-not-allowed text-text-disabled" : ""
+          className={`text-sm font-medium text-text-primary ${
+            disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"
           }`}
         >
           {label}
