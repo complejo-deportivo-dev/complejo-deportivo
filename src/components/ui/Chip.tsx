@@ -11,7 +11,7 @@ interface ChipProps {
 
 const stateClasses: Record<string, string> = {
   libre: "bg-surface border-border text-text-primary hover:border-primary",
-  ocupada: "bg-surface/50 border-border text-text-disabled line-through",
+  ocupada: "bg-surface border-border text-text-disabled line-through opacity-50",
   seleccionada: "bg-primary border-primary text-white hover:bg-primary-hover",
 };
 
