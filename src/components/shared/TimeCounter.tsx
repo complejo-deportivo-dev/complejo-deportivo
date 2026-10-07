@@ -50,23 +50,24 @@ export default function TimeCounter({
   // Guardamos el callback en un ref para no reiniciar el intervalo
   // cuando el padre pasa una función nueva en cada render.
   const onExpireRef = useRef(onExpire);
-  const hasExpiredRef = useRef(false);
+  // Guarda el expiresAt para el cual ya se ejecutó onExpire.
+  // Así se ejecuta una sola vez por expiración, incluso con el doble
+  // montaje de React Strict Mode en desarrollo.
+  const expiredForRef = useRef<number | null>(null);
 
   useEffect(() => {
     onExpireRef.current = onExpire;
   }, [onExpire]);
 
   useEffect(() => {
-    hasExpiredRef.current = false;
-
     const tick = () => {
       const next = getRemainingSeconds(expiresAtMs);
       setRemaining(next);
 
       if (next === 0) {
         clearInterval(intervalId);
-        if (!hasExpiredRef.current) {
-          hasExpiredRef.current = true;
+        if (expiredForRef.current !== expiresAtMs) {
+          expiredForRef.current = expiresAtMs;
           onExpireRef.current?.();
         }
       }
