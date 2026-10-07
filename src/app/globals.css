@@ -10,6 +10,18 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --color-primary: #0B5FA5;
+  --color-primary-hover: #094F88;
+  --color-secondary: #EA580C;
+  --color-secondary-hover: #C2410C;
+  --color-surface: #FFFFFF;
+  --color-border: #E2E8F0;
+  --color-text-primary: #0F172A;
+  --color-text-secondary: #475569;
+  --color-success: #16A34A;
+  --color-success-soft: #DCFCE7;
+  --color-neutral-soft: #F1F5F9;
+  --color-neutral-text: #475569;
 }
 
 @media (prefers-color-scheme: dark) {
