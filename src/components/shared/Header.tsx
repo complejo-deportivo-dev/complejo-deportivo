@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Menu, X, LogOut, User } from 'lucide-react';
 import Avatar from '@/components/ui/Avatar';
+import Image from 'next/image';
 
 export interface HeaderProps {
   role: 'client' | 'admin' | 'employee';
@@ -118,12 +119,18 @@ export default function Header({
           }}
           className="flex items-center gap-3 transition-opacity hover:opacity-90"
         >
-          <div
-            className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary-soft text-primary font-heading font-bold text-sm select-none"
-            aria-hidden="true"
-          >
-            O
+          {/* NUEVO CONTENEDOR DE IMAGEN */}
+          <div className="relative flex size-8 shrink-0 items-center justify-center">
+            <Image
+              src="/img/logo.png"
+              alt="Logo de Otium"
+              width={32}
+              height={32}
+              className="object-contain"
+              priority
+            />
           </div>
+          
           {!isEmployee && (
             <span className="font-heading text-lg font-bold text-text-primary tracking-tight">
               Otium
