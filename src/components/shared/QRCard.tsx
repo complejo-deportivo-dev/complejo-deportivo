@@ -18,7 +18,7 @@ export default function QRCard({
   const accent =
     qrType === "group"
       ? "from-blue-600 to-blue-700"
-      : "from-orange-500 to-orange-600";
+      : "from-orange-500 to-orange-600"; 
 
   const statusClasses = used
     ? "border-slate-200 bg-slate-100 text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
