@@ -120,22 +120,18 @@ export default function Header({
           className="flex items-center gap-3 transition-opacity hover:opacity-90"
         >
           {/* NUEVO CONTENEDOR DE IMAGEN */}
-          <div className="relative flex size-8 shrink-0 items-center justify-center">
+          <div className="relative flex  pl-3">
             <Image
-              src="/img/logo.png"
+              src="/brand/imagotipo-dark.svg"
               alt="Logo de Otium"
-              width={32}
-              height={32}
+              width={96}
+              height={96}
               className="object-contain"
               priority
             />
           </div>
           
-          {!isEmployee && (
-            <span className="font-heading text-lg font-bold text-text-primary tracking-tight">
-              Otium
-            </span>
-          )}
+
         </Link>
 
         {/* NAVEGACIÓN DESKTOP & TABLET */}
