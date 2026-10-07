@@ -2,7 +2,7 @@
 
 import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
-import { Dumbbell, Trophy, UserPlus, Users } from "lucide-react";
+import { Dumbbell, Trophy, UserPlus, Users, ArrowRight } from "lucide-react";
 
 export interface ServiceCardProps {
   name: string;
@@ -115,7 +115,7 @@ export default function ServiceCard({
               className="inline-flex items-center gap-1 text-sm font-medium text-primary transition-colors hover:text-primary-hover"
               aria-label={`Reservar ${name}`}
             >
-              Reservar <span aria-hidden="true">→</span>
+              Reservar <ArrowRight className="size-4" />
             </button>
           </div>
         </div>
