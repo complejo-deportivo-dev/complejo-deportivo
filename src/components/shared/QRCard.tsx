@@ -41,7 +41,7 @@ export default function QRCard({
         <Badge variant={used ? "neutral" : "success"} size="sm">
           {used ? "Ya escaneado" : "Vigente"}
         </Badge>
-        <span className="mt-1 max-w-full truncate text-base font-medium leading-6 text-text-primary dark:text-slate-100">
+        <span className="mt-1 max-w-full truncate font-body text-base font-medium leading-6 text-text-primary dark:text-slate-100">
           {title}
         </span>
         <span className="max-w-full truncate text-xs leading-4 text-text-secondary dark:text-slate-400">
