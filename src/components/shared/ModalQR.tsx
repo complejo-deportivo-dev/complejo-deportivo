@@ -21,67 +21,9 @@ export interface ModalQRProps {
 }
 
 const GRID = 25;
-/**
- * Placeholder visual de un QR (determinista según el token).
- * TODO: reemplazar por el QR real generado con la librería `qrcode`.
- */
-function QRPlaceholder({
-  token,
-  className = "",
-}: {
-  token: string;
-  className?: string;
-}) {
-  const cells = useMemo(() => {
-    let seed = 0;
-    for (let i = 0; i < token.length; i++) {
-      seed = (seed * 31 + token.charCodeAt(i)) >>> 0;
-    }
-    const rand = () => {
-      seed = (seed * 1664525 + 1013904223) >>> 0;
-      return seed / 0xffffffff;
-    };
+// (No changes needed in imports, just removing unused QRPlaceholder if it was defined separately, 
+// but the user only asked for the change in the render)
 
-    const inFinder = (x: number, y: number) =>
-      (x < 8 && y < 8) || (x >= GRID - 8 && y < 8) || (x < 8 && y >= GRID - 8);
-
-    const out: { x: number; y: number }[] = [];
-    for (let y = 0; y < GRID; y++) {
-      for (let x = 0; x < GRID; x++) {
-        if (!inFinder(x, y) && rand() > 0.52) out.push({ x, y });
-      }
-    }
-    return out;
-  }, [token]);
-
-  const finderOrigins = [
-    [0, 0],
-    [GRID - 7, 0],
-    [0, GRID - 7],
-  ];
-
-  return (
-    <svg
-      aria-label="Código QR de la reserva"
-      className={className}
-      role="img"
-      shapeRendering="crispEdges"
-      viewBox={`0 0 ${GRID} ${GRID}`}
-    >
-      <rect fill="#fff" height={GRID} width={GRID} />
-      {finderOrigins.map(([fx, fy]) => (
-        <g key={`${fx}-${fy}`}>
-          <rect fill="#000" height={7} width={7} x={fx} y={fy} />
-          <rect fill="#fff" height={5} width={5} x={fx + 1} y={fy + 1} />
-          <rect fill="#000" height={3} width={3} x={fx + 2} y={fy + 2} />
-        </g>
-      ))}
-      {cells.map(({ x, y }) => (
-        <rect fill="#000" height={1} key={`${x}-${y}`} width={1} x={x} y={y} />
-      ))}
-    </svg>
-  );
-}
 
 export default function ModalQR({
   isOpen,
@@ -195,12 +137,11 @@ export default function ModalQR({
         </div>
 
         <div className="rounded-3xl bg-white p-8 shadow-lg">
-          <QRPlaceholder
-            className={`aspect-square w-full max-w-80 sm:size-80 ${
-              used ? "opacity-40" : ""
-            }`}
-            token={qrToken}
-          />
+          <div className={`flex aspect-square w-full max-w-80 items-center justify-center rounded-md bg-slate-50 p-5 text-slate-500 sm:size-80 ${used ? "opacity-40" : ""}`}>
+             <span className="flex size-full items-center justify-center rounded-md border border-slate-200 text-sm font-medium text-slate-600">
+               QR
+             </span>
+          </div>
         </div>
 
         <div className="flex flex-col items-center gap-2 text-center">
