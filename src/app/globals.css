@@ -13,6 +13,7 @@
 
   --color-secondary: #fb923c;
   --color-secondary-hover: #f97316;
+  --color-secondary-soft: rgba(251, 146, 60, 0.15);
 
   --color-success: #22c55e;
   --color-success-soft: rgba(34, 197, 94, 0.15);
