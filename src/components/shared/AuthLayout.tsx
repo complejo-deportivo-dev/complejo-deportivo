@@ -15,31 +15,41 @@ export default function AuthLayout({
   return (
     <div className="min-h-screen flex">
       {/* Branding Panel (Hidden on mobile) */}
-      <div className="hidden md:flex md:w-[35%] lg:w-[40%] bg-gradient-to-b from-primary to-primary-hover p-12 flex-col justify-between text-white">
-        <div>
-          {/* Logo */}
-          <div className="flex items-center gap-2 mb-12">
-            <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
-              <div className="w-6 h-6 bg-primary rounded-full" />
+      <div className="hidden md:flex md:w-[35%] lg:w-[40%] p-12 flex-col justify-between text-white relative overflow-hidden">
+        {/* Background Image with Blur */}
+        <div 
+          className="absolute inset-0 z-0 bg-cover bg-center" 
+          style={{ backgroundImage: "url('/images/bg-auth.png')" }}
+        />
+        <div className="absolute inset-0 z-0 bg-black/30 backdrop-blur-sm" />
+        
+        {/* Content Container */}
+        <div className="relative z-10 flex flex-col h-full justify-between">
+          <div>
+            {/* Logo */}
+            <div className="flex items-center gap-2 mb-12">
+              <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
+                <div className="w-6 h-6 bg-primary rounded-full" />
+              </div>
+              <span className="font-heading font-bold text-2xl">Otium</span>
             </div>
-            <span className="font-heading font-bold text-2xl">Otium</span>
+
+            {/* Content */}
+            <h1 className="font-heading font-bold text-4xl mb-4 leading-tight">{title}</h1>
+            <p className="text-base opacity-80 mb-8">{subtitle}</p>
+
+            {/* Feature Cards */}
+            <div className="space-y-4">
+              <FeatureCard icon={<Zap size={20} />} text="Reserva en segundos" />
+              <FeatureCard icon={<QrCode size={20} />} text="Ingreso con QR" />
+              <FeatureCard icon={<CheckCircle size={20} />} text="Sin filas" />
+            </div>
           </div>
 
-          {/* Content */}
-          <h1 className="font-heading font-bold text-4xl mb-4 leading-tight">{title}</h1>
-          <p className="text-base opacity-80 mb-8">{subtitle}</p>
-
-          {/* Feature Cards */}
-          <div className="space-y-4">
-            <FeatureCard icon={<Zap size={20} />} text="Reserva en segundos" />
-            <FeatureCard icon={<QrCode size={20} />} text="Ingreso con QR" />
-            <FeatureCard icon={<CheckCircle size={20} />} text="Sin filas" />
+          {/* Footer */}
+          <div className="text-sm opacity-60">
+            © 2025 Otium
           </div>
-        </div>
-
-        {/* Footer */}
-        <div className="text-sm opacity-60">
-          © 2025 Otium
         </div>
       </div>
 
