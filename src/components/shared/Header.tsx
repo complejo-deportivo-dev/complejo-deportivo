@@ -44,7 +44,6 @@ const ROLE_NAVIGATION: Record<
     items: [],
   },
 };
-
 export default function Header({
   role,
   userName,
