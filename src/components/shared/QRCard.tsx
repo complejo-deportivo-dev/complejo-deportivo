@@ -1,5 +1,7 @@
 "use client";
 
+import { User, Users, ArrowRight } from "lucide-react";
+
 interface QRCardProps {
   title: string;
   reservationCode: string;
@@ -39,10 +41,17 @@ export default function QRCard({
       <span className="flex min-h-0 flex-1 flex-col items-center px-4 pb-3 pt-2">
         <span
           aria-hidden="true"
-          className={`mb-2 flex h-[140px] w-[140px] shrink-0 items-center justify-center rounded-xl bg-slate-50 p-5 text-slate-500 dark:bg-slate-800 dark:text-slate-400 ${used ? "opacity-40" : ""}`}
+          className={`relative mb-2 flex h-[140px] w-[140px] shrink-0 items-center justify-center rounded-xl bg-slate-50 p-5 text-slate-500 dark:bg-slate-800 dark:text-slate-400 ${used ? "opacity-40" : ""}`}
         >
           <span className="flex size-full items-center justify-center rounded-md border border-slate-200 text-sm font-medium text-slate-600 dark:border-slate-700 dark:text-slate-300">
             QR
+          </span>
+          <span className="absolute -right-2 -top-2 flex size-10 items-center justify-center rounded-full bg-blue-50 text-blue-600 dark:bg-slate-700 dark:text-blue-400">
+            {qrType === "group" ? (
+              <Users className="size-5" />
+            ) : (
+              <User className="size-5" />
+            )}
           </span>
         </span>
 
@@ -62,8 +71,9 @@ export default function QRCard({
         <span className="max-w-full truncate text-xs leading-4 text-slate-500 dark:text-slate-400">
           {reservationCode}
         </span>
-        <span className={`mt-auto w-full text-sm font-medium leading-5 ${linkClasses}`}>
-          Ver QR →
+        <span className={`mt-auto w-full flex items-center justify-between text-sm font-medium leading-5 ${linkClasses}`}>
+          Ver QR
+          <ArrowRight className="size-4" />
         </span>
       </span>
     </button>
