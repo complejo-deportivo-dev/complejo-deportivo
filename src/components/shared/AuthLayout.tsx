@@ -27,19 +27,18 @@ export default function AuthLayout({
         <div className="relative z-10 flex flex-col h-full justify-between">
           <div>
             {/* Logo */}
-            <div className="flex items-center gap-2 mb-12">
-              <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
-                <div className="w-6 h-6 bg-primary rounded-full" />
-              </div>
-              <span className="font-heading font-bold text-2xl">Otium</span>
-            </div>
+            <img
+              src="/brand/imagotipo-light.svg"
+              alt="Otium"
+              className="h-10 mb-12"
+            />
 
             {/* Content */}
             <h1 className="font-heading font-bold text-4xl mb-4 leading-tight">{title}</h1>
             <p className="text-base opacity-80 mb-8">{subtitle}</p>
 
             {/* Feature Cards */}
-            <div className="space-y-4">
+            <div className="grid grid-cols-3 gap-3">
               <FeatureCard icon={<Zap size={20} />} text="Reserva en segundos" />
               <FeatureCard icon={<QrCode size={20} />} text="Ingreso con QR" />
               <FeatureCard icon={<CheckCircle size={20} />} text="Sin filas" />
