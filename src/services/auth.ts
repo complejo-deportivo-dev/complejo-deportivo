@@ -68,4 +68,32 @@ export const authService = {
       email: authData.user.email,
     };
   },
+
+  async forgotPassword(email: string) {
+    const supabase = await createClient();
+    
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/auth/reset`,
+    });
+
+    // We do not throw error here to prevent account enumeration as per requirements
+    if (error) {
+      console.error(`[AuthService] Error sending reset email: ${error.message}`);
+    }
+  },
+
+  async resetPassword(password: string) {
+    const supabase = await createClient();
+    
+    const { data, error } = await supabase.auth.updateUser({
+      password,
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    return data;
+  },
+};
 };
