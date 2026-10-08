@@ -18,6 +18,7 @@ export default function Layout({ children }: { children: ReactNode }) {
           gimnasio en segundos.
         </>
       }
+      reservation={null}
     >
       {children}
     </AuthLayout>

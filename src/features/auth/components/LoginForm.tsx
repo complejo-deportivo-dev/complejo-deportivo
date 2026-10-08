@@ -4,6 +4,7 @@ import { useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { LockKeyhole, Mail } from "lucide-react";
+import { z } from "zod";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import Input from "@/components/ui/Input";
@@ -16,6 +17,17 @@ const roleHomes: Record<UserRole, string> = {
   employee: "/employee",
 };
 
+const loginSchema = z.object({
+  email: z
+    .string()
+    .trim()
+    .min(1, "El correo electrónico es obligatorio.")
+    .email("El correo debe tener un formato válido."),
+  password: z
+    .string()
+    .refine((value) => value.trim().length > 0, "La contraseña es obligatoria."),
+});
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
@@ -26,20 +38,34 @@ function isUserRole(value: unknown): value is UserRole {
 
 export default function LoginForm() {
   const router = useRouter();
-  const submissionInProgress = useRef(false);
+  const authSubmissionInProgress = useRef(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({ email: "", password: "" });
   const isBusy = isSubmitting || isGoogleLoading;
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (submissionInProgress.current) return;
+    if (authSubmissionInProgress.current) return;
 
-    submissionInProgress.current = true;
+    const validation = loginSchema.safeParse({ email, password });
+    if (!validation.success) {
+      const errors = { email: "", password: "" };
+      for (const issue of validation.error.issues) {
+        const field = issue.path[0];
+        if (field === "email" || field === "password") {
+          errors[field] = issue.message;
+        }
+      }
+      setFieldErrors(errors);
+      return;
+    }
+
+    authSubmissionInProgress.current = true;
     setIsSubmitting(true);
     setError("");
 
@@ -47,19 +73,18 @@ export default function LoginForm() {
       const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim(), password }),
+        body: JSON.stringify(validation.data),
       });
-      const body: unknown = await response.json();
-
       if (!response.ok) {
-        const message =
-          isRecord(body) && typeof body.error === "string"
-            ? body.error
-            : "No se pudo iniciar sesión. Intenta nuevamente.";
-        setError(message);
+        setError(
+          response.status === 401
+            ? "Correo o contraseña incorrectos"
+            : "No se pudo iniciar sesión. Intenta nuevamente.",
+        );
         return;
       }
 
+      const body: unknown = await response.json();
       const data = isRecord(body) && isRecord(body.data) ? body.data : null;
       const user = data && isRecord(data.user) ? data.user : null;
       if (!user || !isUserRole(user.role)) {
@@ -71,12 +96,15 @@ export default function LoginForm() {
     } catch {
       setError("No se pudo conectar con el servidor. Intenta nuevamente.");
     } finally {
-      submissionInProgress.current = false;
+      authSubmissionInProgress.current = false;
       setIsSubmitting(false);
     }
   }
 
   async function handleGoogleLogin() {
+    if (authSubmissionInProgress.current) return;
+
+    authSubmissionInProgress.current = true;
     setError("");
     setIsGoogleLoading(true);
 
@@ -85,16 +113,21 @@ export default function LoginForm() {
       const { error: oauthError } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: new URL(
+            "/auth/callback",
+            process.env.NEXT_PUBLIC_APP_URL || window.location.origin,
+          ).toString(),
         },
       });
 
       if (oauthError) {
         setError("No se pudo iniciar sesión con Google. Intenta nuevamente.");
+        authSubmissionInProgress.current = false;
         setIsGoogleLoading(false);
       }
     } catch {
       setError("No se pudo iniciar sesión con Google. Intenta nuevamente.");
+      authSubmissionInProgress.current = false;
       setIsGoogleLoading(false);
     }
   }
@@ -102,7 +135,7 @@ export default function LoginForm() {
   return (
     <Card
       as="section"
-      className="mx-auto w-full max-w-[460px] border-white/10 bg-surface-elevated p-6 shadow-2xl sm:p-8"
+      className="mx-auto w-full max-w-[500px] border-white/10 bg-surface-elevated p-6 shadow-2xl sm:p-8"
       padding="none"
     >
       <div className="mb-5">
@@ -135,15 +168,26 @@ export default function LoginForm() {
         <span className="h-px flex-1 bg-border" />
       </div>
 
-      <form className="space-y-4" onSubmit={handleSubmit}>
+      <form className="space-y-4" noValidate onSubmit={handleSubmit}>
         <Input
           className="space-y-1.5"
           disabled={isBusy}
+          error={fieldErrors.email}
           icon={<Mail />}
           label="Correo electrónico"
           name="email"
           onChange={(event) => {
-            setEmail(event.target.value);
+            const value = event.target.value;
+            const validation = loginSchema.shape.email.safeParse(value);
+            setEmail(value);
+            setFieldErrors((current) => ({
+              ...current,
+              email: value
+                ? validation.success
+                  ? ""
+                  : (validation.error.issues[0]?.message ?? "")
+                : current.email,
+            }));
             setError("");
           }}
           placeholder="tu@correo.com"
@@ -155,11 +199,16 @@ export default function LoginForm() {
         <Input
           className="space-y-1.5"
           disabled={isBusy}
+          error={fieldErrors.password}
           icon={<LockKeyhole />}
           label="Contraseña"
           name="password"
           onChange={(event) => {
-            setPassword(event.target.value);
+            const value = event.target.value;
+            setPassword(value);
+            if (value) {
+              setFieldErrors((current) => ({ ...current, password: "" }));
+            }
             setError("");
           }}
           placeholder="••••••••"
