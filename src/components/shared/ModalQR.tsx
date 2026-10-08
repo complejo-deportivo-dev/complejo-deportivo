@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { Download, X } from "lucide-react";
 
@@ -20,17 +20,11 @@ export interface ModalQRProps {
   used?: boolean;
 }
 
-const GRID = 25;
-// (No changes needed in imports, just removing unused QRPlaceholder if it was defined separately, 
-// but the user only asked for the change in the render)
-
-
 export default function ModalQR({
   isOpen,
   onClose,
   reservationId,
   serviceName,
-  qrToken,
   title,
   date,
   timeRange,
@@ -45,8 +39,6 @@ export default function ModalQR({
     onCloseRef.current = onClose;
   }, [onClose]);
 
-  // Escape, bloqueo de scroll, focus trap y restauración del foco
-  // (mismo comportamiento que components/ui/Modal.tsx)
   useEffect(() => {
     if (!isOpen) return;
 
@@ -100,8 +92,6 @@ export default function ModalQR({
   const titleId = `modal-qr-title-${reservationId}`;
 
   return createPortal(
-    // Overlay propio: Modal no permite configurar fondo (bg-black/80, blur-sm)
-    // ni ocultar su header/contenedor, y aquí se requiere rgba(0,0,0,0.95) + blur 20px.
     <div
       className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/95 p-4 backdrop-blur-[20px]"
       onClick={onClose}
@@ -121,7 +111,7 @@ export default function ModalQR({
           ref={closeRef}
           type="button"
         >
-          <X size={28} />
+          <X aria-hidden="true" size={28} />
         </button>
 
         <div className="flex flex-col items-center gap-1 text-center">
@@ -137,10 +127,12 @@ export default function ModalQR({
         </div>
 
         <div className="rounded-3xl bg-white p-8 shadow-lg">
-          <div className={`flex aspect-square w-full max-w-80 items-center justify-center rounded-md bg-slate-50 p-5 text-slate-500 sm:size-80 ${used ? "opacity-40" : ""}`}>
-             <span className="flex size-full items-center justify-center rounded-md border border-slate-200 text-sm font-medium text-slate-600">
-               QR
-             </span>
+          <div
+            className={`flex aspect-square w-full max-w-80 items-center justify-center rounded-md bg-white p-4 sm:size-80 ${used ? "opacity-40" : ""}`}
+          >
+            <div className="flex size-full items-center justify-center rounded-md border-2 border-dashed border-slate-300 text-center text-sm font-medium text-slate-400">
+              Aquí va el QR
+            </div>
           </div>
         </div>
 
@@ -163,7 +155,6 @@ export default function ModalQR({
         {used ? (
           <p className="text-sm text-white/60">Este código ya fue utilizado.</p>
         ) : (
-          // TODO: implementar la descarga real cuando se integre `qrcode`
           <Button className="w-full max-w-80 sm:w-80" size="lg">
             <Download size={18} />
             Descargar QR
