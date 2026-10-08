@@ -2,6 +2,7 @@
 
 import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
+import Image from "next/image";
 import { Dumbbell, Trophy, UserPlus, Users, ArrowRight } from "lucide-react";
 
 export interface ServiceCardProps {
@@ -37,16 +38,16 @@ export default function ServiceCard({
     qrType === "group" ? (
       <Badge variant="primary">Grupal</Badge>
     ) : (
-      <Badge variant="secondary">Individual</Badge>
+      <Badge variant="warning">Individual</Badge>
     );
 
   const contentIcon =
     categoryName.toLowerCase().includes("atlet") ||
     categoryName.toLowerCase().includes("fitness") ||
     categoryName.toLowerCase().includes("gimnas") ? (
-      <Dumbbell className="size-12 text-primary/70" />
+      <Dumbbell aria-hidden="true" className="size-12 text-primary/70" />
     ) : (
-      <Trophy className="size-12 text-primary/70" />
+      <Trophy aria-hidden="true" className="size-12 text-primary/70" />
     );
 
   return (
@@ -54,15 +55,17 @@ export default function ServiceCard({
       variant="default"
       padding="none"
       onClick={onClick}
-      className="group w-full max-w-[420px] overflow-hidden border border-border bg-surface shadow-md transition-all duration-200 hover:scale-[1.02] hover:border-primary/40 hover:shadow-lg"
+      className="w-full max-w-[420px] overflow-hidden"
       as="article"
     >
       <div className="relative h-[140px] w-full overflow-hidden rounded-t-[20px]">
         {image ? (
-          <img
+          <Image
             src={image}
             alt={name}
-            className="h-full w-full object-cover"
+            fill
+            className="object-cover"
+            sizes="(max-width: 768px) 100vw, 420px"
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary-soft to-surface">
@@ -88,11 +91,11 @@ export default function ServiceCard({
 
         <div className="flex items-center gap-4 text-sm text-text-secondary">
           <div className="flex items-center gap-2">
-            <Users className="h-4 w-4" />
+            <Users aria-hidden="true" className="h-4 w-4" />
             <span>Hasta {capacity} personas</span>
           </div>
           <div className="flex items-center gap-2">
-            <UserPlus className="h-4 w-4" />
+            <UserPlus aria-hidden="true" className="h-4 w-4" />
             <span>Máximo {maxCompanions} acompañantes</span>
           </div>
         </div>
@@ -115,7 +118,7 @@ export default function ServiceCard({
               className="inline-flex items-center gap-1 text-sm font-medium text-primary transition-colors hover:text-primary-hover"
               aria-label={`Reservar ${name}`}
             >
-              Reservar <ArrowRight className="size-4" />
+              Reservar <ArrowRight aria-hidden="true" className="size-4" />
             </button>
           </div>
         </div>
