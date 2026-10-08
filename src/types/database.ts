@@ -14,8 +14,9 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  number_document: string;
+  number_document: string | null;
   role: UserRole;
+  is_active: boolean;
   created_at: string;
 }
 
@@ -50,8 +51,7 @@ export interface Reservation {
   id: number;
   id_user: string;
   quantity: number;
-  reservation_date: string;
-  expires_at: string;
+  expires_at: string | null;
   status: ReservationStatus;
   created_at: string;
 }
@@ -87,7 +87,8 @@ export interface AccessLog {
   id: number;
   id_reservation: number;
   id_employee: string;
-  id_qr_code: number;
+  id_qr_code: number | null;
+  entry_type: EntryType;
   result: AccessResult;
   scanned_at: string;
 }
