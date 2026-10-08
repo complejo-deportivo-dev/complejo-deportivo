@@ -11,8 +11,8 @@ interface TimeCounterProps {
 
 type CounterStatus = "normal" | "warning" | "expired";
 
-const TOTAL_SECONDS = 600; // 10 minutos
-const WARNING_THRESHOLD = 120; // 2 minutos
+const TOTAL_SECONDS = 600;
+const WARNING_THRESHOLD = 120;
 
 function getRemainingSeconds(expiresAtMs: number): number {
   return Math.max(0, Math.ceil((expiresAtMs - Date.now()) / 1000));
@@ -47,12 +47,7 @@ export default function TimeCounter({
     getRemainingSeconds(expiresAtMs)
   );
 
-  // Guardamos el callback en un ref para no reiniciar el intervalo
-  // cuando el padre pasa una función nueva en cada render.
   const onExpireRef = useRef(onExpire);
-  // Guarda el expiresAt para el cual ya se ejecutó onExpire.
-  // Así se ejecuta una sola vez por expiración, incluso con el doble
-  // montaje de React Strict Mode en desarrollo.
   const expiredForRef = useRef<number | null>(null);
 
   useEffect(() => {
