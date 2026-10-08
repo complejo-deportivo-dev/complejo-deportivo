@@ -50,7 +50,6 @@ export default function CategoryCard({
       onClick={onClick}
       onMouseMove={handleMouseMove}
       onMouseLeave={resetTilt}
-      onMouseEnter={handleMouseMove}
       style={{
         transform: `perspective(1800px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg) translateY(-8px) scale(1.02)`,
         transition: "transform 250ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 250ms ease",
