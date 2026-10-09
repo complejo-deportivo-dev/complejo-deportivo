@@ -33,11 +33,35 @@ curl -X POST http://localhost:3000/api/auth/forgot-password \
      -d '{"email":"test@ejemplo.com"}'
 ```
 
+### Cierre de Sesión
+```bash
+curl -X POST http://localhost:3000/api/auth/logout \
+     -H "Content-Type: application/json" \
+     -d '{}'
+```
+
+### Restablecer Contraseña
+```bash
+curl -X POST http://localhost:3000/api/auth/reset-password \
+     -H "Content-Type: application/json" \
+     -d '{"password":"NuevaPassword123"}'
+```
+
 ---
 
 ## 2. Probando con Postman (Interfaz Gráfica)
 
 Postman es recomendado para capturar capturas de pantalla claras para documentación.
+
+### Ejemplos de JSON para el Body (Postman)
+
+| Endpoint | Ejemplo de Body JSON |
+| :--- | :--- |
+| `/api/auth/register` | `{"name":"Usuario Test", "email":"test@ejemplo.com", "password":"password123"}` |
+| `/api/auth/login` | `{"email":"test@ejemplo.com", "password":"password123"}` |
+| `/api/auth/forgot-password` | `{"email":"test@ejemplo.com"}` |
+| `/api/auth/logout` | `{}` |
+| `/api/auth/reset-password` | `{"password":"NuevaPassword123"}` |
 
 ### Pasos para cada Endpoint:
 
