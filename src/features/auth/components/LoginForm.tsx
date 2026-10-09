@@ -145,9 +145,9 @@ export default function LoginForm({ passwordUpdated = false }: LoginFormProps) {
   return (
     <Card
       as="section"
-      padding="none"
-      variant="flat"
-      className="w-full !rounded-none !bg-transparent !shadow-none !backdrop-blur-none"
+      padding="lg"
+      variant="default"
+      className="w-full max-w-[720px] rounded-[28px] border border-white/10 bg-[#1d2a38]/90 shadow-[0_30px_80px_-40px_rgba(15,23,42,0.95)] backdrop-blur-xl"
     >
       <div className="mb-6">
         <h2 className="font-heading text-3xl font-bold leading-tight text-text-primary">
@@ -159,97 +159,99 @@ export default function LoginForm({ passwordUpdated = false }: LoginFormProps) {
       </div>
 
       <form className="space-y-4" noValidate onSubmit={handleSubmit}>
-        {successMessage && (
-          <p
-            className="rounded-md border border-success/30 bg-success-soft px-3 py-2 text-sm text-success"
-            role="status"
-          >
-            {successMessage}
-          </p>
-        )}
-
-        <Input
-          className="space-y-1.5"
-          disabled={isBusy}
-          error={fieldErrors.email}
-          icon={<Mail />}
-          label="Correo electrónico"
-          name="email"
-          onChange={(event) => {
-            const value = event.target.value;
-            const validation = loginSchema.shape.email.safeParse(value);
-            setEmail(value);
-            setFieldErrors((current) => ({
-              ...current,
-              email: value
-                ? validation.success
-                  ? ""
-                  : (validation.error.issues[0]?.message ?? "")
-                : current.email,
-            }));
-            setError("");
-          }}
-          placeholder="tu@correo.com"
-          type="email"
-          value={email}
-        />
-
-        <div className="space-y-1.5">
-          <div className="flex items-center justify-between gap-3">
-            <label
-              className="block text-sm font-medium text-text-primary"
-              htmlFor="login-password"
+        <div className="space-y-4">
+          {successMessage && (
+            <p
+              className="rounded-md border border-success/30 bg-success-soft px-3 py-2 text-sm text-success"
+              role="status"
             >
-              Contraseña
-            </label>
-            <Link
-              className="text-xs font-medium text-primary transition-colors hover:text-primary-hover"
-              href="/forgot-password"
-            >
-              ¿Olvidaste tu contraseña?
-            </Link>
-          </div>
+              {successMessage}
+            </p>
+          )}
+
           <Input
+            className="space-y-1.5"
             disabled={isBusy}
-            error={fieldErrors.password}
-            icon={<LockKeyhole />}
-            id="login-password"
-            name="password"
+            error={fieldErrors.email}
+            icon={<Mail />}
+            label="Correo electrónico"
+            name="email"
             onChange={(event) => {
               const value = event.target.value;
-              setPassword(value);
-              if (value) {
-                setFieldErrors((current) => ({ ...current, password: "" }));
-              }
+              const validation = loginSchema.shape.email.safeParse(value);
+              setEmail(value);
+              setFieldErrors((current) => ({
+                ...current,
+                email: value
+                  ? validation.success
+                    ? ""
+                    : (validation.error.issues[0]?.message ?? "")
+                  : current.email,
+              }));
               setError("");
             }}
-            placeholder="••••••••"
-            type="password"
-            value={password}
+            placeholder="tu@correo.com"
+            type="email"
+            value={email}
           />
-        </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-sm">
-          <label className="inline-flex cursor-pointer items-center gap-1.5 text-text-secondary">
-            <input
-              checked={rememberMe}
-              className="h-4 w-4 rounded border-border bg-surface accent-primary focus:ring-2 focus:ring-primary/50"
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between gap-3">
+              <label
+                className="block text-sm font-medium text-text-primary"
+                htmlFor="login-password"
+              >
+                Contraseña
+              </label>
+              <Link
+                className="text-xs font-medium text-primary transition-colors hover:text-primary-hover"
+                href="/forgot-password"
+              >
+                ¿Olvidaste tu contraseña?
+              </Link>
+            </div>
+            <Input
               disabled={isBusy}
-              onChange={(event) => setRememberMe(event.target.checked)}
-              type="checkbox"
+              error={fieldErrors.password}
+              icon={<LockKeyhole />}
+              id="login-password"
+              name="password"
+              onChange={(event) => {
+                const value = event.target.value;
+                setPassword(value);
+                if (value) {
+                  setFieldErrors((current) => ({ ...current, password: "" }));
+                }
+                setError("");
+              }}
+              placeholder="••••••••"
+              type="password"
+              value={password}
             />
-            Mantener la sesión iniciada
-          </label>
-        </div>
+          </div>
 
-        {error && (
-          <p
-            className="rounded-md border border-error/30 bg-error-soft px-3 py-2 text-sm text-error"
-            role="alert"
-          >
-            {error}
-          </p>
-        )}
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-sm">
+            <label className="inline-flex cursor-pointer items-center gap-1.5 text-text-secondary">
+              <input
+                checked={rememberMe}
+                className="h-4 w-4 rounded border-border bg-surface accent-primary focus:ring-2 focus:ring-primary/50"
+                disabled={isBusy}
+                onChange={(event) => setRememberMe(event.target.checked)}
+                type="checkbox"
+              />
+              Mantener la sesión iniciada
+            </label>
+          </div>
+
+          {error && (
+            <p
+              className="rounded-md border border-error/30 bg-error-soft px-3 py-2 text-sm text-error"
+              role="alert"
+            >
+              {error}
+            </p>
+          )}
+        </div>
 
         <Button
           className="w-full !rounded-full"

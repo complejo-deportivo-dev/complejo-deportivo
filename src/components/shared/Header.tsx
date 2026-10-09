@@ -2,10 +2,8 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Menu, X, LogOut, User } from "lucide-react";
+import { ArrowLeft, LogOut, User } from "lucide-react";
 import Avatar from "@/components/ui/Avatar";
-import Image from "next/image";
 
 export interface HeaderProps {
   role: "client" | "admin" | "employee";
@@ -14,52 +12,29 @@ export interface HeaderProps {
   className?: string;
 }
 
-interface NavItem {
-  label: string;
-  href: string;
-}
-
-const ROLE_NAVIGATION: Record<
-  HeaderProps["role"],
-  { homeHref: string; items: NavItem[] }
-> = {
+const ROLE_NAVIGATION: Record<HeaderProps["role"], { homeHref: string }> = {
   client: {
     homeHref: "/client",
-    items: [
-      { label: "Inicio", href: "/client" },
-      { label: "Reservas", href: "/client/reservations" },
-      { label: "Perfil", href: "/profile" },
-    ],
   },
   admin: {
     homeHref: "/admin",
-    items: [
-      { label: "Dashboard", href: "/admin" },
-      { label: "Reservas", href: "/admin/reservations" },
-      { label: "Empleados", href: "/admin/employees" },
-      { label: "Métricas", href: "/admin/metrics" },
-    ],
   },
   employee: {
     homeHref: "/employee",
-    items: [],
   },
 };
+
 export default function Header({
   role,
   userName,
   userInitials,
   className = "",
 }: HeaderProps) {
-  const pathname = usePathname();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const mobileMenuRef = useRef<HTMLDivElement>(null);
 
-  const { homeHref, items: navItems } = ROLE_NAVIGATION[role];
-  const hasNavigation = navItems.length > 0;
+  const { homeHref } = ROLE_NAVIGATION[role];
   const isEmployee = role === "employee";
 
   useEffect(() => {
@@ -70,18 +45,11 @@ export default function Header({
       ) {
         setIsDropdownOpen(false);
       }
-      if (
-        mobileMenuRef.current &&
-        !mobileMenuRef.current.contains(event.target as Node)
-      ) {
-        setIsMobileMenuOpen(false);
-      }
     }
 
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
         setIsDropdownOpen(false);
-        setIsMobileMenuOpen(false);
       }
     }
 
@@ -93,13 +61,6 @@ export default function Header({
     };
   }, []);
 
-  const isLinkActive = (href: string) => {
-    if (href === "/" || href === "/admin" || href === "/client") {
-      return pathname === href;
-    }
-    return pathname.startsWith(href);
-  };
-
   const avatarName = userName || userInitials || (isEmployee ? "E" : "U");
 
   return (
@@ -107,53 +68,15 @@ export default function Header({
       <div className="relative flex h-16 items-center justify-between rounded-xl border border-border bg-surface px-4 sm:px-6 shadow-md backdrop-blur-md">
         <Link
           href={homeHref}
-          onClick={() => {
-            setIsDropdownOpen(false);
-            setIsMobileMenuOpen(false);
-          }}
+          onClick={() => setIsDropdownOpen(false)}
           className="flex items-center gap-3 transition-opacity hover:opacity-90"
         >
           <div className="relative flex">
-            <Image
-              src="/brand/imagotipo-dark.svg"
-              alt="Logo de Otium"
-              width={98}
-              height={98}
-              className="object-contain"
-              priority
-            />
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/15 text-sm font-semibold text-primary">
+              O
+            </span>
           </div>
         </Link>
-
-        {hasNavigation && (
-          <nav
-            aria-label="Navegación principal"
-            className="hidden md:flex items-center gap-8"
-          >
-            {navItems.map((item) => {
-              const active = isLinkActive(item.href);
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`relative py-1 text-sm font-medium transition-colors ${
-                    active
-                      ? "text-primary"
-                      : "text-text-secondary hover:text-text-primary"
-                  }`}
-                >
-                  {item.label}
-                  {active && (
-                    <span
-                      aria-hidden="true"
-                      className="absolute -bottom-1 left-0 right-0 h-0.5 rounded-full bg-primary"
-                    />
-                  )}
-                </Link>
-              );
-            })}
-          </nav>
-        )}
 
         <div className="flex items-center gap-3">
           <div className="relative" ref={dropdownRef}>
@@ -211,51 +134,17 @@ export default function Header({
               </div>
             )}
           </div>
-
-          {hasNavigation && (
-            <button
-              type="button"
-              onClick={() => setIsMobileMenuOpen((prev) => !prev)}
-              aria-label={isMobileMenuOpen ? "Cerrar menú" : "Abrir menú"}
-              aria-expanded={isMobileMenuOpen}
-              className="flex md:hidden items-center justify-center rounded-lg p-2 text-text-secondary transition-colors hover:bg-surface-elevated hover:text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/50"
-            >
-              {isMobileMenuOpen ? (
-                <X className="size-5" />
-              ) : (
-                <Menu className="size-5" />
-              )}
-            </button>
-          )}
         </div>
+      </div>
 
-        {hasNavigation && isMobileMenuOpen && (
-          <div
-            ref={mobileMenuRef}
-            className="absolute left-0 right-0 top-[calc(100%+0.5rem)] rounded-xl border border-border bg-background/95 p-4 shadow-lg backdrop-blur-md md:hidden z-50 flex flex-col gap-1"
-          >
-            {navItems.map((item) => {
-              const active = isLinkActive(item.href);
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className={`flex items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
-                    active
-                      ? "bg-primary-soft text-primary font-semibold"
-                      : "text-text-secondary hover:bg-surface-elevated hover:text-text-primary"
-                  }`}
-                >
-                  <span>{item.label}</span>
-                  {active && (
-                    <span className="size-1.5 rounded-full bg-primary" />
-                  )}
-                </Link>
-              );
-            })}
-          </div>
-        )}
+      <div className="mt-3 px-2">
+        <Link
+          href={homeHref}
+          className="inline-flex items-center gap-2 text-sm font-medium text-text-secondary transition-colors hover:text-text-primary"
+        >
+          <ArrowLeft className="size-4" />
+          <span>Volver</span>
+        </Link>
       </div>
     </header>
   );

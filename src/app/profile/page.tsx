@@ -49,11 +49,12 @@ export default function ProfilePage() {
     };
   }, [router]);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background">
-        <Header role={role} />
-        <main className="px-4 py-6 md:px-6 lg:px-8">
+  return (
+    <div className="min-h-screen bg-background">
+      <Header role={role} />
+
+      <main className="px-4 py-6 md:px-6 lg:px-8">
+        {loading ? (
           <div className="mx-auto max-w-[720px] space-y-5 rounded-[28px] border border-border bg-surface p-6 shadow-md">
             <div className="flex flex-col items-center gap-3">
               <Skeleton className="!rounded-full" height={96} width={96} variant="circle" />
@@ -70,17 +71,9 @@ export default function ProfilePage() {
               <Skeleton height={48} />
             </div>
           </div>
-        </main>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-background">
-      <Header role={role} />
-
-      <main className="px-4 py-6 md:px-6 lg:px-8">
-        <ProfileForm />
+        ) : (
+          <ProfileForm />
+        )}
       </main>
     </div>
   );

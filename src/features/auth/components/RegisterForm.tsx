@@ -209,9 +209,9 @@ export default function RegisterForm() {
   return (
     <Card
       as="section"
-      padding="none"
-      variant="flat"
-      className="w-full !rounded-none !bg-transparent !shadow-none !backdrop-blur-none"
+      padding="lg"
+      variant="default"
+      className="w-full max-w-[720px] rounded-[28px] border border-white/10 bg-[#1d2a38]/90 shadow-[0_30px_80px_-40px_rgba(15,23,42,0.95)] backdrop-blur-xl"
     >
       <h2 className="mb-6 font-heading text-h2 font-bold leading-tight text-text-primary">
         Crear cuenta
