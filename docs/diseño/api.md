@@ -259,12 +259,12 @@ Tablas: `categories`, `services`, `time_slots`.
   - La fecha no es pasada
   - La fecha no pasa de hoy + 15 días
 
-**Cómo se calcula la disponibilidad (estimación).** En el MER, `time_slots` solo tiene hora de inicio y de fin, sin fecha. Eso quiere decir que las franjas de un servicio se repiten todos los días. La fecha vive en `reservations.reservation_date`. Para una fecha dada, una franja cuenta como ocupada cuando existe una reserva de esa fecha que la usa (a través de `reservations_slots`) y que está en uno de estos casos:
+**Cómo se calcula la disponibilidad.** En el MER, `time_slots` solo tiene hora de inicio y de fin, sin fecha. Eso quiere decir que las franjas de un servicio se repiten todos los días. La fecha vive en `reservation_slots.slot_date`. Para una fecha dada, una franja cuenta como ocupada cuando existe un registro activo en `reservation_slots` para esa fecha que se relaciona con una reserva en uno de estos estados:
 
-- `confirmed` o `completed`
+- `confirmed`
 - `pending` con `expires_at` todavía en el futuro (el bloqueo de 10 minutos)
 
-Para servicios `group`, una reserva ocupada deja la franja no disponible. Para servicios `individual`, `remaining_capacity = capacity - suma de quantity` de esas reservas, y `available` es verdadero si queda cupo. Si la fecha es hoy, las franjas que ya empezaron aparecen como no disponibles.
+Las reservas `failed`, `expired` y `completed`, así como los registros de `reservation_slots` inactivos, no afectan la disponibilidad. Para servicios `group`, una reserva válida deja la franja no disponible. Para servicios `individual`, `remaining_capacity = max(0, capacity - suma de quantity)` de esas reservas, y `available` es verdadero si queda cupo. Si la fecha es hoy en `America/Bogota`, las franjas que ya empezaron aparecen como no disponibles. Solo se aceptan fechas desde hoy hasta 15 días de anticipación.
 
 ### 3.3 Reservas (cliente)
 
