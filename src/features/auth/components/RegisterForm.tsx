@@ -21,7 +21,9 @@ const registerSchema = z
       .max(100, "El correo no puede superar 100 caracteres."),
     password: z
       .string()
-      .min(6, "La contraseña debe tener al menos 6 caracteres."),
+      .min(8, "La contraseña debe tener al menos 8 caracteres.")
+      .regex(/[A-Z]/, "La contraseña debe incluir una mayúscula.")
+      .regex(/[0-9]/, "La contraseña debe incluir un número."),
     confirmPassword: z.string().min(1, "Confirma tu contraseña."),
     acceptedTerms: z.literal(true, {
       error: "Debes aceptar los Términos y la Política de Privacidad.",
@@ -276,7 +278,7 @@ export default function RegisterForm() {
             setFieldErrors((current) => ({ ...current, password: "" }));
             setError("");
           }}
-          placeholder="Mínimo 6 caracteres"
+          placeholder="8 caracteres, una mayúscula y un número"
           required
           type="password"
           value={password}
