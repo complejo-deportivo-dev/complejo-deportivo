@@ -36,3 +36,8 @@ Authentication failed against the database server, the provided database credent
 
 
 ```
+
+El endpoint de login todavía no funciona. El log sigue mostrando el mismo error: Authentication failed against the database server, the provided database credentials for postgres are not valid.
+
+Esto significa que, aunque actualizamos el archivo .env.local, el servidor de desarrollo sigue utilizando las credenciales antiguas.
+
