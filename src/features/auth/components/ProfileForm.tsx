@@ -1,14 +1,17 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import { z } from "zod";
 import { LogOut } from "lucide-react";
 import Avatar from "@/components/ui/Avatar";
 import Badge from "@/components/ui/Badge";
+import Banner from "@/components/ui/Banner";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import Input from "@/components/ui/Input";
 import Modal from "@/components/ui/Modal";
+import Skeleton from "@/components/ui/Skeleton";
 
 export type ProfileRole = "client" | "admin" | "employee";
 
@@ -20,29 +23,82 @@ interface ProfileUser {
   role: ProfileRole;
 }
 
-interface ProfileFormProps {
-  user: ProfileUser;
-}
-
 const roleLabels: Record<ProfileRole, string> = {
   client: "Cliente",
   employee: "Empleado",
   admin: "Admin",
 };
 
-export default function ProfileForm({ user }: ProfileFormProps) {
+const profileSchema = z.object({
+  name: z.string().trim().min(1, "El nombre es obligatorio.").max(50, "El nombre no puede superar 50 caracteres."),
+  number_document: z
+    .string()
+    .trim()
+    .max(20, "La cédula no puede superar 20 caracteres.")
+    .regex(/^\d*$/, "La cédula solo puede contener números.")
+    .optional()
+    .or(z.literal("")),
+});
+
+export default function ProfileForm() {
   const router = useRouter();
-  const [name, setName] = useState(user.name);
-  const [document, setDocument] = useState(user.number_document ?? "");
+  const [user, setUser] = useState<ProfileUser | null>(null);
+  const [name, setName] = useState("");
+  const [document, setDocument] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
-  const [message, setMessage] = useState<{
-    type: "success" | "error";
-    text: string;
-  } | null>(null);
+  const [banner, setBanner] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
-  const isDocumentBlocked = Boolean(user.number_document);
+  useEffect(() => {
+    let active = true;
+
+    async function loadProfile() {
+      try {
+        const response = await fetch("/api/users/me", { cache: "no-store" });
+
+        if (!response.ok) {
+          if (active) {
+            setBanner({
+              type: "error",
+              text: "No se pudo cargar tu perfil. Intenta nuevamente.",
+            });
+          }
+          router.replace("/login");
+          return;
+        }
+
+        const data = (await response.json()) as ProfileUser;
+
+        if (!active) return;
+
+        setUser(data);
+        setName(data.name);
+        setDocument(data.number_document ?? "");
+      } catch {
+        if (active) {
+          setBanner({
+            type: "error",
+            text: "No se pudo cargar tu perfil. Intenta nuevamente.",
+          });
+        }
+        router.replace("/login");
+      } finally {
+        if (active) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    void loadProfile();
+
+    return () => {
+      active = false;
+    };
+  }, [router]);
+
+  const isDocumentBlocked = Boolean(user?.number_document);
 
   function sanitizeDocument(value: string) {
     return value.replace(/\D/g, "").slice(0, 20);
@@ -51,16 +107,26 @@ export default function ProfileForm({ user }: ProfileFormProps) {
   async function handleSave(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    const trimmedName = name.trim();
-    const sanitizedDocument = sanitizeDocument(document);
+    if (!user) return;
 
-    if (!trimmedName) {
-      setMessage({ type: "error", text: "El nombre es obligatorio." });
+    const validation = profileSchema.safeParse({
+      name,
+      number_document: isDocumentBlocked ? user.number_document ?? "" : document,
+    });
+
+    if (!validation.success) {
+      setBanner({
+        type: "error",
+        text: validation.error.issues[0]?.message ?? "Revisa los datos del formulario.",
+      });
       return;
     }
 
+    const trimmedName = validation.data.name;
+    const sanitizedDocument = sanitizeDocument(validation.data.number_document ?? "");
+
     setIsSaving(true);
-    setMessage(null);
+    setBanner(null);
 
     try {
       const response = await fetch("/api/users/me", {
@@ -68,9 +134,7 @@ export default function ProfileForm({ user }: ProfileFormProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: trimmedName,
-          number_document: isDocumentBlocked
-            ? user.number_document ?? null
-            : sanitizedDocument || null,
+          number_document: isDocumentBlocked ? user.number_document ?? null : sanitizedDocument || null,
         }),
       });
 
@@ -78,17 +142,13 @@ export default function ProfileForm({ user }: ProfileFormProps) {
         throw new Error("update_failed");
       }
 
-      const data = (await response.json()) as Partial<ProfileUser>;
-      const nextName = data.name?.trim() || trimmedName;
-      const nextDocument =
-        data.number_document ??
-        (isDocumentBlocked ? user.number_document ?? "" : sanitizedDocument);
-
-      setName(nextName);
-      setDocument(nextDocument ?? "");
-      setMessage({ type: "success", text: "Tus cambios se guardaron" });
+      const nextUser = (await response.json()) as ProfileUser;
+      setUser(nextUser);
+      setName(nextUser.name);
+      setDocument(nextUser.number_document ?? "");
+      setBanner({ type: "success", text: "Tus cambios se guardaron" });
     } catch {
-      setMessage({
+      setBanner({
         type: "error",
         text: "No se pudieron guardar los cambios. Intenta nuevamente.",
       });
@@ -98,9 +158,11 @@ export default function ProfileForm({ user }: ProfileFormProps) {
   }
 
   async function handleLogoutConfirm() {
-    setIsLogoutModalOpen(false);
+    if (isLoggingOut || !user) return;
+
     setIsLoggingOut(true);
-    setMessage(null);
+    setIsLogoutModalOpen(false);
+    setBanner(null);
 
     try {
       const response = await fetch("/api/auth/logout", {
@@ -113,12 +175,33 @@ export default function ProfileForm({ user }: ProfileFormProps) {
 
       router.replace("/login");
     } catch {
-      setMessage({
+      setBanner({
         type: "error",
         text: "No se pudo cerrar la sesión. Intenta nuevamente.",
       });
       setIsLoggingOut(false);
     }
+  }
+
+  if (isLoading || !user) {
+    return (
+      <div className="mx-auto max-w-[720px] space-y-5 rounded-[28px] border border-border bg-surface p-6 shadow-md">
+        <div className="flex flex-col items-center gap-3">
+          <Skeleton className="!rounded-full" height={96} width={96} variant="circle" />
+          <Skeleton height={32} width="38%" />
+          <Skeleton height={28} width="22%" />
+        </div>
+        <div className="h-px w-full bg-border" />
+        <div className="grid gap-5 md:grid-cols-2">
+          <Skeleton height={48} />
+          <Skeleton height={48} />
+        </div>
+        <div className="grid gap-5 md:grid-cols-2">
+          <Skeleton height={48} />
+          <Skeleton height={48} />
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -144,17 +227,8 @@ export default function ProfileForm({ user }: ProfileFormProps) {
         <div className="my-6 h-px w-full bg-border" />
 
         <form className="space-y-5" noValidate onSubmit={handleSave}>
-          {message && (
-            <div
-              className={`rounded-xl border px-3 py-2 text-sm ${
-                message.type === "success"
-                  ? "border-success/30 bg-success-soft text-success"
-                  : "border-error/30 bg-error-soft text-error"
-              }`}
-              role={message.type === "error" ? "alert" : "status"}
-            >
-              {message.text}
-            </div>
+          {banner && (
+            <Banner variant={banner.type}>{banner.text}</Banner>
           )}
 
           <div className="grid gap-5 md:grid-cols-2">
@@ -183,10 +257,7 @@ export default function ProfileForm({ user }: ProfileFormProps) {
               label="Cédula"
               maxLength={20}
               name="document"
-              onChange={(event) => {
-                const nextValue = sanitizeDocument(event.target.value);
-                setDocument(nextValue);
-              }}
+              onChange={(event) => setDocument(sanitizeDocument(event.target.value))}
               placeholder={isDocumentBlocked ? "Cédula registrada" : "Sin registrar"}
               type="text"
               value={document}
@@ -242,6 +313,7 @@ export default function ProfileForm({ user }: ProfileFormProps) {
         <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
           <Button
             className="w-full sm:w-auto"
+            disabled={isLoggingOut}
             onClick={() => setIsLogoutModalOpen(false)}
             type="button"
             variant="ghost"
@@ -250,6 +322,8 @@ export default function ProfileForm({ user }: ProfileFormProps) {
           </Button>
           <Button
             className="w-full sm:w-auto"
+            disabled={isLoggingOut}
+            loading={isLoggingOut}
             onClick={handleLogoutConfirm}
             type="button"
             variant="danger"
