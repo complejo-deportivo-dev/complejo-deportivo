@@ -5,13 +5,8 @@
 
 import type { 
   User, 
-  UserRole, 
-  Reservation, 
   ReservationStatus, 
-  Service, 
-  TimeSlot, 
-  QrCode,
-  PaymentStatus 
+  QrType
 } from './database';
 
 export interface ApiResponse<T> {
@@ -20,6 +15,21 @@ export interface ApiResponse<T> {
 
 export interface ApiError {
   error: string;
+}
+
+export interface CatalogCategory {
+  id: number;
+  name: string;
+}
+
+export interface CatalogService {
+  id: number;
+  name: string;
+  category_id: number;
+  hour_price: number;
+  capacity: number;
+  max_companions: number;
+  qr_type: QrType;
 }
 
 // --- Authentication ---
