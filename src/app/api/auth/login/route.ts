@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { NextResponse } from "next/server";
-import { authService } from "@/services/auth";
+import { authService } from "../../../../services/auth";
+
 
 const loginSchema = z.object({
   email: z.string().email().min(1),

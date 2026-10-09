@@ -1,5 +1,6 @@
-import { createClient } from "@/lib/supabase/server";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "../lib/prisma";
+import { createClient } from "../lib/supabase/server";
+
 
 export const authService = {
   async login(email: string, password: string) {
@@ -14,7 +15,7 @@ export const authService = {
       throw new Error("INVALID_CREDENTIALS");
     }
 
-    const user = await prisma.user.findUnique({
+    const user = await prisma.public_users.findUnique({
       where: { id: authData.user.id },
       select: {
         id: true,
