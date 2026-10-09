@@ -46,8 +46,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Datos inválidos' }, { status: 400 });
   }
   
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email.trim())) {
+  const trimmedEmail = email.trim();
+  if (trimmedEmail.indexOf('@') === -1 || trimmedEmail.indexOf('.') === -1) {
     return NextResponse.json({ error: 'Datos inválidos' }, { status: 400 });
   }
   if (number_document !== undefined && number_document !== null) {
