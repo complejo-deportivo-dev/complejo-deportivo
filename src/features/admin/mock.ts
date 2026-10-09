@@ -292,3 +292,287 @@ export function deleteMockCategory(id: number): boolean { // TEMP-MOCK
   mockCategoryState = mockCategoryState.filter((category) => category.id !== id); // TEMP-MOCK
   return mockCategoryState.length !== previousLength; // TEMP-MOCK
 } // TEMP-MOCK
+
+export const MOCK_EMPLOYEES: Array<{ // TEMP-MOCK
+  id: number; // TEMP-MOCK
+  name: string; // TEMP-MOCK
+  email: string; // TEMP-MOCK
+  number_document: string; // TEMP-MOCK
+  is_active: boolean; // TEMP-MOCK
+  initials?: string; // TEMP-MOCK
+  access_logs_count?: number; // TEMP-MOCK
+}> = [ // TEMP-MOCK
+  { id: 1, name: "Luis Herrera", email: "luis@otium.com", number_document: "1023456789", is_active: true, initials: "LH", access_logs_count: 5 }, // TEMP-MOCK
+  { id: 2, name: "María Rodríguez", email: "maria@otium.com", number_document: "987654321", is_active: true, initials: "MR", access_logs_count: 0 }, // TEMP-MOCK
+  { id: 3, name: "Pedro Sánchez", email: "pedro@otium.com", number_document: "123456789", is_active: true, initials: "PS", access_logs_count: 2 }, // TEMP-MOCK
+]; // TEMP-MOCK
+
+let mockEmployeeState = [...MOCK_EMPLOYEES]; // TEMP-MOCK
+
+export function getMockEmployees() { // TEMP-MOCK
+  const mode = process.env.NEXT_PUBLIC_USE_MOCK?.trim().toLowerCase(); // TEMP-MOCK
+
+  if (mode === "empty") { // TEMP-MOCK
+    return []; // TEMP-MOCK
+  } // TEMP-MOCK
+
+  if (mode === "error") { // TEMP-MOCK
+    throw new Error("No se pudo cargar la lista de empleados."); // TEMP-MOCK
+  } // TEMP-MOCK
+
+  return mockEmployeeState.map((employee) => ({ ...employee })); // TEMP-MOCK
+} // TEMP-MOCK
+
+export function createMockEmployee(payload: { // TEMP-MOCK
+  name: string; // TEMP-MOCK
+  email: string; // TEMP-MOCK
+  number_document: string; // TEMP-MOCK
+  is_active?: boolean; // TEMP-MOCK
+}): (typeof MOCK_EMPLOYEES)[number] { // TEMP-MOCK
+  const trimmedName = payload.name.trim(); // TEMP-MOCK
+  const nextId = mockEmployeeState.length > 0 ? Math.max(...mockEmployeeState.map((employee) => employee.id)) + 1 : 1; // TEMP-MOCK
+  const initials = trimmedName // TEMP-MOCK
+    .split(/\s+/) // TEMP-MOCK
+    .filter(Boolean) // TEMP-MOCK
+    .slice(0, 2) // TEMP-MOCK
+    .map((word) => word[0]?.toUpperCase() ?? "") // TEMP-MOCK
+    .join("") || "E"; // TEMP-MOCK
+
+  const nextEmployee = { // TEMP-MOCK
+    id: nextId, // TEMP-MOCK
+    name: trimmedName, // TEMP-MOCK
+    email: payload.email.trim(), // TEMP-MOCK
+    number_document: payload.number_document.trim(), // TEMP-MOCK
+    is_active: payload.is_active ?? true, // TEMP-MOCK
+    initials, // TEMP-MOCK
+    access_logs_count: 0, // TEMP-MOCK
+  }; // TEMP-MOCK
+
+  mockEmployeeState = [nextEmployee, ...mockEmployeeState]; // TEMP-MOCK
+  return { ...nextEmployee }; // TEMP-MOCK
+} // TEMP-MOCK
+
+export function updateMockEmployee( // TEMP-MOCK
+  id: number, // TEMP-MOCK
+  payload: Partial<(typeof MOCK_EMPLOYEES)[number]>, // TEMP-MOCK
+): (typeof MOCK_EMPLOYEES)[number] | null { // TEMP-MOCK
+  let updatedEmployee: (typeof MOCK_EMPLOYEES)[number] | null = null; // TEMP-MOCK
+
+  mockEmployeeState = mockEmployeeState.map((employee) => { // TEMP-MOCK
+    if (employee.id !== id) { // TEMP-MOCK
+      return employee; // TEMP-MOCK
+    } // TEMP-MOCK
+
+    updatedEmployee = { // TEMP-MOCK
+      ...employee, // TEMP-MOCK
+      ...payload, // TEMP-MOCK
+      name: payload.name?.trim() || employee.name, // TEMP-MOCK
+      email: payload.email?.trim() || employee.email, // TEMP-MOCK
+      number_document: payload.number_document?.trim() || employee.number_document, // TEMP-MOCK
+      initials:
+        payload.initials ??
+        employee.initials ??
+        ((employee.name.split(/\s+/).filter(Boolean).slice(0, 2).map((word) => word[0]?.toUpperCase() ?? "").join("") || "E")), // TEMP-MOCK
+    }; // TEMP-MOCK
+
+    return updatedEmployee; // TEMP-MOCK
+  }); // TEMP-MOCK
+
+  return updatedEmployee; // TEMP-MOCK
+} // TEMP-MOCK
+
+export function toggleMockEmployee(id: number): (typeof MOCK_EMPLOYEES)[number] | null { // TEMP-MOCK
+  const current = mockEmployeeState.find((employee) => employee.id === id); // TEMP-MOCK
+
+  if (!current) { // TEMP-MOCK
+    return null; // TEMP-MOCK
+  } // TEMP-MOCK
+
+  return updateMockEmployee(id, { is_active: !current.is_active }); // TEMP-MOCK
+} // TEMP-MOCK
+
+export function deleteMockEmployee(id: number): boolean { // TEMP-MOCK
+  const previousLength = mockEmployeeState.length; // TEMP-MOCK
+  mockEmployeeState = mockEmployeeState.filter((employee) => employee.id !== id); // TEMP-MOCK
+  return mockEmployeeState.length !== previousLength; // TEMP-MOCK
+} // TEMP-MOCK
+
+export const MOCK_SERVICE_CATEGORIES: { id: number; name: string }[] = [ // TEMP-MOCK
+  { id: 1, name: "Canchas" }, // TEMP-MOCK
+  { id: 2, name: "Piscinas" }, // TEMP-MOCK
+  { id: 3, name: "Gimnasio" }, // TEMP-MOCK
+  { id: 4, name: "Wellness" }, // TEMP-MOCK
+]; // TEMP-MOCK
+
+export function getMockServiceCategories() { // TEMP-MOCK
+  return MOCK_SERVICE_CATEGORIES.map((category) => ({ ...category })); // TEMP-MOCK
+} // TEMP-MOCK
+
+export const MOCK_SERVICES: Array<{
+  id: number;
+  name: string;
+  category_id: number;
+  category_name: string;
+  capacity: number;
+  max_companions?: number;
+  qr_type: "group" | "individual";
+  price_per_hour: number;
+  is_active: boolean;
+  active_reservations_count?: number;
+  past_reservations_count?: number;
+}> = [ // TEMP-MOCK
+  { // TEMP-MOCK
+    id: 1, // TEMP-MOCK
+    name: "Cancha sintética 5v5 #1", // TEMP-MOCK
+    category_id: 1, // TEMP-MOCK
+    category_name: "Canchas", // TEMP-MOCK
+    capacity: 10, // TEMP-MOCK
+    max_companions: 4, // TEMP-MOCK
+    qr_type: "group", // TEMP-MOCK
+    price_per_hour: 45000, // TEMP-MOCK
+    is_active: true, // TEMP-MOCK
+    active_reservations_count: 3, // TEMP-MOCK
+    past_reservations_count: 7, // TEMP-MOCK
+  }, // TEMP-MOCK
+  { // TEMP-MOCK
+    id: 2, // TEMP-MOCK
+    name: "Piscina olímpica", // TEMP-MOCK
+    category_id: 2, // TEMP-MOCK
+    category_name: "Piscinas", // TEMP-MOCK
+    capacity: 20, // TEMP-MOCK
+    max_companions: 2, // TEMP-MOCK
+    qr_type: "individual", // TEMP-MOCK
+    price_per_hour: 32000, // TEMP-MOCK
+    is_active: true, // TEMP-MOCK
+    active_reservations_count: 0, // TEMP-MOCK
+    past_reservations_count: 5, // TEMP-MOCK
+  }, // TEMP-MOCK
+  { // TEMP-MOCK
+    id: 3, // TEMP-MOCK
+    name: "Gimnasio principal", // TEMP-MOCK
+    category_id: 3, // TEMP-MOCK
+    category_name: "Gimnasio", // TEMP-MOCK
+    capacity: 12, // TEMP-MOCK
+    max_companions: 1, // TEMP-MOCK
+    qr_type: "individual", // TEMP-MOCK
+    price_per_hour: 28000, // TEMP-MOCK
+    is_active: false, // TEMP-MOCK
+    active_reservations_count: 0, // TEMP-MOCK
+    past_reservations_count: 2, // TEMP-MOCK
+  }, // TEMP-MOCK
+  { // TEMP-MOCK
+    id: 4, // TEMP-MOCK
+    name: "Sauna & relax", // TEMP-MOCK
+    category_id: 4, // TEMP-MOCK
+    category_name: "Wellness", // TEMP-MOCK
+    capacity: 8, // TEMP-MOCK
+    max_companions: 1, // TEMP-MOCK
+    qr_type: "group", // TEMP-MOCK
+    price_per_hour: 25000, // TEMP-MOCK
+    is_active: true, // TEMP-MOCK
+    active_reservations_count: 1, // TEMP-MOCK
+    past_reservations_count: 1, // TEMP-MOCK
+  }, // TEMP-MOCK
+  { // TEMP-MOCK
+    id: 5, // TEMP-MOCK
+    name: "Cancha de pádel", // TEMP-MOCK
+    category_id: 1, // TEMP-MOCK
+    category_name: "Canchas", // TEMP-MOCK
+    capacity: 4, // TEMP-MOCK
+    max_companions: 2, // TEMP-MOCK
+    qr_type: "group", // TEMP-MOCK
+    price_per_hour: 38000, // TEMP-MOCK
+    is_active: true, // TEMP-MOCK
+    active_reservations_count: 0, // TEMP-MOCK
+    past_reservations_count: 0, // TEMP-MOCK
+  }, // TEMP-MOCK
+]; // TEMP-MOCK
+
+let mockServiceState = [...MOCK_SERVICES]; // TEMP-MOCK
+
+export function getMockServices() { // TEMP-MOCK
+  const mode = process.env.NEXT_PUBLIC_USE_MOCK?.trim().toLowerCase(); // TEMP-MOCK
+
+  if (mode === "empty") { // TEMP-MOCK
+    return []; // TEMP-MOCK
+  } // TEMP-MOCK
+
+  if (mode === "error") { // TEMP-MOCK
+    throw new Error("No se pudo cargar la lista de servicios."); // TEMP-MOCK
+  } // TEMP-MOCK
+
+  return mockServiceState.map((service) => ({ ...service })); // TEMP-MOCK
+} // TEMP-MOCK
+
+export function createMockService(payload: { // TEMP-MOCK
+  name: string; // TEMP-MOCK
+  category_id: number; // TEMP-MOCK
+  capacity: number; // TEMP-MOCK
+  max_companions?: number; // TEMP-MOCK
+  qr_type: "group" | "individual"; // TEMP-MOCK
+  price_per_hour: number; // TEMP-MOCK
+  is_active?: boolean; // TEMP-MOCK
+}): (typeof MOCK_SERVICES)[number] { // TEMP-MOCK
+  const trimmedName = payload.name.trim(); // TEMP-MOCK
+  const nextId = mockServiceState.length > 0 ? Math.max(...mockServiceState.map((service) => service.id)) + 1 : 1; // TEMP-MOCK
+  const category = MOCK_SERVICE_CATEGORIES.find((item) => item.id === payload.category_id); // TEMP-MOCK
+
+  const nextService = { // TEMP-MOCK
+    id: nextId, // TEMP-MOCK
+    name: trimmedName, // TEMP-MOCK
+    category_id: payload.category_id, // TEMP-MOCK
+    category_name: category?.name ?? "Sin categoría", // TEMP-MOCK
+    capacity: payload.capacity, // TEMP-MOCK
+    max_companions: payload.max_companions ?? 0, // TEMP-MOCK
+    qr_type: payload.qr_type, // TEMP-MOCK
+    price_per_hour: payload.price_per_hour, // TEMP-MOCK
+    is_active: payload.is_active ?? true, // TEMP-MOCK
+    active_reservations_count: 0, // TEMP-MOCK
+    past_reservations_count: 0, // TEMP-MOCK
+  }; // TEMP-MOCK
+
+  mockServiceState = [nextService, ...mockServiceState]; // TEMP-MOCK
+  return { ...nextService }; // TEMP-MOCK
+} // TEMP-MOCK
+
+export function updateMockService( // TEMP-MOCK
+  id: number, // TEMP-MOCK
+  payload: Partial<(typeof MOCK_SERVICES)[number]>, // TEMP-MOCK
+): (typeof MOCK_SERVICES)[number] | null { // TEMP-MOCK
+  let updatedService: (typeof MOCK_SERVICES)[number] | null = null; // TEMP-MOCK
+
+  mockServiceState = mockServiceState.map((service) => { // TEMP-MOCK
+    if (service.id !== id) { // TEMP-MOCK
+      return service; // TEMP-MOCK
+    } // TEMP-MOCK
+
+    const category = MOCK_SERVICE_CATEGORIES.find((item) => item.id === (payload.category_id ?? service.category_id)); // TEMP-MOCK
+
+    updatedService = { // TEMP-MOCK
+      ...service, // TEMP-MOCK
+      ...payload, // TEMP-MOCK
+      name: payload.name?.trim() || service.name, // TEMP-MOCK
+      category_name: category?.name ?? service.category_name, // TEMP-MOCK
+    }; // TEMP-MOCK
+
+    return updatedService; // TEMP-MOCK
+  }); // TEMP-MOCK
+
+  return updatedService; // TEMP-MOCK
+} // TEMP-MOCK
+
+export function toggleMockService(id: number): (typeof MOCK_SERVICES)[number] | null { // TEMP-MOCK
+  const current = mockServiceState.find((service) => service.id === id); // TEMP-MOCK
+
+  if (!current) { // TEMP-MOCK
+    return null; // TEMP-MOCK
+  } // TEMP-MOCK
+
+  return updateMockService(id, { is_active: !current.is_active }); // TEMP-MOCK
+} // TEMP-MOCK
+
+export function deleteMockService(id: number): boolean { // TEMP-MOCK
+  const previousLength = mockServiceState.length; // TEMP-MOCK
+  mockServiceState = mockServiceState.filter((service) => service.id !== id); // TEMP-MOCK
+  return mockServiceState.length !== previousLength; // TEMP-MOCK
+} // TEMP-MOCK
