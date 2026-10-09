@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
@@ -43,7 +43,7 @@ export default function CategoryServicesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -60,13 +60,13 @@ export default function CategoryServicesPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [categoryId]);
 
   useEffect(() => {
     if (categoryId) {
       loadData();
     }
-  }, [categoryId]);
+  }, [categoryId, loadData]);
 
   return (
     <div className="flex min-h-screen flex-col">
