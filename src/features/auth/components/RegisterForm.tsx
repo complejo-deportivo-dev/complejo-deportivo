@@ -138,6 +138,13 @@ export default function RegisterForm() {
       });
 
       if (response.status === 201) {
+        if (typeof window !== "undefined") {
+          sessionStorage.setItem(
+            "pendingVerificationEmail",
+            validation.data.email,
+          );
+        }
+
         router.push(`/verify-email?email=${encodeURIComponent(validation.data.email)}`);
         return;
       }

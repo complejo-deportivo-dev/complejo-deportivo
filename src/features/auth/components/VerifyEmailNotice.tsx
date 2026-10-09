@@ -1,24 +1,45 @@
 "use client";
 
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 import { Mail } from "lucide-react";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import { createClient } from "@/lib/supabase/client";
 
+function isValidEmail(value: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+}
+
 export default function VerifyEmailNotice() {
+  const router = useRouter();
   const searchParams = useSearchParams();
-  const email = searchParams.get("email") ?? "";
+
+  const queryEmail = searchParams.get("email") ?? "";
+  const storedEmail =
+    typeof window !== "undefined"
+      ? sessionStorage.getItem("pendingVerificationEmail") ?? ""
+      : "";
+
+  const email = useMemo(() => {
+    const candidates = [queryEmail, storedEmail];
+    return candidates.find((candidate) => isValidEmail(candidate)) ?? "";
+  }, [queryEmail, storedEmail]);
+
   const [isResending, setIsResending] = useState(false);
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
   const [feedback, setFeedback] = useState("");
 
+  useEffect(() => {
+    if (!email) {
+      router.replace("/login");
+    }
+  }, [email, router]);
+
   async function handleResend() {
     if (!email) {
-      setStatus("error");
-      setFeedback("No se encontró el correo para reenviar el enlace.");
+      router.replace("/login");
       return;
     }
 
@@ -38,13 +59,17 @@ export default function VerifyEmailNotice() {
       }
 
       setStatus("success");
-      setFeedback(`Se ha reenviado el enlace a ${email}.`);
+      setFeedback("Correo reenviado. Revisa tu bandeja.");
     } catch {
       setStatus("error");
-      setFeedback("No se pudo reenviar el correo. Intenta nuevamente.");
+      setFeedback("No fue posible reenviar el correo. Intenta nuevamente.");
     } finally {
       setIsResending(false);
     }
+  }
+
+  if (!email) {
+    return null;
   }
 
   return (
@@ -65,12 +90,12 @@ export default function VerifyEmailNotice() {
       </h2>
 
       <p className="mt-4 text-sm leading-relaxed text-text-secondary">
-        Te enviamos un enlace a {email || "tu correo"}. Haz clic en él para activar
-        tu cuenta.
+        Te enviamos un enlace a {email}. Haz clic en él para activar tu cuenta.
       </p>
 
       {feedback && (
         <div
+          aria-live="polite"
           className={`mt-4 rounded-md border px-3 py-2 text-sm ${
             status === "success"
               ? "border-success/30 bg-success-soft text-success"
@@ -84,7 +109,7 @@ export default function VerifyEmailNotice() {
 
       <Button
         className="mt-6 w-full !rounded-full"
-        disabled={isResending || !email}
+        disabled={isResending}
         loading={isResending}
         onClick={handleResend}
         size="lg"
