@@ -8,8 +8,8 @@ interface CategoryCardProps {
   name: string;
   subtitle: string;
   image: string;
-  servicesCount: number;
-  minPrice: number;
+  servicesCount?: number;
+  minPrice?: number;
   onClick?: () => void;
 }
 
@@ -25,7 +25,10 @@ export default function CategoryCard({
   const [glow, setGlow] = useState({ x: 50, y: 50 });
 
   // Ejemplo: 60000 -> "60.000"
-  const formattedPrice = new Intl.NumberFormat("es-CO").format(minPrice);
+  const formattedPrice =
+    minPrice === undefined
+      ? undefined
+      : new Intl.NumberFormat("es-CO").format(minPrice);
 
   const handleMouseMove = (event: React.MouseEvent<HTMLButtonElement>) => {
     const rect = event.currentTarget.getBoundingClientRect();
@@ -64,9 +67,12 @@ export default function CategoryCard({
       />
 
       {/* Badge de servicios */}
-      <span className="absolute right-4 top-4 z-20 rounded-full bg-black/40 px-3 py-1 text-[10px] font-bold text-white backdrop-blur-md border border-white/20">
-        {servicesCount} {servicesCount === 1 ? "SERVICIO" : "SERVICIOS"}
-      </span>
+      {servicesCount !== undefined && (
+        <span className="absolute right-4 top-4 z-20 rounded-full border border-white/20 bg-black/40 px-3 py-1 text-[10px] font-bold text-white backdrop-blur-md">
+          {servicesCount}{" "}
+          {servicesCount === 1 ? "SERVICIO" : "SERVICIOS"}
+        </span>
+      )}
 
       {/* Imagen de fondo (o gradiente si no hay imagen) */}
       {image ? (
@@ -74,6 +80,7 @@ export default function CategoryCard({
           src={image}
           alt={name}
           fill
+          sizes="(max-width: 494px) 85vw, 420px"
           className="object-cover transition-transform duration-500 group-hover:scale-110"
         />
       ) : (
@@ -95,7 +102,7 @@ export default function CategoryCard({
         {/* Precio y flecha */}
         <span className="mt-3 flex items-center justify-between">
           <span className="text-xs font-medium text-white/80">
-            Desde ${formattedPrice}/h
+            {formattedPrice ? `Desde $${formattedPrice}/h` : "Explorar"}
           </span>
           <span className="flex size-10 items-center justify-center rounded-full bg-primary text-white transition-all duration-300 group-hover:bg-white group-hover:text-primary">
             <ArrowRight size={18} />
