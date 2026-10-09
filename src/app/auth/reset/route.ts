@@ -27,5 +27,11 @@ export async function GET(request: NextRequest) {
         : "/update-password?error=invalid-link",
       requestUrl.origin,
     ),
+    {
+      headers: {
+        "Cache-Control": "no-store, max-age=0",
+        "Referrer-Policy": "no-referrer",
+      },
+    },
   );
 }
