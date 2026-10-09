@@ -36,7 +36,11 @@ function isUserRole(value: unknown): value is UserRole {
   return value === "admin" || value === "client" || value === "employee";
 }
 
-export default function LoginForm() {
+interface LoginFormProps {
+  passwordUpdated?: boolean;
+}
+
+export default function LoginForm({ passwordUpdated = false }: LoginFormProps) {
   const router = useRouter();
   const authSubmissionInProgress = useRef(false);
   const [email, setEmail] = useState("");
@@ -45,6 +49,11 @@ export default function LoginForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState(
+    passwordUpdated
+      ? "Contraseña actualizada correctamente. Ya puedes iniciar sesión."
+      : "",
+  );
   const [fieldErrors, setFieldErrors] = useState({ email: "", password: "" });
   const isBusy = isSubmitting || isGoogleLoading;
 
@@ -68,6 +77,7 @@ export default function LoginForm() {
     authSubmissionInProgress.current = true;
     setIsSubmitting(true);
     setError("");
+    setSuccessMessage("");
 
     try {
       const response = await fetch("/api/auth/login", {
@@ -149,6 +159,15 @@ export default function LoginForm() {
       </div>
 
       <form className="space-y-4" noValidate onSubmit={handleSubmit}>
+        {successMessage && (
+          <p
+            className="rounded-md border border-success/30 bg-success-soft px-3 py-2 text-sm text-success"
+            role="status"
+          >
+            {successMessage}
+          </p>
+        )}
+
         <Input
           className="space-y-1.5"
           disabled={isBusy}

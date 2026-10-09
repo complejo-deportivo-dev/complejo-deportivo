@@ -9,6 +9,7 @@ export default function Layout({ children }: { children: ReactNode }) {
   const isRegisterPage = pathname === "/register";
   const isVerifyEmailPage = pathname === "/verify-email";
   const isForgotPasswordPage = pathname === "/forgot-password";
+  const isUpdatePasswordPage = pathname === "/update-password";
 
   return (
     <AuthLayout
@@ -19,7 +20,9 @@ export default function Layout({ children }: { children: ReactNode }) {
             ? "Confirma tu correo electrónico."
             : isForgotPasswordPage
               ? "Recupera tu contraseña"
-              : "Inicia sesión"
+              : isUpdatePasswordPage
+                ? "Nueva contraseña"
+                : "Inicia sesión"
       }
       subtitle={
         isRegisterPage
@@ -28,7 +31,9 @@ export default function Layout({ children }: { children: ReactNode }) {
             ? "Revisa tu bandeja de entrada para activar tu cuenta."
             : isForgotPasswordPage
               ? "Te enviaremos un enlace para restablecerla"
-              : "Accede a tu cuenta para reservar."
+              : isUpdatePasswordPage
+                ? "Elige una contraseña segura"
+                : "Accede a tu cuenta para reservar."
       }
       reservation={null}
     >

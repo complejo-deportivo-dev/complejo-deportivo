@@ -1,5 +1,11 @@
 import LoginForm from "@/features/auth/components/LoginForm";
 
-export default function LoginPage() {
-  return <LoginForm />;
+interface LoginPageProps {
+  searchParams: Promise<{ passwordUpdated?: string }>;
+}
+
+export default async function LoginPage({ searchParams }: LoginPageProps) {
+  const params = await searchParams;
+
+  return <LoginForm passwordUpdated={params.passwordUpdated === "1"} />;
 }
