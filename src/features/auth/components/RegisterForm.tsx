@@ -217,26 +217,7 @@ export default function RegisterForm() {
         Crear cuenta
       </h2>
 
-      <Button
-        className="w-full !rounded-full !border-border !bg-surface-elevated !text-text-primary hover:!bg-surface"
-        disabled={isBusy}
-        loading={isGoogleLoading}
-        onClick={handleGoogleRegister}
-        variant="secondary"
-      >
-        <GoogleIcon />
-        Continuar con Google
-      </Button>
-
-      <div
-        aria-label="o"
-        className="my-6 flex items-center gap-3 text-xs text-text-secondary"
-        role="separator"
-      >
-        <span className="h-px flex-1 bg-border" />
-        <span aria-hidden="true">o</span>
-        <span className="h-px flex-1 bg-border" />
-      </div>
+       
 
       <form className="space-y-4" noValidate onSubmit={handleSubmit}>
         <Input
