@@ -250,7 +250,7 @@ export default function LoginForm() {
         role="separator"
       >
         <span className="h-px flex-1 bg-border" />
-        <span aria-hidden="true">o continúa con</span>
+        <span aria-hidden="true">O</span>
         <span className="h-px flex-1 bg-border" />
       </div>
 
