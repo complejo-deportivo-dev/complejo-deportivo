@@ -138,7 +138,7 @@ export default function RegisterForm() {
       });
 
       if (response.status === 201) {
-        router.push("/verify-email");
+        router.push(`/verify-email?email=${encodeURIComponent(validation.data.email)}`);
         return;
       }
 

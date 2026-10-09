@@ -17,23 +17,23 @@ export default function Layout({ children }: { children: ReactNode }) {
         isRegisterPage
           ? "Crea tu cuenta y empieza a reservar."
           : isVerifyEmailPage
-            ? "Confirma tu correo electrónico."
+            ? "Revisa tu correo"
             : isForgotPasswordPage
               ? "Recupera tu contraseña"
               : isUpdatePasswordPage
                 ? "Nueva contraseña"
-                : "Inicia sesión"
+                : "Tu complejo deportivo, a un clic."
       }
       subtitle={
         isRegisterPage
           ? "Canchas, piscinas, zonas húmedas y gimnasio, todo en un solo lugar."
           : isVerifyEmailPage
-            ? "Revisa tu bandeja de entrada para activar tu cuenta."
+            ? "Te enviamos un enlace para verificar tu cuenta."
             : isForgotPasswordPage
               ? "Te enviaremos un enlace para restablecerla"
               : isUpdatePasswordPage
                 ? "Elige una contraseña segura"
-                : "Accede a tu cuenta para reservar."
+                : "Reserva canchas, piscinas, zonas húmedas y gimnasio en segundos."
       }
       reservation={null}
     >

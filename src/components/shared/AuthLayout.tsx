@@ -201,7 +201,7 @@ export default function AuthLayout({
             )}
           </div>
 
-          <div className="shrink-0">
+          <div className="shrink-0 ">
             <div className="grid grid-cols-3 gap-3">
               {features.map((f, i) => (
                 <FeatureCard
