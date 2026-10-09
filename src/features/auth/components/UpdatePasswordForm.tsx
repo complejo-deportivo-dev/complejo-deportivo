@@ -105,16 +105,18 @@ export default function UpdatePasswordForm({
   return (
     <Card
       as="section"
-      padding="none"
-      variant="flat"
-      className="w-full !rounded-none !bg-transparent !shadow-none !backdrop-blur-none"
+      padding="lg"
+      variant="default"
+      className="w-full max-w-[720px] rounded-[28px] border border-white/10 bg-[#1d2a38]/90 shadow-[0_30px_80px_-40px_rgba(15,23,42,0.95)] backdrop-blur-xl"
     >
-      <h2 className="mb-2 font-heading text-h2 font-bold leading-tight text-text-primary">
-        Nueva contraseña
-      </h2>
-      <p className="mb-6 text-sm text-text-secondary">
-        Elige una contraseña segura
-      </p>
+      <div className="mb-6">
+        <h2 className="font-heading text-3xl font-bold leading-tight text-text-primary">
+          Nueva contraseña
+        </h2>
+        <p className="mt-1 text-sm text-text-secondary">
+          Elige una contraseña segura para continuar.
+        </p>
+      </div>
 
       <form className="space-y-4" noValidate onSubmit={handleSubmit}>
         <Input
