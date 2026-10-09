@@ -4,7 +4,7 @@ import type React from "react";
 
 type CardVariant = "default" | "highlighted" | "flat";
 type CardPadding = "none" | "sm" | "md" | "lg";
-type CardElement = "div" | "section" | "article";
+type CardElement = "div" | "section" | "article" | "ul";
 
 interface CardProps {
   children: React.ReactNode;
