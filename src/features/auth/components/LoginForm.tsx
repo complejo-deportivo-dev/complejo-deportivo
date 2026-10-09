@@ -3,7 +3,7 @@
 import { useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { LockKeyhole, Mail } from "lucide-react";
+import { ArrowRight, LockKeyhole, Mail } from "lucide-react";
 import { z } from "zod";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
@@ -135,37 +135,17 @@ export default function LoginForm() {
   return (
     <Card
       as="section"
-      className="mx-auto w-full max-w-[500px] border-white/10 bg-surface-elevated p-6 shadow-2xl sm:p-8"
       padding="none"
+      variant="flat"
+      className="w-full !rounded-none !bg-transparent !shadow-none !backdrop-blur-none"
     >
-      <div className="mb-5">
-        <h2 className="font-heading text-2xl font-bold leading-tight text-text-primary">
-          Iniciar sesión
+      <div className="mb-6">
+        <h2 className="font-heading text-3xl font-bold leading-tight text-text-primary">
+          Bienvenido de vuelta
         </h2>
-        <p className="mt-1 text-xs text-text-secondary">
-          Ingresa con tu correo y contraseña.
+        <p className="mt-1 text-sm text-text-secondary">
+          Ingresa tus datos para continuar con tus reservas.
         </p>
-      </div>
-
-      <Button
-        className="h-10 w-full border-white/10 bg-white/5 text-sm text-text-primary hover:bg-white/10"
-        disabled={isBusy}
-        loading={isGoogleLoading}
-        onClick={handleGoogleLogin}
-        variant="secondary"
-      >
-        <GoogleIcon />
-        Continuar con Google
-      </Button>
-
-      <div
-        aria-label="o"
-        className="my-5 flex items-center gap-3 text-xs text-text-disabled"
-        role="separator"
-      >
-        <span className="h-px flex-1 bg-border" />
-        <span aria-hidden="true">o</span>
-        <span className="h-px flex-1 bg-border" />
       </div>
 
       <form className="space-y-4" noValidate onSubmit={handleSubmit}>
@@ -191,33 +171,46 @@ export default function LoginForm() {
             setError("");
           }}
           placeholder="tu@correo.com"
-          required
           type="email"
           value={email}
         />
 
-        <Input
-          className="space-y-1.5"
-          disabled={isBusy}
-          error={fieldErrors.password}
-          icon={<LockKeyhole />}
-          label="Contraseña"
-          name="password"
-          onChange={(event) => {
-            const value = event.target.value;
-            setPassword(value);
-            if (value) {
-              setFieldErrors((current) => ({ ...current, password: "" }));
-            }
-            setError("");
-          }}
-          placeholder="••••••••"
-          required
-          type="password"
-          value={password}
-        />
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between gap-3">
+            <label
+              className="block text-sm font-medium text-text-primary"
+              htmlFor="login-password"
+            >
+              Contraseña
+            </label>
+            <Link
+              className="text-xs font-medium text-primary transition-colors hover:text-primary-hover"
+              href="/forgot-password"
+            >
+              ¿Olvidaste tu contraseña?
+            </Link>
+          </div>
+          <Input
+            disabled={isBusy}
+            error={fieldErrors.password}
+            icon={<LockKeyhole />}
+            id="login-password"
+            name="password"
+            onChange={(event) => {
+              const value = event.target.value;
+              setPassword(value);
+              if (value) {
+                setFieldErrors((current) => ({ ...current, password: "" }));
+              }
+              setError("");
+            }}
+            placeholder="••••••••"
+            type="password"
+            value={password}
+          />
+        </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-sm">
           <label className="inline-flex cursor-pointer items-center gap-1.5 text-text-secondary">
             <input
               checked={rememberMe}
@@ -226,14 +219,8 @@ export default function LoginForm() {
               onChange={(event) => setRememberMe(event.target.checked)}
               type="checkbox"
             />
-            Recordarme
+            Mantener la sesión iniciada
           </label>
-          <Link
-            className="text-text-primary underline decoration-text-disabled underline-offset-2 transition-colors hover:text-primary"
-            href="/forgot-password"
-          >
-            ¿Olvidaste tu contraseña?
-          </Link>
         </div>
 
         {error && (
@@ -246,42 +233,48 @@ export default function LoginForm() {
         )}
 
         <Button
-          className="w-full"
+          className="w-full !rounded-full"
           disabled={isBusy}
           loading={isSubmitting}
-          size="lg"
+          size="md"
           type="submit"
         >
           Iniciar sesión
+          <ArrowRight aria-hidden="true" className="h-4 w-4" />
         </Button>
       </form>
 
-      <p className="mt-4 rounded-md border border-secondary/40 bg-secondary/10 py-2.5 text-center text-sm text-text-secondary">
+      <div
+        aria-label="o continúa con"
+        className="my-6 flex items-center gap-3 text-xs text-text-secondary"
+        role="separator"
+      >
+        <span className="h-px flex-1 bg-border" />
+        <span aria-hidden="true">o continúa con</span>
+        <span className="h-px flex-1 bg-border" />
+      </div>
+
+      <Button
+        className="w-full !rounded-full !border-border !bg-surface-elevated !text-text-primary hover:!bg-surface"
+        disabled={isBusy}
+        loading={isGoogleLoading}
+        onClick={handleGoogleLogin}
+        variant="secondary"
+      >
+        <GoogleIcon />
+        Google
+      </Button>
+
+      <p className="mt-6 text-center text-sm text-text-secondary">
         ¿No tienes cuenta?{" "}
         <Link
-          className="font-medium text-text-primary underline decoration-secondary underline-offset-2 transition-colors hover:text-secondary"
+          className="font-semibold text-primary transition-colors hover:text-primary-hover"
           href="/register"
         >
           Regístrate
         </Link>
       </p>
 
-      <p className="mt-4 text-center text-[10px] leading-relaxed text-text-disabled">
-        Al continuar aceptas los{" "}
-        <Link
-          className="underline underline-offset-2 hover:text-text-secondary"
-          href="/terms"
-        >
-          Términos
-        </Link>{" "}
-        y la{" "}
-        <Link
-          className="underline underline-offset-2 hover:text-text-secondary"
-          href="/privacy"
-        >
-          Política de Privacidad
-        </Link>
-      </p>
     </Card>
   );
 }

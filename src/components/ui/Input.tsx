@@ -61,7 +61,7 @@ export default function Input({
         </label>
       )}
       <div
-        className={`relative flex h-11 items-center rounded-md border bg-surface px-3 transition-colors ${
+        className={`relative flex h-10 items-center rounded-full border bg-surface-elevated px-3 transition-colors ${
           error
             ? "border-error focus-within:border-error focus-within:ring-2 focus-within:ring-error-soft"
             : "border-border hover:border-primary-soft focus-within:border-primary focus-within:ring-2 focus-within:ring-primary-soft"
@@ -70,7 +70,7 @@ export default function Input({
         {icon && (
           <span
             aria-hidden="true"
-            className="absolute left-3 flex h-5 w-5 items-center justify-center text-text-secondary [&>svg]:h-5 [&>svg]:w-5"
+            className="absolute left-3 flex h-4 w-4 items-center justify-center text-text-secondary [&>svg]:h-4 [&>svg]:w-4"
           >
             {icon}
           </span>
@@ -78,9 +78,9 @@ export default function Input({
         <input
           aria-describedby={describedBy}
           aria-invalid={error ? true : undefined}
-          className={`h-full w-full bg-transparent text-text-primary outline-none placeholder:text-text-disabled ${
-            icon ? "pl-10" : ""
-          } ${isPassword ? "pr-10" : ""} ${
+          className={`h-full w-full bg-transparent text-sm text-text-primary outline-none placeholder:text-text-secondary ${
+            icon ? "pl-9" : ""
+          } ${isPassword ? "pr-9" : ""} ${
             disabled ? "cursor-not-allowed" : ""
           }`}
           disabled={disabled}
@@ -97,7 +97,7 @@ export default function Input({
             aria-label={
               showPassword ? "Ocultar contraseña" : "Mostrar contraseña"
             }
-            className="absolute right-3 flex items-center justify-center text-text-secondary hover:text-text-primary disabled:cursor-not-allowed"
+            className="absolute right-3 flex items-center justify-center text-text-secondary hover:text-text-primary disabled:cursor-not-allowed [&>svg]:h-4 [&>svg]:w-4"
             disabled={disabled}
             onClick={() => setShowPassword((visible) => !visible)}
             type="button"
