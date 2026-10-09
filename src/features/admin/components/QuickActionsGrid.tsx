@@ -2,40 +2,51 @@ import Link from "next/link";
 import { CalendarClock, LayoutGrid, Package, Users } from "lucide-react";
 
 import { CARD_CLASS } from "@/features/admin/constants";
+import type { AdminMetrics } from "@/features/admin/types";
 
-// Textos fijos sin números mientras el backend implementa conteos
-const actions = [
-  {
-    title: "Categorías",
-    description: "Categorías del complejo",
-    href: "/admin/categories",
-    icon: LayoutGrid,
-    actionText: "Gestionar \u2192",
-  },
-  {
-    title: "Servicios",
-    description: "Servicios disponibles",
-    href: "/admin/services",
-    icon: Package,
-    actionText: "Gestionar \u2192",
-  },
-  {
-    title: "Horarios / Franjas",
-    description: "Configurar franjas por servicio",
-    href: "/admin/time-slots",
-    icon: CalendarClock,
-    actionText: "Configurar \u2192",
-  },
-  {
-    title: "Empleados",
-    description: "Personal del complejo",
-    href: "/admin/employees",
-    icon: Users,
-    actionText: "Gestionar \u2192",
-  },
-];
+interface QuickActionsGridProps {
+  // Si no llegan los conteos, las tarjetas muestran un texto fijo.
+  counts?: AdminMetrics["counts"];
+}
 
-export default function QuickActionsGrid() {
+export default function QuickActionsGrid({ counts }: QuickActionsGridProps) {
+  const actions = [
+    {
+      title: "Categorías",
+      description: counts
+        ? `${counts.categories} categorías`
+        : "Categorías del complejo",
+      href: "/admin/categories",
+      icon: LayoutGrid,
+      actionText: "Gestionar \u2192",
+    },
+    {
+      title: "Servicios",
+      description: counts
+        ? `${counts.services} servicios`
+        : "Servicios disponibles",
+      href: "/admin/services",
+      icon: Package,
+      actionText: "Gestionar \u2192",
+    },
+    {
+      title: "Horarios / Franjas",
+      description: "Configurar franjas por servicio",
+      href: "/admin/time-slots",
+      icon: CalendarClock,
+      actionText: "Configurar \u2192",
+    },
+    {
+      title: "Empleados",
+      description: counts
+        ? `${counts.employees} empleados activos`
+        : "Personal del complejo",
+      href: "/admin/employees",
+      icon: Users,
+      actionText: "Gestionar \u2192",
+    },
+  ];
+
   return (
     <section>
       <div className="mb-4">

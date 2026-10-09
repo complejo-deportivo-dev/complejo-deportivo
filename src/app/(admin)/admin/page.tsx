@@ -58,7 +58,13 @@ async function fetchDashboardData(): Promise<DashboardData> {
     fetchJson<AdminAccessLog[]>("/api/admin/access-logs?limit=5"),
   ]);
 
-  return { metrics, reservations, accessLogs };
+  // El diseño aún no define `limit` en estos endpoints, así que recortamos a 5 en el
+  // frontend como protección por si el backend devuelve más registros.
+  return {
+    metrics,
+    reservations: reservations.slice(0, 5),
+    accessLogs: accessLogs.slice(0, 5),
+  };
 }
 
 export default function AdminDashboardPage() {
@@ -153,7 +159,7 @@ export default function AdminDashboardPage() {
             <ServiceOccupancyList
               services={data.metrics.service_occupancy}
             />
-            <QuickActionsGrid />
+            <QuickActionsGrid counts={data.metrics.counts} />
             <RecentReservationsTable reservations={data.reservations} />
             <RecentAccessLogsTable accessLogs={data.accessLogs} />
           </>

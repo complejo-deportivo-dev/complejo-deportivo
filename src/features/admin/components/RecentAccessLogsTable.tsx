@@ -8,7 +8,7 @@ interface RecentAccessLogsTableProps {
   accessLogs: AdminAccessLog[];
 }
 
-// Extrae solo la hora en formato HH:mm sin fecha
+// Extrae solo la hora en formato HH:mm sin convertir zona horaria
 function formatTimeOnly(timeStr: string): string {
   if (!timeStr) return "—";
   if (timeStr.includes("T")) {
@@ -25,9 +25,6 @@ function formatTimeOnly(timeStr: string): string {
 export default function RecentAccessLogsTable({
   accessLogs,
 }: RecentAccessLogsTableProps) {
-  // Mostramos máximo 5 registros como pide la rúbrica
-  const displayedLogs = accessLogs.slice(0, 5);
-
   return (
     <section className={CARD_CLASS}>
       <div className="mb-4 flex items-center justify-between">
@@ -42,7 +39,7 @@ export default function RecentAccessLogsTable({
         </Link>
       </div>
 
-      {displayedLogs.length === 0 ? (
+      {accessLogs.length === 0 ? (
         <p className="py-6 text-center text-sm text-text-secondary">
           Todavía no hay accesos registrados.
         </p>
@@ -59,19 +56,16 @@ export default function RecentAccessLogsTable({
               </tr>
             </thead>
             <tbody>
-              {displayedLogs.map((log) => (
-                <tr
-                  className="border-b border-border last:border-0"
-                  key={log.id}
-                >
+              {accessLogs.map((log) => (
+                <tr className="border-b border-border last:border-0" key={log.id}>
                   <td className="py-3 pr-4 font-medium text-text-primary">
-                    {log.personName}
+                    {log.reservation?.user?.name ?? "—"}
                   </td>
                   <td className="py-3 pr-4 text-text-secondary">
-                    {log.serviceName}
+                    {log.reservation?.service?.name ?? "—"}
                   </td>
                   <td className="py-3 pr-4 text-text-secondary">
-                    {formatTimeOnly(log.accessedAt)}
+                    {formatTimeOnly(log.scanned_at)}
                   </td>
                   <td className="py-3 pr-4">
                     <Badge
@@ -84,7 +78,7 @@ export default function RecentAccessLogsTable({
                     </Badge>
                   </td>
                   <td className="py-3 text-text-secondary">
-                    {log.employeeName || "—"}
+                    {log.employee?.name ?? "—"}
                   </td>
                 </tr>
               ))}

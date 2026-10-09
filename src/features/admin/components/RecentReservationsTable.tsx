@@ -8,12 +8,49 @@ interface RecentReservationsTableProps {
   reservations: AdminReservation[];
 }
 
+// Nombres cortos en español para mostrar la fecha sin depender de la zona horaria
+const DAY_NAMES = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
+const MONTH_NAMES = [
+  "Ene",
+  "Feb",
+  "Mar",
+  "Abr",
+  "May",
+  "Jun",
+  "Jul",
+  "Ago",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dic",
+];
+
+// Formatea "YYYY-MM-DD" como "Vie 15 Oct".
+// No usamos new Date("YYYY-MM-DD") porque eso interpreta la fecha en UTC y puede correr un día.
+function formatReservationDate(dateStr: string): string {
+  if (!dateStr) return "—";
+  const [year, month, day] = dateStr.split("-").map(Number);
+  if (!year || !month || !day) return dateStr;
+  const date = new Date(year, month - 1, day);
+  return `${DAY_NAMES[date.getDay()]} ${day} ${MONTH_NAMES[date.getMonth()]}`;
+}
+
+// Recorta "18:00:00" a "18:00"
+function formatTime(time: string): string {
+  return (time ?? "").slice(0, 5);
+}
+
+// Rango desde el inicio de la primera franja hasta el fin de la última
+function formatTimeRange(slots: AdminReservation["slots"]): string {
+  if (!slots || slots.length === 0) return "—";
+  const first = slots[0];
+  const last = slots[slots.length - 1];
+  return `${formatTime(first.time_start)} - ${formatTime(last.time_end)}`;
+}
+
 export default function RecentReservationsTable({
   reservations,
 }: RecentReservationsTableProps) {
-  // Mostramos máximo 5 registros como pide la rúbrica
-  const displayedReservations = reservations.slice(0, 5);
-
   return (
     <section className={CARD_CLASS}>
       <div className="mb-4 flex items-center justify-between">
@@ -28,7 +65,7 @@ export default function RecentReservationsTable({
         </Link>
       </div>
 
-      {displayedReservations.length === 0 ? (
+      {reservations.length === 0 ? (
         <p className="py-6 text-center text-sm text-text-secondary">
           Todavía no hay reservas.
         </p>
@@ -46,28 +83,29 @@ export default function RecentReservationsTable({
               </tr>
             </thead>
             <tbody>
-              {displayedReservations.map((reservation) => {
+              {reservations.map((reservation) => {
                 const status = RESERVATION_STATUS[reservation.status];
                 return (
                   <tr
                     className="border-b border-border last:border-0"
-                    key={reservation.id}
+                    key={reservation.reservation_id}
                   >
                     <td className="py-3 pr-4">
                       <p className="font-medium text-text-primary">
-                        {reservation.clientName}
+                        {reservation.user.name}
                       </p>
-                      {reservation.clientDocumentLast4 && (
+                      {reservation.user.document_last4 && (
                         <span className="block text-xs text-text-secondary">
-                          CC •••• {reservation.clientDocumentLast4}
+                          CC •••• {reservation.user.document_last4}
                         </span>
                       )}
                     </td>
                     <td className="py-3 pr-4 text-text-secondary">
-                      {reservation.serviceName}
+                      {reservation.service.name}
                     </td>
                     <td className="py-3 pr-4 text-text-secondary">
-                      {reservation.date} · {reservation.timeRange}
+                      {formatReservationDate(reservation.reservation_date)} ·{" "}
+                      {formatTimeRange(reservation.slots)}
                     </td>
                     <td className="py-3 pr-4">
                       <Badge size="sm" variant={status?.variant ?? "neutral"}>
