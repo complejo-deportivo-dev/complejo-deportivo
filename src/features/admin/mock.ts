@@ -213,3 +213,82 @@ export const MOCK_EMPTY_DASHBOARD_DATA: DashboardData = { // TEMP-MOCK
   reservations: [], // TEMP-MOCK
   accessLogs: [], // TEMP-MOCK
 }; // TEMP-MOCK
+
+export type CategoryMockItem = { // TEMP-MOCK
+  id: number; // TEMP-MOCK
+  name: string; // TEMP-MOCK
+  servicios_count: number; // TEMP-MOCK
+  activo: boolean; // TEMP-MOCK
+}; // TEMP-MOCK
+
+export const MOCK_CATEGORIES: CategoryMockItem[] = [ // TEMP-MOCK
+  { id: 1, name: "Canchas", servicios_count: 4, activo: true }, // TEMP-MOCK
+  { id: 2, name: "Piscinas", servicios_count: 4, activo: true }, // TEMP-MOCK
+  { id: 3, name: "Zonas húmedas", servicios_count: 2, activo: true }, // TEMP-MOCK
+  { id: 4, name: "Gimnasio", servicios_count: 1, activo: true }, // TEMP-MOCK
+]; // TEMP-MOCK
+
+let mockCategoryState: CategoryMockItem[] = [...MOCK_CATEGORIES]; // TEMP-MOCK
+
+export function getMockCategories(): CategoryMockItem[] { // TEMP-MOCK
+  const mode = process.env.NEXT_PUBLIC_USE_MOCK?.trim().toLowerCase(); // TEMP-MOCK
+
+  if (mode === "empty") { // TEMP-MOCK
+    return []; // TEMP-MOCK
+  } // TEMP-MOCK
+
+  if (mode === "error") { // TEMP-MOCK
+    throw new Error("No se pudo cargar la lista de categorías."); // TEMP-MOCK
+  } // TEMP-MOCK
+
+  return mockCategoryState.map((category) => ({ ...category })); // TEMP-MOCK
+} // TEMP-MOCK
+
+export function createMockCategory(payload: { name: string; is_active?: boolean }): CategoryMockItem { // TEMP-MOCK
+  const trimmedName = payload.name.trim(); // TEMP-MOCK
+  const nextId = mockCategoryState.length > 0 ? Math.max(...mockCategoryState.map((category) => category.id)) + 1 : 1; // TEMP-MOCK
+  const nextCategory: CategoryMockItem = { // TEMP-MOCK
+    id: nextId, // TEMP-MOCK
+    name: trimmedName, // TEMP-MOCK
+    servicios_count: 0, // TEMP-MOCK
+    activo: payload.is_active ?? true, // TEMP-MOCK
+  }; // TEMP-MOCK
+
+  mockCategoryState = [nextCategory, ...mockCategoryState]; // TEMP-MOCK
+  return { ...nextCategory }; // TEMP-MOCK
+} // TEMP-MOCK
+
+export function updateMockCategory( // TEMP-MOCK
+  id: number, // TEMP-MOCK
+  payload: { name?: string; is_active?: boolean }, // TEMP-MOCK
+): CategoryMockItem | null { // TEMP-MOCK
+  let updatedCategory: CategoryMockItem | null = null; // TEMP-MOCK
+
+  mockCategoryState = mockCategoryState.map((category) => { // TEMP-MOCK
+    if (category.id !== id) { // TEMP-MOCK
+      return category; // TEMP-MOCK
+    } // TEMP-MOCK
+
+    updatedCategory = { // TEMP-MOCK
+      ...category, // TEMP-MOCK
+      name: payload.name?.trim() || category.name, // TEMP-MOCK
+      activo: payload.is_active ?? category.activo, // TEMP-MOCK
+    }; // TEMP-MOCK
+
+    return updatedCategory; // TEMP-MOCK
+  }); // TEMP-MOCK
+
+  return updatedCategory; // TEMP-MOCK
+} // TEMP-MOCK
+
+export function toggleMockCategory(id: number): CategoryMockItem | null { // TEMP-MOCK
+  return updateMockCategory(id, { // TEMP-MOCK
+    is_active: !mockCategoryState.find((category) => category.id === id)?.activo, // TEMP-MOCK
+  }); // TEMP-MOCK
+} // TEMP-MOCK
+
+export function deleteMockCategory(id: number): boolean { // TEMP-MOCK
+  const previousLength = mockCategoryState.length; // TEMP-MOCK
+  mockCategoryState = mockCategoryState.filter((category) => category.id !== id); // TEMP-MOCK
+  return mockCategoryState.length !== previousLength; // TEMP-MOCK
+} // TEMP-MOCK

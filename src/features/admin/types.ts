@@ -69,3 +69,19 @@ export interface DashboardData {
   reservations: AdminReservation[];
   accessLogs: AdminAccessLog[];
 }
+
+export interface AdminCategory {
+  id: number;
+  name: string;
+  is_active: boolean;
+  serviceCount?: number; // TODO-BACKEND: conteo real del backend.
+  services?: { id: number; name: string }[]; // TODO-BACKEND
+}
+
+export interface AdminCategoryMockRecord {
+  id: number;
+  name: string;
+  servicios_count?: number; // TODO-BACKEND: campo real del backend para servicios asociados.
+  activo?: boolean; // TODO-BACKEND: bandera real del backend.
+  is_active?: boolean; // TODO-BACKEND: alias del frontend para compatibilidad.
+}
