@@ -1,45 +1,23 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 import { Mail } from "lucide-react";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import { createClient } from "@/lib/supabase/client";
 
-function isValidEmail(value: string) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+interface VerifyEmailNoticeProps {
+  email: string;
 }
 
-export default function VerifyEmailNotice() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-
-  const queryEmail = searchParams.get("email") ?? "";
-  const storedEmail =
-    typeof window !== "undefined"
-      ? sessionStorage.getItem("pendingVerificationEmail") ?? ""
-      : "";
-
-  const email = useMemo(() => {
-    const candidates = [queryEmail, storedEmail];
-    return candidates.find((candidate) => isValidEmail(candidate)) ?? "";
-  }, [queryEmail, storedEmail]);
-
+export default function VerifyEmailNotice({ email }: VerifyEmailNoticeProps) {
   const [isResending, setIsResending] = useState(false);
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
   const [feedback, setFeedback] = useState("");
 
-  useEffect(() => {
-    if (!email) {
-      router.replace("/login");
-    }
-  }, [email, router]);
-
   async function handleResend() {
     if (!email) {
-      router.replace("/login");
       return;
     }
 
@@ -68,16 +46,12 @@ export default function VerifyEmailNotice() {
     }
   }
 
-  if (!email) {
-    return null;
-  }
-
   return (
     <Card
       as="section"
       padding="none"
       variant="flat"
-      className="w-full !rounded-none !bg-transparent !shadow-none !backdrop-blur-none text-center"
+      className="mx-auto w-full max-w-md !rounded-none !bg-transparent !shadow-none !backdrop-blur-none text-center"
     >
       <div className="mb-6 flex justify-center">
         <div className="flex size-16 items-center justify-center rounded-full bg-primary-soft text-primary">
