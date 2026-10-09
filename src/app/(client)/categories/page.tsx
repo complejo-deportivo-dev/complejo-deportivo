@@ -49,8 +49,25 @@ export default function CategoriesPage() {
   }, []);
 
   useEffect(() => {
-    loadCategories();
-  }, [loadCategories]);
+    let active = true;
+
+    fetchData<CategoryWithStats[]>("/api/categories")
+      .then((data) => {
+        if (!active) return;
+        setCategories(Array.isArray(data) ? data : []);
+      })
+      .catch((err) => {
+        if (!active) return;
+        setError(err instanceof Error ? err.message : "Error desconocido");
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   return (
     <div className="flex min-h-screen flex-col">
