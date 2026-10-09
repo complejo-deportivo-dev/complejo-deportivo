@@ -576,3 +576,85 @@ export function deleteMockService(id: number): boolean { // TEMP-MOCK
   mockServiceState = mockServiceState.filter((service) => service.id !== id); // TEMP-MOCK
   return mockServiceState.length !== previousLength; // TEMP-MOCK
 } // TEMP-MOCK
+
+export const MOCK_TIME_SLOTS: Array<{ // TEMP-MOCK
+  id: number; // TEMP-MOCK
+  service_id: number; // TEMP-MOCK
+  start_time: string; // TEMP-MOCK
+  end_time: string; // TEMP-MOCK
+  is_active?: boolean; // TEMP-MOCK
+  active_reservations_count?: number; // TEMP-MOCK
+}> = [ // TEMP-MOCK
+  { id: 1, service_id: 1, start_time: "08:00", end_time: "09:00", is_active: true, active_reservations_count: 2 }, // TEMP-MOCK
+  { id: 2, service_id: 1, start_time: "09:00", end_time: "10:00", is_active: false, active_reservations_count: 1 }, // TEMP-MOCK
+  { id: 3, service_id: 1, start_time: "10:00", end_time: "11:00", is_active: true, active_reservations_count: 0 }, // TEMP-MOCK
+  { id: 4, service_id: 2, start_time: "07:00", end_time: "09:00", is_active: false, active_reservations_count: 3 }, // TEMP-MOCK
+  { id: 5, service_id: 2, start_time: "09:00", end_time: "11:00", is_active: true, active_reservations_count: 0 }, // TEMP-MOCK
+]; // TEMP-MOCK
+
+let mockTimeSlotState = [...MOCK_TIME_SLOTS]; // TEMP-MOCK
+
+export function getMockTimeSlots(serviceId?: number) { // TEMP-MOCK
+  const mode = process.env.NEXT_PUBLIC_USE_MOCK?.trim().toLowerCase(); // TEMP-MOCK
+
+  if (mode === "empty") { // TEMP-MOCK
+    return []; // TEMP-MOCK
+  } // TEMP-MOCK
+
+  if (mode === "error") { // TEMP-MOCK
+    throw new Error("No se pudo cargar la lista de franjas horarias."); // TEMP-MOCK
+  } // TEMP-MOCK
+
+  const timeSlots = serviceId === undefined ? mockTimeSlotState : mockTimeSlotState.filter((slot) => slot.service_id === serviceId); // TEMP-MOCK
+  return timeSlots.map((slot) => ({ ...slot })); // TEMP-MOCK
+} // TEMP-MOCK
+
+export function createMockTimeSlot(payload: { // TEMP-MOCK
+  service_id: number; // TEMP-MOCK
+  start_time: string; // TEMP-MOCK
+  end_time: string; // TEMP-MOCK
+}): (typeof MOCK_TIME_SLOTS)[number] { // TEMP-MOCK
+  const nextId = mockTimeSlotState.length > 0 ? Math.max(...mockTimeSlotState.map((slot) => slot.id)) + 1 : 1; // TEMP-MOCK
+
+  const nextSlot = { // TEMP-MOCK
+    id: nextId, // TEMP-MOCK
+    service_id: payload.service_id, // TEMP-MOCK
+    start_time: payload.start_time, // TEMP-MOCK
+    end_time: payload.end_time, // TEMP-MOCK
+    is_active: true, // TEMP-MOCK
+    active_reservations_count: 0, // TEMP-MOCK
+  }; // TEMP-MOCK
+
+  mockTimeSlotState = [nextSlot, ...mockTimeSlotState]; // TEMP-MOCK
+  return { ...nextSlot }; // TEMP-MOCK
+} // TEMP-MOCK
+
+export function updateMockTimeSlot( // TEMP-MOCK
+  id: number, // TEMP-MOCK
+  payload: Partial<(typeof MOCK_TIME_SLOTS)[number]>, // TEMP-MOCK
+): (typeof MOCK_TIME_SLOTS)[number] | null { // TEMP-MOCK
+  let updatedSlot: (typeof MOCK_TIME_SLOTS)[number] | null = null; // TEMP-MOCK
+
+  mockTimeSlotState = mockTimeSlotState.map((slot) => { // TEMP-MOCK
+    if (slot.id !== id) { // TEMP-MOCK
+      return slot; // TEMP-MOCK
+    } // TEMP-MOCK
+
+    updatedSlot = { // TEMP-MOCK
+      ...slot, // TEMP-MOCK
+      ...payload, // TEMP-MOCK
+      start_time: payload.start_time ?? slot.start_time, // TEMP-MOCK
+      end_time: payload.end_time ?? slot.end_time, // TEMP-MOCK
+    }; // TEMP-MOCK
+
+    return updatedSlot; // TEMP-MOCK
+  }); // TEMP-MOCK
+
+  return updatedSlot; // TEMP-MOCK
+} // TEMP-MOCK
+
+export function deleteMockTimeSlot(id: number): boolean { // TEMP-MOCK
+  const previousLength = mockTimeSlotState.length; // TEMP-MOCK
+  mockTimeSlotState = mockTimeSlotState.filter((slot) => slot.id !== id); // TEMP-MOCK
+  return mockTimeSlotState.length !== previousLength; // TEMP-MOCK
+} // TEMP-MOCK

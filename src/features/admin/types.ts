@@ -138,3 +138,22 @@ export interface AdminEmployeeMockRecord {
   initials?: string; // TODO-BACKEND
   access_logs_count?: number; // TODO-BACKEND
 }
+
+export interface AdminTimeSlot {
+  id: number;
+  service_id: number;
+  start_time: string;
+  end_time: string;
+  is_active?: boolean; // TODO-BACKEND: estado real del backend si aplica.
+  duration_minutes?: number; // TODO-BACKEND: se puede calcular en frontend si no viene del backend.
+  active_reservations_count?: number; // TODO-BACKEND
+}
+
+export interface AdminTimeSlotMockRecord {
+  id: number;
+  service_id: number;
+  start_time: string;
+  end_time: string;
+  is_active?: boolean; // TODO-BACKEND
+  active_reservations_count?: number; // TODO-BACKEND
+}
