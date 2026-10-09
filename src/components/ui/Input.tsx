@@ -18,6 +18,7 @@ interface InputProps {
   name?: string;
   id?: string;
   className?: string;
+  maxLength?: number;
 }
 
 export default function Input({
@@ -34,6 +35,7 @@ export default function Input({
   name,
   id,
   className = "",
+  maxLength,
 }: InputProps) {
   const generatedId = useId();
   const inputId = id ?? generatedId;
@@ -85,6 +87,7 @@ export default function Input({
           }`}
           disabled={disabled}
           id={inputId}
+          maxLength={maxLength}
           name={name}
           onChange={onChange}
           placeholder={placeholder}

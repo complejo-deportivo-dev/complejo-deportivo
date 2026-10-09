@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Header from "@/components/shared/Header";
 import ProfileForm from "@/features/auth/components/ProfileForm";
-import { createClient } from "@/lib/supabase/client";
 
 export type ProfileRole = "client" | "admin" | "employee";
 
@@ -25,41 +24,26 @@ export default function ProfilePage() {
     let ignore = false;
 
     async function loadProfile() {
-      const supabase = createClient();
-      const {
-        data: { user },
-        error: authError,
-      } = await supabase.auth.getUser();
+      try {
+        const response = await fetch("/api/users/me", { cache: "no-store" });
 
-      if (authError || !user) {
-        if (!ignore) {
-          router.replace("/login");
-        }
-        return;
-      }
-
-      const { data, error } = await supabase
-        .from("users")
-        .select("id, name, email, number_document, role")
-        .eq("id", user.id)
-        .single();
-
-      if (!ignore) {
-        if (error || !data) {
-          router.replace("/login");
+        if (!response.ok) {
+          if (!ignore) {
+            router.replace("/login");
+          }
           return;
         }
 
-        const nextProfile = {
-          id: data.id,
-          name: data.name,
-          email: data.email,
-          number_document: data.number_document,
-          role: data.role,
-        } as ProfileData;
+        const data: ProfileData = await response.json();
 
-        setProfile(nextProfile);
-        setLoading(false);
+        if (!ignore) {
+          setProfile(data);
+          setLoading(false);
+        }
+      } catch {
+        if (!ignore) {
+          router.replace("/login");
+        }
       }
     }
 
