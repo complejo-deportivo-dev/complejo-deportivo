@@ -9,12 +9,22 @@ import type {
   CreateReservationResponse,
 } from "@/types/api";
 import { formatInTimeZone } from "date-fns-tz";
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
 
 const MAX_SMALLINT_ID = 32_767;
 const TIME_ZONE = "America/Bogota";
 const RESERVATION_DURATION_MS = 10 * 60 * 1000;
+const VALID_RESERVATION_STATUSES = [
+  "pending",
+  "confirmed",
+  "failed",
+  "expired",
+  "completed",
+] as const;
+
+type ReservationStatusFilter =
+  (typeof VALID_RESERVATION_STATUSES)[number];
 
 const createReservationSchema = z
   .object({
@@ -61,9 +71,136 @@ function timeInMilliseconds(value: Date): number {
   );
 }
 
+function formatDateOnly(value: Date): string {
+  return formatInTimeZone(value, TIME_ZONE, "yyyy-MM-dd");
+}
+
+function formatTimeOnly(value: Date): string {
+  return formatInTimeZone(value, TIME_ZONE, "HH:mm");
+}
+
 function timeStringInMilliseconds(value: string): number {
   const [hours, minutes, seconds] = value.split(":").map(Number);
   return hours * 3_600_000 + minutes * 60_000 + seconds * 1_000;
+}
+
+function parseReservationStatus(
+  rawStatus: string | null
+): ReservationStatusFilter | null {
+  if (rawStatus === null) {
+    return null;
+  }
+
+  return VALID_RESERVATION_STATUSES.includes(
+    rawStatus as ReservationStatusFilter
+  )
+    ? (rawStatus as ReservationStatusFilter)
+    : null;
+}
+
+function calculateReservationAmount({
+  serviceHourPrice,
+  reservationSlots,
+  quantity,
+}: {
+  serviceHourPrice: Prisma.Decimal | number;
+  reservationSlots: Array<{
+    time_slots: { time_start: Date; time_end: Date } | null;
+  }>;
+  quantity: number;
+}): number {
+  const totalMilliseconds = reservationSlots.reduce((total, slot) => {
+    const timeSlot = slot.time_slots;
+    if (!timeSlot) {
+      return total;
+    }
+
+    return (
+      total +
+      (timeInMilliseconds(timeSlot.time_end) -
+        timeInMilliseconds(timeSlot.time_start))
+    );
+  }, 0);
+
+  const hours = totalMilliseconds / 3_600_000;
+  const price =
+    typeof serviceHourPrice === "number"
+      ? serviceHourPrice
+      : Number(serviceHourPrice);
+
+  return Number(new Prisma.Decimal(hours).mul(price).mul(quantity).toFixed(2));
+}
+
+function serializeReservation(reservation: {
+  id: number;
+  status: string | null;
+  quantity: number;
+  expires_at: Date | null;
+  reservation_slots: Array<{
+    slot_date: Date;
+    id_time_slot: number | null;
+    time_slots: {
+      time_start: Date;
+      time_end: Date;
+      services: { id: number; name: string; hour_price: Prisma.Decimal } | null;
+    } | null;
+  }>;
+  payments: { amount: Prisma.Decimal } | null;
+}) {
+  const orderedSlots = [...reservation.reservation_slots].sort(
+    (left, right) => left.slot_date.getTime() - right.slot_date.getTime()
+  );
+
+  const serviceEntry =
+    orderedSlots.find((slot) => slot.time_slots?.services)?.time_slots?.services ??
+    null;
+
+  const slots = orderedSlots
+    .map((slot) => {
+      const timeSlot = slot.time_slots;
+      if (!timeSlot || slot.id_time_slot === null) {
+        return null;
+      }
+
+      return {
+        time_slot_id: slot.id_time_slot,
+        time_start: formatTimeOnly(timeSlot.time_start),
+        time_end: formatTimeOnly(timeSlot.time_end),
+      };
+    })
+    .filter(
+      (
+        slot
+      ): slot is { time_slot_id: number; time_start: string; time_end: string } =>
+        slot !== null
+    );
+
+  const amount =
+    reservation.payments !== null && reservation.payments !== undefined
+      ? Number(reservation.payments.amount)
+      : serviceEntry
+        ? calculateReservationAmount({
+            serviceHourPrice: serviceEntry.hour_price,
+            reservationSlots: reservation.reservation_slots,
+            quantity: reservation.quantity,
+          })
+        : 0;
+
+  return {
+    reservation_id: reservation.id,
+    service: {
+      id: serviceEntry?.id ?? 0,
+      name: serviceEntry?.name ?? "",
+    },
+    reservation_date: orderedSlots[0]?.slot_date
+      ? formatDateOnly(orderedSlots[0].slot_date)
+      : null,
+    slots,
+    status: reservation.status ?? "pending",
+    quantity: reservation.quantity,
+    amount,
+    expires_at: reservation.expires_at?.toISOString() ?? null,
+  };
 }
 
 function validateConsecutiveSlots(
@@ -91,6 +228,72 @@ function reservationDateErrorMessage(validationError: string): string {
     return "No se puede reservar con más de 15 días de anticipación";
   }
   return "Datos inválidos";
+}
+
+export async function GET(request: NextRequest) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !user) {
+    return NextResponse.json<ApiError>({ error: "No autenticado" }, { status: 401 });
+  }
+
+  const profile = await prisma.public_users.findUnique({
+    where: { id: user.id },
+    select: { id: true, role: true },
+  });
+
+  if (!profile || profile.role !== "client") {
+    return NextResponse.json<ApiError>({ error: "No autorizado" }, { status: 403 });
+  }
+
+  const rawStatus = request.nextUrl.searchParams.get("status");
+  const parsedStatus = parseReservationStatus(rawStatus);
+
+  if (rawStatus !== null && parsedStatus === null) {
+    return NextResponse.json<ApiError>(
+      { error: "Estado inválido" },
+      { status: 400 }
+    );
+  }
+
+  try {
+    const reservations = await prisma.reservations.findMany({
+      where: {
+        id_user: user.id,
+        ...(parsedStatus ? { status: parsedStatus } : {}),
+      },
+      orderBy: {
+        created_at: "desc",
+      },
+      include: {
+        reservation_slots: {
+          where: { is_active: true },
+          include: {
+            time_slots: {
+              include: {
+                services: true,
+              },
+            },
+          },
+        },
+        payments: true,
+      },
+    });
+
+    return NextResponse.json<ApiResponse<ReturnType<typeof serializeReservation>[]>>({
+      data: reservations.map((reservation) => serializeReservation(reservation)),
+    });
+  } catch (error) {
+    console.error("Error al listar reservas:", error);
+    return NextResponse.json<ApiError>(
+      { error: "Error al obtener las reservas" },
+      { status: 500 }
+    );
+  }
 }
 
 export async function POST(request: Request) {
@@ -194,11 +397,7 @@ export async function POST(request: Request) {
           },
         });
 
-        if (
-          !profile ||
-          !profile.is_active ||
-          profile.role !== "client"
-        ) {
+        if (!profile || !profile.is_active || profile.role !== "client") {
           throw new ReservationRequestError("No autenticado", 401);
         }
 
