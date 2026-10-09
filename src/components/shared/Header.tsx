@@ -1,13 +1,14 @@
-'use client';
+"use client";
 
-import { useState, useRef, useEffect } from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { Menu, X, LogOut, User } from 'lucide-react';
-import Avatar from '@/components/ui/Avatar';
+import { useState, useRef, useEffect } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { Menu, X, LogOut, User } from "lucide-react";
+import Avatar from "@/components/ui/Avatar";
+import Image from "next/image";
 
 export interface HeaderProps {
-  role: 'client' | 'admin' | 'employee';
+  role: "client" | "admin" | "employee";
   userName?: string;
   userInitials?: string;
   className?: string;
@@ -19,28 +20,28 @@ interface NavItem {
 }
 
 const ROLE_NAVIGATION: Record<
-  HeaderProps['role'],
+  HeaderProps["role"],
   { homeHref: string; items: NavItem[] }
 > = {
   client: {
-    homeHref: '/',
+    homeHref: "/client",
     items: [
-      { label: 'Inicio', href: '/' },
-      { label: 'Reservas', href: '/reservations' },
-      { label: 'Perfil', href: '/profile' },
+      { label: "Inicio", href: "/client" },
+      { label: "Reservas", href: "/client/reservations" },
+      { label: "Perfil", href: "/profile" },
     ],
   },
   admin: {
-    homeHref: '/admin',
+    homeHref: "/admin",
     items: [
-      { label: 'Dashboard', href: '/admin' },
-      { label: 'Reservas', href: '/admin/reservations' },
-      { label: 'Empleados', href: '/admin/employees' },
-      { label: 'Métricas', href: '/admin/metrics' },
+      { label: "Dashboard", href: "/admin" },
+      { label: "Reservas", href: "/admin/reservations" },
+      { label: "Empleados", href: "/admin/employees" },
+      { label: "Métricas", href: "/admin/metrics" },
     ],
   },
   employee: {
-    homeHref: '/employee',
+    homeHref: "/employee",
     items: [],
   },
 };
@@ -48,7 +49,7 @@ export default function Header({
   role,
   userName,
   userInitials,
-  className = '',
+  className = "",
 }: HeaderProps) {
   const pathname = usePathname();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -59,9 +60,8 @@ export default function Header({
 
   const { homeHref, items: navItems } = ROLE_NAVIGATION[role];
   const hasNavigation = navItems.length > 0;
-  const isEmployee = role === 'employee';
+  const isEmployee = role === "employee";
 
-  // Cerrar dropdown y menú mobile al hacer click afuera o presionar Escape
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (
@@ -79,37 +79,32 @@ export default function Header({
     }
 
     function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape') {
+      if (event.key === "Escape") {
         setIsDropdownOpen(false);
         setIsMobileMenuOpen(false);
       }
     }
 
-    document.addEventListener('mousedown', handleClickOutside);
-    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleKeyDown);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
     };
   }, []);
 
-
   const isLinkActive = (href: string) => {
-    if (href === '/' || href === '/admin') {
+    if (href === "/" || href === "/admin" || href === "/client") {
       return pathname === href;
     }
     return pathname.startsWith(href);
   };
 
-  // Preparar nombre o iniciales para el componente Avatar
-  const avatarName =
-    userName ||
-    (userInitials ? userInitials.split('').join(' ') : isEmployee ? 'E' : 'U');
+  const avatarName = userName || userInitials || (isEmployee ? "E" : "U");
 
   return (
     <header className={`sticky top-6 z-40 mx-6 lg:mx-16 ${className}`}>
       <div className="relative flex h-16 items-center justify-between rounded-xl border border-border bg-surface px-4 sm:px-6 shadow-md backdrop-blur-md">
-        {/* LOGO */}
         <Link
           href={homeHref}
           onClick={() => {
@@ -118,20 +113,18 @@ export default function Header({
           }}
           className="flex items-center gap-3 transition-opacity hover:opacity-90"
         >
-          <div
-            className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary-soft text-primary font-heading font-bold text-sm select-none"
-            aria-hidden="true"
-          >
-            O
+          <div className="relative flex">
+            <Image
+              src="/brand/imagotipo-dark.svg"
+              alt="Logo de Otium"
+              width={98}
+              height={98}
+              className="object-contain"
+              priority
+            />
           </div>
-          {!isEmployee && (
-            <span className="font-heading text-lg font-bold text-text-primary tracking-tight">
-              Otium
-            </span>
-          )}
         </Link>
 
-        {/* NAVEGACIÓN DESKTOP & TABLET */}
         {hasNavigation && (
           <nav
             aria-label="Navegación principal"
@@ -145,8 +138,8 @@ export default function Header({
                   href={item.href}
                   className={`relative py-1 text-sm font-medium transition-colors ${
                     active
-                      ? 'text-primary'
-                      : 'text-text-secondary hover:text-text-primary'
+                      ? "text-primary"
+                      : "text-text-secondary hover:text-text-primary"
                   }`}
                 >
                   {item.label}
@@ -162,9 +155,7 @@ export default function Header({
           </nav>
         )}
 
-        {/* ÁREA DE USUARIO Y MOBILE TOGGLE */}
         <div className="flex items-center gap-3">
-          {/* USER DROPDOWN TRIGGER */}
           <div className="relative" ref={dropdownRef}>
             <button
               type="button"
@@ -178,14 +169,9 @@ export default function Header({
                   {userName}
                 </span>
               )}
-              <Avatar
-                size="md"
-                name={avatarName}
-                className="cursor-pointer"
-              />
+              <Avatar size="md" name={avatarName} className="cursor-pointer" />
             </button>
 
-            {/* DROPDOWN MENU */}
             {isDropdownOpen && (
               <div
                 role="menu"
@@ -193,14 +179,16 @@ export default function Header({
               >
                 {!isEmployee && userName && (
                   <div className="px-3 py-2 border-b border-border mb-1 xl:hidden">
-                    <p className="text-xs text-text-secondary">Conectado como</p>
+                    <p className="text-xs text-text-secondary">
+                      Conectado como
+                    </p>
                     <p className="text-sm font-medium text-text-primary truncate">
                       {userName}
                     </p>
                   </div>
                 )}
                 <Link
-                  href={role === 'admin' ? '/admin/profile' : '/profile'}
+                  href={role === "admin" ? "/admin/profile" : "/profile"}
                   role="menuitem"
                   onClick={() => setIsDropdownOpen(false)}
                   className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-text-primary transition-colors hover:bg-surface-elevated hover:text-primary"
@@ -224,12 +212,11 @@ export default function Header({
             )}
           </div>
 
-          {/* BOTÓN MENÚ HAMBURGUESA EN MOBILE */}
           {hasNavigation && (
             <button
               type="button"
               onClick={() => setIsMobileMenuOpen((prev) => !prev)}
-              aria-label={isMobileMenuOpen ? 'Cerrar menú' : 'Abrir menú'}
+              aria-label={isMobileMenuOpen ? "Cerrar menú" : "Abrir menú"}
               aria-expanded={isMobileMenuOpen}
               className="flex md:hidden items-center justify-center rounded-lg p-2 text-text-secondary transition-colors hover:bg-surface-elevated hover:text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/50"
             >
@@ -242,7 +229,6 @@ export default function Header({
           )}
         </div>
 
-        {/* MENÚ MÓVIL (COLLAPSIBLE PANEL) */}
         {hasNavigation && isMobileMenuOpen && (
           <div
             ref={mobileMenuRef}
@@ -257,8 +243,8 @@ export default function Header({
                   onClick={() => setIsMobileMenuOpen(false)}
                   className={`flex items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
                     active
-                      ? 'bg-primary-soft text-primary font-semibold'
-                      : 'text-text-secondary hover:bg-surface-elevated hover:text-text-primary'
+                      ? "bg-primary-soft text-primary font-semibold"
+                      : "text-text-secondary hover:bg-surface-elevated hover:text-text-primary"
                   }`}
                 >
                   <span>{item.label}</span>
