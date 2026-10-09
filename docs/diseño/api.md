@@ -268,9 +268,9 @@ Las reservas `failed`, `expired` y `completed`, así como los registros de `rese
 
 ### 3.3 Reservas (cliente)
 
-Tablas: `reservations`, `reservations_slots`, `time_slots`, `services`, `users`.
+Tablas: `reservations`, `reservation_slots`, `time_slots`, `services`, `users`.
 
-Una reserva no guarda el servicio directamente. Se llega al servicio a través de sus franjas: `reservations` → `reservations_slots` → `time_slots` → `services`. Por eso una reserva puede tener varias franjas seguidas, y todas tienen que ser del mismo servicio.
+Una reserva no guarda el servicio directamente. Se llega al servicio a través de sus franjas: `reservations` → `reservation_slots` → `time_slots` → `services`. Por eso una reserva puede tener varias franjas seguidas, y todas tienen que ser del mismo servicio.
 
 #### POST /api/reservations
 
@@ -280,7 +280,7 @@ Una reserva no guarda el servicio directamente. Se llega al servicio a través d
   - `time_slot_ids` es una lista con una o más franjas. Para franjas seguidas se mandan varias (por ejemplo 5-6pm y 6-7pm).
   - `reservation_date` es la fecha de la reserva (`YYYY-MM-DD`).
   - `quantity` solo se manda cuando el servicio es `individual`.
-  - `number_document` es la cédula. Solo es obligatoria si el usuario todavía no la tiene guardada en su perfil. Se guarda en `users.number_document` **(estimación)**.
+  - `number_document` es la cédula. Solo es obligatoria si el usuario todavía no la tiene guardada en su perfil. Se guarda en `users.number_document`.
 - **Respuesta OK:** `201` `{ data: { reservation_id, expires_at, amount } }`
 - **Errores:**
   - `400` "Debes indicar tu cédula para reservar"
@@ -301,10 +301,11 @@ Una reserva no guarda el servicio directamente. Se llega al servicio a través d
   - Todas las franjas están libres para esa fecha. Si dos clientes piden la misma al mismo tiempo, solo uno la consigue y el otro recibe "Franja no disponible".
   - El cliente no tiene otra reserva activa que se cruce en horario ese día. Puede tener las que quiera en horarios distintos, sin límite. (Ojo con la excepción de la cancha, está en los pendientes.)
   - Si el servicio es `individual`: `quantity` es obligatorio, un número entero mayor que 0 y no puede pasar del cupo que queda
-  - Si el servicio es `group`: se ignora `quantity` y se guarda 1 **(estimación)**
+  - Si el servicio es `group`: se ignora `quantity` y se guarda 1.
   - `number_document` tiene máximo 20 caracteres
-- **Qué se guarda:** una fila en `reservations` con `status = pending` y `expires_at = ahora + 10 minutos` (lo calcula el servidor), y una fila en `reservations_slots` por cada franja.
-- **Cómo se calcula `amount` (estimación):** `hour_price` × horas totales de las franjas, y se multiplica por `quantity` si el servicio es `individual`. La tabla `reservations` no guarda el monto. Se calcula aquí y se guarda en `payments.amount` al crear el pago.
+- **Concurrencia:** la validación de disponibilidad, el conflicto del cliente y la creación se realizan dentro de una transacción. Se toman bloqueos advisory por fecha/franja y por cliente/fecha para serializar intentos que compiten por capacidad o se solapan.
+- **Qué se guarda:** una fila en `reservations` con `status = pending` y `expires_at = ahora + 10 minutos` (lo calcula el servidor), y una fila en `reservation_slots` por cada franja.
+- **Cómo se calcula `amount`:** `hour_price` × horas totales de las franjas, y se multiplica por `quantity` si el servicio es `individual`. La tabla `reservations` no guarda el monto. Se calcula aquí y se guarda en `payments.amount` al crear el pago.
 
 #### GET /api/reservations
 
@@ -633,7 +634,7 @@ Las franjas son horas del día que se repiten todos los días. No llevan fecha.
   - `404` "Franja no encontrada"
   - `409` "La franja tiene reservas asociadas"
   - `401`, `403`
-- **Validaciones:** La franja no aparece en `reservations_slots`. Con historial no se puede borrar, porque el MER no tiene forma de desactivarla.
+- **Validaciones:** La franja no aparece en `reservation_slots`. Con historial no se puede borrar, porque el MER no tiene forma de desactivarla.
 
 #### Empleados
 
@@ -791,11 +792,11 @@ Tablas que usa cada módulo:
 | Módulo        | Tablas                                                                                                           |
 | ------------- | ---------------------------------------------------------------------------------------------------------------- |
 | Autenticación | `users` (más Supabase Auth)                                                                                      |
-| Servicios     | `categories`, `services`, `time_slots`, `reservations_slots`, `reservations`                                     |
-| Reservas      | `reservations`, `reservations_slots`, `time_slots`, `services`, `users`                                          |
+| Servicios     | `categories`, `services`, `time_slots`, `reservation_slots`, `reservations`                                     |
+| Reservas      | `reservations`, `reservation_slots`, `time_slots`, `services`, `users`                                          |
 | Pagos         | `payments`, `reservations`, `qr_codes`                                                                           |
 | QR y acceso   | `qr_codes`, `access_logs`, `reservations`, `users`                                                               |
-| Admin         | `categories`, `services`, `time_slots`, `users`, `reservations`, `reservations_slots`, `access_logs`, `payments` |
+| Admin         | `categories`, `services`, `time_slots`, `users`, `reservations`, `reservation_slots`, `access_logs`, `payments` |
 | Usuarios      | `users`                                                                                                          |
 
 Campos del MER que usa la API:
@@ -807,7 +808,7 @@ Campos del MER que usa la API:
 | `services`           | `id`, `name` (50), `id_category`, `capacity`, `max_companions`, `qr_type` (`group`, `individual`), `is_active`, `hour_price` (8,2), `created_at` |
 | `time_slots`         | `id`, `id_service`, `time_start`, `time_end`, `created_at`                                                                                       |
 | `reservations`       | `id`, `id_user`, `quantity`, `reservation_date`, `expires_at`, `status` (`pending`, `confirmed`, `failed`, `expired`, `completed`), `created_at` |
-| `reservations_slots` | `id`, `id_time_slot`, `id_reservation`, `created_at`                                                                                             |
+| `reservation_slots`  | `id`, `id_time_slot`, `id_reservation`, `slot_date`, `is_active`, `created_at`                                                                    |
 | `payments`           | `id`, `id_reservation`, `stripe_payment_intent_id` (único), `status` (`pending`, `succeeded`, `failed`), `amount` (10,2), `created_at`           |
 | `qr_codes`           | `id`, `id_reservation`, `token`, `used_at`, `used_by` (UUID del empleado), `created_at`                                                          |
 | `access_logs`        | `id`, `id_reservation`, `id_employee`, `id_QR_code`, `result` (`granted`, `denied`), `scanned_at`                                                |
@@ -849,7 +850,7 @@ Puntos donde este documento asume algo o depende de otra área. Se llevan a `#bl
 1. **Reserva a nombre de otra persona (Dev 1 y Dev 2).** El cliente dijo que sí se puede, pero `reservations` solo guarda `id_user`, sin nombre ni cédula del titular. Con el MER actual, la reserva siempre queda a nombre del usuario que la hace. Si se quiere soportar, hay que agregar campos de titular (por ejemplo nombre y cédula) en `reservations`, y `POST /api/reservations` los recibiría en el body.
 2. **Cédula al registrarse o al reservar (Dev 1 y Dev 4).** La cédula está en `users.number_document`. Aquí se pide al reservar si falta, porque con Google OAuth no llega. Falta confirmar si debe ser obligatoria desde el registro.
 3. **Excepción de la cancha en reservas simultáneas (Dev 2 y Tech Lead).** El cliente dice que no se permiten dos reservas al mismo horario, salvo la cancha de fútbol, pero lo que explica es solo lo del QR de grupo. No queda claro si un cliente puede reservar una cancha y otro servicio a la misma hora. Aquí se asume que no.
-4. **Reglas de franjas seguidas (Dev 2).** El MER resuelve que una reserva puede tener varias franjas (`reservations_slots`). Aquí se asume que deben ser del mismo servicio, del mismo día y sin huecos. Falta confirmar si hay un máximo de franjas por reserva.
+4. **Reglas de franjas seguidas (Dev 2).** El MER resuelve que una reserva puede tener varias franjas (`reservation_slots`). Aquí se asume que deben ser del mismo servicio, del mismo día y sin huecos. Falta confirmar si hay un máximo de franjas por reserva.
 5. **Cómo se calcula el monto (Dev 2, Tech Lead y cliente).** El MER solo tiene `hour_price`. Aquí se asume `hour_price` × horas, multiplicado por `quantity` en servicios `individual`. Falta confirmar si el precio es por persona o por reserva, y qué pasa si una franja no dura una hora.
 6. **Acompañantes (Dev 1 y Dev 2).** `max_companions` existe, pero `reservations` no tiene dónde guardar cuántos acompañantes vienen. Si solo es un límite que revisa el empleado, no hace falta nada. Si se quiere registrar el número, falta una columna.
 7. **Canchas y cupo (Dev 2).** El cliente habló de la cancha de fútbol con QR de grupo. Falta confirmar si la cancha de polideportivo también va con QR de grupo. Aquí se asume que una reserva `group` ocupa la franja completa.
