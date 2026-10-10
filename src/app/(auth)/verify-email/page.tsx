@@ -1,21 +1,21 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo } from "react";
+import { Suspense, useEffect, useMemo } from "react";
 import VerifyEmailNotice from "@/features/auth/components/VerifyEmailNotice";
 
 function isValidEmail(value: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 }
 
-export default function VerifyEmailPage() {
+function VerifyEmailContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
   const queryEmail = searchParams.get("email") ?? "";
   const storedEmail =
     typeof window !== "undefined"
-      ? sessionStorage.getItem("pendingVerificationEmail") ?? ""
+      ? (sessionStorage.getItem("pendingVerificationEmail") ?? "")
       : "";
 
   const email = useMemo(() => {
@@ -34,4 +34,12 @@ export default function VerifyEmailPage() {
   }
 
   return <VerifyEmailNotice email={email} />;
+}
+
+export default function VerifyEmailPage() {
+  return (
+    <Suspense fallback={null}>
+      <VerifyEmailContent />
+    </Suspense>
+  );
 }
