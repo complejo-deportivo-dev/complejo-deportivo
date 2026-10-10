@@ -183,7 +183,7 @@ export default function ReservationList() {
 
         <div
           aria-label="Filtrar reservas"
-          className="mb-6 flex w-full gap-1 overflow-x-auto rounded-lg border border-border bg-surface p-1 sm:w-fit"
+          className="scrollbar-hide mb-6 flex w-full gap-1 overflow-x-auto rounded-lg border border-border bg-surface p-1 sm:w-fit"
           role="group"
         >
           {FILTERS.map(({ id, label, icon: Icon }) => (
