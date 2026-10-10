@@ -17,17 +17,20 @@ export interface AuthReservationCard {
 
 interface AuthLayoutProps {
   children: ReactNode;
-  title?: string;
-  subtitle?: string;
+  title?: ReactNode;
+  subtitle?: ReactNode;
   features?: AuthFeature[];
   reservation?: AuthReservationCard | null;
   footer?: string;
 }
 
 const DEFAULT_FEATURES: AuthFeature[] = [
-  { icon: <Zap size={20} />, text: "Reserva en segundos" },
-  { icon: <QrCode size={20} />, text: "Ingreso con QR" },
-  { icon: <CheckCircle size={20} />, text: "Sin filas" },
+  { icon: <Zap size={20} className="text-primary" />, text: "Reserva en segundos" },
+  { icon: <QrCode size={20} className="text-white" />, text: "Ingreso con QR" },
+  {
+    icon: <CheckCircle size={20} className="text-secondary" />,
+    text: "Sin filas",
+  },
 ];
 
 const DEFAULT_RESERVATION: AuthReservationCard = {
@@ -57,11 +60,10 @@ export default function AuthLayout({
   footer = "© 2025 Otium",
 }: AuthLayoutProps) {
   return (
-    <div className="flex h-dvh w-full overflow-hidden">
+    <div className="relative isolate flex h-dvh w-full min-w-0 overflow-hidden">
       <style>{`
         @keyframes otium-float-a { 0%,100%{transform:translate3d(0,0,0) scale(1)} 50%{transform:translate3d(60px,40px,0) scale(1.15)} }
         @keyframes otium-float-b { 0%,100%{transform:translate3d(0,0,0) scale(1)} 50%{transform:translate3d(-50px,-60px,0) scale(1.2)} }
-        @keyframes otium-float-c { 0%,100%{transform:translate3d(0,0,0)} 50%{transform:translate3d(40px,-30px,0)} }
         @keyframes otium-bob { 0%,100%{transform:translateY(0) rotate(var(--r,0deg))} 50%{transform:translateY(-10px) rotate(var(--r,0deg))} }
         @keyframes otium-rise { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
         @keyframes otium-shine { from{transform:translateX(-120%) skewX(-20deg)} to{transform:translateX(260%) skewX(-20deg)} }
@@ -73,71 +75,45 @@ export default function AuthLayout({
         }
       `}</style>
 
-      <div className="relative isolate hidden h-full overflow-hidden bg-[#06121a] p-6 text-white md:flex md:w-[35%] lg:w-[50%] lg:p-10">
+      <div className="relative isolate hidden h-full overflow-hidden bg-background p-6 text-white md:flex md:w-1/2 md:p-8 lg:p-10">
         <div
           aria-hidden="true"
-          className="absolute inset-0 z-0 overflow-hidden"
-        >
-          <div
-            className="otium-anim absolute -top-24 -left-24 h-[420px] w-[420px] rounded-full bg-emerald-400/50 blur-[90px]"
-            style={{ animation: "otium-float-a 14s ease-in-out infinite" }}
-          />
-          <div
-            className="otium-anim absolute top-1/3 -right-32 h-[460px] w-[460px] rounded-full bg-cyan-500/45 blur-[100px]"
-            style={{ animation: "otium-float-b 18s ease-in-out infinite" }}
-          />
-          <div
-            className="otium-anim absolute -bottom-32 left-1/4 h-[380px] w-[380px] rounded-full bg-violet-500/40 blur-[100px]"
-            style={{ animation: "otium-float-c 16s ease-in-out infinite" }}
-          />
-        </div>
-
-        {/* 2. Viñeta */}
-        <div className="absolute inset-0 z-0 bg-gradient-to-b from-black/30 via-transparent to-black/60" />
-
-        {/* 3. Grid técnico */}
+          className="otium-anim absolute -left-1/4 -top-1/4 z-0 h-3/4 w-3/4 rounded-full bg-success/30 blur-[100px]"
+          style={{ animation: "otium-float-a 14s ease-in-out infinite" }}
+        />
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 z-0 opacity-[0.18]"
+          className="otium-anim absolute -bottom-1/4 right-0 z-0 h-3/4 w-3/4 rounded-full bg-primary/30 blur-[110px]"
+          style={{ animation: "otium-float-b 18s ease-in-out infinite" }}
+        />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 z-0 opacity-10"
           style={{
             backgroundImage:
               "linear-gradient(to right, rgba(255,255,255,.5) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,.5) 1px, transparent 1px)",
             backgroundSize: "44px 44px",
             maskImage:
-              "radial-gradient(ellipse 80% 70% at 30% 40%, black 30%, transparent 75%)",
-            WebkitMaskImage:
-              "radial-gradient(ellipse 80% 70% at 30% 40%, black 30%, transparent 75%)",
+              "linear-gradient(to right, #000 0%, #000 calc(100% - 44px), transparent 100%)",
           }}
         />
-
-        {/* 4. Ruido */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 z-0 opacity-[0.15] mix-blend-overlay"
-          style={{
-            backgroundImage: `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='noise'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23noise)'/></svg>")`,
-            backgroundRepeat: "repeat",
-            backgroundSize: "200px 200px",
-          }}
+          className="pointer-events-none absolute inset-y-0 right-0 z-[1] hidden w-[40%] bg-gradient-to-r from-transparent via-background/70 to-background md:block"
         />
 
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-y-0 right-0 z-[5] w-32 bg-gradient-to-r from-transparent via-background/70 to-background lg:w-56"
-        />
-
-        <div className="relative z-10 flex h-full w-full flex-col gap-4 md:pr-6 lg:pr-16">
+        <div className="relative z-10 flex h-full w-full flex-col gap-4">
           <div className="shrink-0">
             <Image
               src="/brand/imagotipo-dark.svg"
               alt="Otium"
               width={160}
               height={40}
-              className="otium-rise mb-8 h-9 w-auto lg:mb-10"
+              className="otium-rise mb-8 h-8 w-auto"
               priority
             />
             <h1
-              className="otium-rise mb-3 bg-gradient-to-br from-white via-white to-emerald-200 bg-clip-text font-heading text-3xl font-bold leading-tight text-transparent lg:text-4xl"
+              className="otium-rise mb-3 font-heading text-3xl font-bold leading-tight text-text-primary lg:text-4xl"
               style={{ animationDelay: ".1s" }}
             >
               {title}
@@ -225,7 +201,7 @@ export default function AuthLayout({
             )}
           </div>
 
-          <div className="shrink-0">
+          <div className="shrink-0 ">
             <div className="grid grid-cols-3 gap-3">
               {features.map((f, i) => (
                 <FeatureCard
@@ -242,8 +218,10 @@ export default function AuthLayout({
         </div>
       </div>
 
-      <div className="flex h-full flex-1 items-center justify-center overflow-y-auto bg-background p-6">
-        <div className="m-auto w-full max-w-md">{children}</div>
+      <div className="flex h-full w-full min-w-0 flex-1 items-center justify-center overflow-y-auto bg-background p-6 md:w-1/2">
+        <div className="m-auto w-full min-w-0 max-w-md">
+          {children}
+        </div>
       </div>
     </div>
   );
