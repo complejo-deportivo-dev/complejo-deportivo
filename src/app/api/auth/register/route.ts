@@ -32,8 +32,9 @@ export async function POST(req: Request) {
       },
       { status: 201 }
     );
-  } catch (error: any) {
-    if (error.message === "EMAIL_ALREADY_REGISTERED") {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "";
+    if (message === "EMAIL_ALREADY_REGISTERED") {
       return NextResponse.json(
         { error: "El correo ya está registrado" },
         { status: 400 }

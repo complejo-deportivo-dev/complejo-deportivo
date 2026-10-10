@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
       { data: null },
       { status: 200 }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("[ResetPasswordRoute] Error:", error);
     return NextResponse.json(
       { error: "Error interno del servidor" },

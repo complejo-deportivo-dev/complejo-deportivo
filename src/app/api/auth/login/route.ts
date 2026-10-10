@@ -36,8 +36,9 @@ export async function POST(req: Request) {
       },
       { status: 200 }
     );
-  } catch (error: any) {
-    if (error.message === "INVALID_CREDENTIALS" || error.message === "USER_NOT_FOUND_IN_PUBLIC") {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "";
+    if (message === "INVALID_CREDENTIALS" || message === "USER_NOT_FOUND_IN_PUBLIC") {
       return NextResponse.json(
         { error: "Correo o contraseÃ±a incorrectos" },
         { status: 401 }
