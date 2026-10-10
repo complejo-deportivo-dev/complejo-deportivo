@@ -15,7 +15,7 @@ export async function POST(req: Request) {
 
     if (!result.success) {
       return NextResponse.json(
-        { error: "Correo y contraseña son obligatorios" },
+        { error: "Correo y contraseÃ±a son obligatorios" },
         { status: 400 }
       );
     }
@@ -37,9 +37,9 @@ export async function POST(req: Request) {
       { status: 200 }
     );
   } catch (error: any) {
-    if (error.message === "INVALID_CREDENTIALS") {
+    if (error.message === "INVALID_CREDENTIALS" || error.message === "USER_NOT_FOUND_IN_PUBLIC") {
       return NextResponse.json(
-        { error: "Correo o contraseña incorrectos" },
+        { error: "Correo o contraseÃ±a incorrectos" },
         { status: 401 }
       );
     }

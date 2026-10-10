@@ -37,7 +37,17 @@ Authentication failed against the database server, the provided database credent
 
 ```
 
-El endpoint de login todavía no funciona. El log sigue mostrando el mismo error: Authentication failed against the database server, the provided database credentials for postgres are not valid.
+## Descripción de Errores Encontrados
 
-Esto significa que, aunque actualizamos el archivo .env.local, el servidor de desarrollo sigue utilizando las credenciales antiguas.
+*   **P1000 (AuthenticationFailed):** Indica que el servidor de base de datos rechazó las credenciales (usuario o contraseña) proporcionadas en la cadena de conexión (`DATABASE_URL`).
+*   **P1011 (TlsConnectionError - self-signed certificate):** Ocurre cuando el cliente de base de datos (Prisma) no puede verificar la cadena de confianza del certificado SSL presentado por el servidor (Supabase), comúnmente en entornos de desarrollo.
+*   **E394 (Module not found - @/services/auth):** Error de compilación en Next.js por una configuración incorrecta en `tsconfig.json` que impedía al empaquetador resolver los alias de rutas.
 
+## Intentos de solución realizados
+
+1. **Corrección de credenciales y puerto:** Se actualizó el archivo `.env` para usar el Transaction Pooler de Supabase (puerto 6543) y se intentaron múltiples configuraciones de usuario/contraseña, ya que el error `P1000` persistía.
+2. **Ajustes de SSL:** Se probaron configuraciones como `sslmode=require`, `sslmode=no-verify`, `sslmode=disable` y `sslmode=verify-full` en la `DATABASE_URL` para mitigar el error `P1011` y la validación estricta de certificados.
+3. **Gestión del servidor:** Se forzó el reinicio continuo del servidor de desarrollo mediante `taskkill` y `npm run dev` para asegurar la aplicación de los cambios en las variables de entorno y configuración.
+4. **Alias de rutas:** Se corrigió el archivo `tsconfig.json` añadiendo explícitamente `baseUrl` y `paths` para mapear `@/*` a `./src/*`, resolviendo así el error de importación de módulos.
+
+A pesar de estos intentos, el error `AuthenticationFailed` (P1000) o `TlsConnectionError` (P1011) persiste en el login, indicando problemas continuos en la autenticación SSL o de credenciales entre Prisma y Supabase.
