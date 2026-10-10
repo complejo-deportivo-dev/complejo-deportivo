@@ -51,3 +51,19 @@ Authentication failed against the database server, the provided database credent
 4. **Alias de rutas:** Se corrigió el archivo `tsconfig.json` añadiendo explícitamente `baseUrl` y `paths` para mapear `@/*` a `./src/*`, resolviendo así el error de importación de módulos.
 
 A pesar de estos intentos, el error `AuthenticationFailed` (P1000) o `TlsConnectionError` (P1011) persiste en el login, indicando problemas continuos en la autenticación SSL o de credenciales entre Prisma y Supabase.
+
+## SOLUCIÓN
+
+se soluciono el error de conexion que presentava el endpoint del login
+
+- las credenciales para la conexión que utiliza prisma se pueden encontrar en supabase en el apartado de 
+
+```bash
+connet to your proyect
+    |
+    └── ORM (Third-party library)
+        |
+        └── PRISMA
+            |
+            └── Configure ORM
+```
