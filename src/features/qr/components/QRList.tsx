@@ -73,6 +73,7 @@ export default function QRList({ items, loading = false, onOpenQR }: QRListProps
               key={item.qrId}
               title={item.title}
               reservationCode={`#RSV-${item.reservationId}`}
+              qrToken={item.token}
               qrType={item.qrType}
               used={item.used}
               onClick={() => onOpenQR?.(item)}

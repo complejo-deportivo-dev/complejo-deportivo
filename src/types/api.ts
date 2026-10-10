@@ -73,6 +73,7 @@ export interface ReservationWithDetails {
   service: {
     id: number;
     name: string;
+    qr_type?: 'group' | 'individual';
   };
   reservation_date: string;
   slots: {

@@ -6,6 +6,7 @@ import { Download, X } from "lucide-react";
 
 import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
+import QRCodeImage from "@/components/shared/QRCodeImage";
 
 export interface ModalQRProps {
   isOpen: boolean;
@@ -25,6 +26,7 @@ export default function ModalQR({
   onClose,
   reservationId,
   serviceName,
+  qrToken,
   title,
   date,
   timeRange,
@@ -130,9 +132,11 @@ export default function ModalQR({
           <div
             className={`flex aspect-square w-full max-w-80 items-center justify-center rounded-md bg-white p-4 sm:size-80 ${used ? "opacity-40" : ""}`}
           >
-            <div className="flex size-full items-center justify-center rounded-md border-2 border-dashed border-slate-300 text-center text-sm font-medium text-slate-400">
-              Aquí va el QR
-            </div>
+            <QRCodeImage
+              alt={`Código QR de acceso para la reserva ${reservationId}`}
+              className="size-full object-contain"
+              value={qrToken}
+            />
           </div>
         </div>
 

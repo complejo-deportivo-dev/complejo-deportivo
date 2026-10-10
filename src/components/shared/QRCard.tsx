@@ -3,10 +3,12 @@
 import { ArrowRight, User, Users } from "lucide-react";
 import Badge from "@/components/ui/Badge";
 import Card from "@/components/ui/Card";
+import QRCodeImage from "@/components/shared/QRCodeImage";
 
 interface QRCardProps {
   title: string;
   reservationCode: string;
+  qrToken: string;
   qrType: "group" | "individual";
   used?: boolean;
   onClick?: () => void;
@@ -15,6 +17,7 @@ interface QRCardProps {
 export default function QRCard({
   title,
   reservationCode,
+  qrToken,
   qrType,
   used = false,
   onClick,
@@ -41,9 +44,11 @@ export default function QRCard({
             used ? "opacity-40" : ""
           }`}
         >
-          <span className="flex size-full items-center justify-center rounded-xl border border-dashed border-border text-xs font-medium text-text-disabled">
-            Aquí va el QR
-          </span>
+          <QRCodeImage
+            alt={`QR de acceso ${reservationCode}`}
+            className="size-full rounded-md object-contain"
+            value={qrToken}
+          />
           <span
             aria-hidden="true"
             className="absolute -right-2 -top-2 flex size-10 items-center justify-center rounded-full bg-primary-soft text-primary"
