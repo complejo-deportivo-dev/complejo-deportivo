@@ -353,8 +353,10 @@ export async function POST(request: Request) {
     now
   );
   if (!reservationDate.success) {
+    const message =
+      "error" in reservationDate ? reservationDate.error : "Error desconocido";
     return NextResponse.json<ApiError>(
-      { error: reservationDateErrorMessage(reservationDate.error) },
+      { error: reservationDateErrorMessage(message) },
       { status: 400 }
     );
   }
@@ -381,8 +383,12 @@ export async function POST(request: Request) {
           transactionNow
         );
         if (!transactionDate.success) {
+          const message =
+            "error" in transactionDate
+              ? transactionDate.error
+              : "Error desconocido";
           throw new ReservationRequestError(
-            reservationDateErrorMessage(transactionDate.error),
+            reservationDateErrorMessage(message),
             400
           );
         }

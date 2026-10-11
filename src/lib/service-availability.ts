@@ -5,7 +5,7 @@ import type { QrType } from "@/types/database";
 const TIME_ZONE = "America/Bogota";
 const MAX_ADVANCE_DAYS = 15;
 
-type DateValidation =
+export type DateValidation =
   | {
       success: true;
       date: Date;

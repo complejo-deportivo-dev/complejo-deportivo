@@ -52,8 +52,9 @@ export async function GET(
   );
 
   if (!date.success) {
+    const message = "error" in date ? date.error : "Error desconocido";
     return NextResponse.json<ApiError>(
-      { error: date.error },
+      { error: message },
       { status: 400 }
     );
   }
