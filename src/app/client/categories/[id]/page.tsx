@@ -15,7 +15,7 @@ interface ServiceData {
   id: number;
   name: string;
   description?: string;
-  image?: string;
+  image_url?: string | null;
   category_name?: string;
   category?: { name: string };
   capacity: number;
@@ -173,7 +173,7 @@ export default function CategoryServicesPage() {
                   key={service.id}
                   name={service.name}
                   description={service.description}
-                  image={service.image}
+                  image={service.image_url ?? undefined}
                   categoryName={service.category_name || service.category?.name || categoryName}
                   capacity={service.capacity}
                   maxCompanions={service.max_companions}

@@ -37,6 +37,7 @@ export async function GET(request: NextRequest) {
       select: {
         id: true,
         name: true,
+        image_url: true,
         id_category: true,
         hour_price: true,
         capacity: true,

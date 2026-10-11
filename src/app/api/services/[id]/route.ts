@@ -41,6 +41,7 @@ export async function GET(
       select: {
         id: true,
         name: true,
+        image_url: true,
         id_category: true,
         hour_price: true,
         capacity: true,

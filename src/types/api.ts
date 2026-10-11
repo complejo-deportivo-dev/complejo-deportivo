@@ -20,11 +20,13 @@ export interface ApiError {
 export interface CatalogCategory {
   id: number;
   name: string;
+  image_url: string | null;
 }
 
 export interface CatalogService {
   id: number;
   name: string;
+  image_url: string | null;
   category_id: number;
   hour_price: number;
   capacity: number;
