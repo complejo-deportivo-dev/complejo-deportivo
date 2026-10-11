@@ -1,3 +1,5 @@
-import PaymentSuccessPage from "@/app/(client)/payment/success/[reservationId]/page";
+import PaymentSuccess from "@/features/payments/components/PaymentSuccess";
 
-export default PaymentSuccessPage;
+export default function PaymentSuccessPage() {
+  return <PaymentSuccess />;
+}
