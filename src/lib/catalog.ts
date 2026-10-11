@@ -6,6 +6,7 @@ export const MAX_SMALLINT_ID = 32_767;
 type PrismaCatalogService = {
   id: number;
   name: string;
+  image_url: string | null;
   id_category: number | null;
   hour_price: { toNumber(): number };
   capacity: number;
@@ -27,6 +28,7 @@ export function toCatalogService(
   return {
     id: service.id,
     name: service.name,
+    image_url: service.image_url,
     category_id: service.id_category,
     hour_price: service.hour_price.toNumber(),
     capacity: service.capacity,

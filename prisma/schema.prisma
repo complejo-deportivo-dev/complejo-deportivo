@@ -602,6 +602,7 @@ model access_logs {
 model categories {
   id         Int        @id @default(autoincrement()) @db.SmallInt
   name       String     @unique @db.VarChar(200)
+  image_url  String?
   is_active  Boolean    @default(true)
   created_at DateTime?  @default(now()) @db.Timestamptz(6)
   services   services[]
@@ -683,6 +684,7 @@ model reservations {
 model services {
   id             Int          @id @default(autoincrement()) @db.SmallInt
   name           String       @db.VarChar(50)
+  image_url      String?
   id_category    Int?         @db.SmallInt
   capacity       Int          @db.SmallInt
   max_companions Int          @default(5) @db.SmallInt
