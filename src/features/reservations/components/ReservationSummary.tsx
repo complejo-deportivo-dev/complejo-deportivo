@@ -93,7 +93,7 @@ export default function ReservationSummary({
         className="w-full"
         disabled={!canSubmit || isSubmitting}
         onClick={onSubmit}
-        isLoading={isSubmitting}
+        loading={isSubmitting}
       >
         Continuar al pago
       </Button>
