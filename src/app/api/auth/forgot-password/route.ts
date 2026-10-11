@@ -1,43 +1,37 @@
-import { NextResponse, type NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { createClient } from "@/lib/supabase/server";
+import { authService } from "@/services/auth";
 
 const forgotPasswordSchema = z.object({
-  email: z.string().trim().email().max(100),
+  email: z.string().email("Formato de correo inválido"),
 });
 
 export async function POST(request: NextRequest) {
-  let body: unknown;
   try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ error: "Correo inválido" }, { status: 400 });
-  }
+    const body = await request.json();
+    const result = forgotPasswordSchema.safeParse(body);
 
-  const validation = forgotPasswordSchema.safeParse(body);
-  if (!validation.success) {
-    return NextResponse.json({ error: "Correo inválido" }, { status: 400 });
-  }
+    if (!result.success) {
+      return NextResponse.json(
+        { error: "El formato del correo electrónico es incorrecto" },
+        { status: 400 }
+      );
+    }
 
-  const supabase = await createClient();
-  const { error } = await supabase.auth.resetPasswordForEmail(
-    validation.data.email,
-    {
-      redirectTo: new URL(
-        "/auth/reset",
-        process.env.NEXT_PUBLIC_APP_URL || request.nextUrl.origin,
-      ).toString(),
-    },
-  );
+    await authService.forgotPassword(result.data.email);
 
-  if (error) {
     return NextResponse.json(
-      { error: "No se pudo procesar la solicitud. Intenta nuevamente." },
-      { status: 500 },
+      {
+        data: {
+          message: "Si el correo existe, recibirás un enlace",
+        },
+      },
+      { status: 200 }
+    );
+  } catch (error) {
+    return NextResponse.json(
+      { error: "Error interno del servidor" },
+      { status: 500 }
     );
   }
-
-  return NextResponse.json({
-    data: { message: "Si el correo existe, recibirás un enlace" },
-  });
 }

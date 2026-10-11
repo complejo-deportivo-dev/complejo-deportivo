@@ -1,75 +1,50 @@
-import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
-import { createClient } from "@/lib/supabase/server";
+import { NextResponse } from "next/server";
+import { authService } from "@/services/auth";
 
 const registerSchema = z.object({
-  name: z.string().trim().min(1).max(50),
-  email: z.string().trim().email().max(100),
-  password: z.string().min(8).regex(/[A-Z]/).regex(/[0-9]/),
+  name: z.string().min(1, "El nombre es obligatorio").max(50, "El nombre no puede exceder los 50 caracteres"),
+  email: z.string().email("Formato de correo inválido").max(100, "El correo no puede exceder los 100 caracteres"),
+  password: z.string().min(8, "La contraseña debe tener al menos 8 caracteres"),
+  number_document: z.string().max(20, "El documento no puede exceder los 20 caracteres").optional(),
 });
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
-}
-
-export async function POST(request: NextRequest) {
-  let body: unknown;
+export async function POST(req: Request) {
   try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ error: "Datos inválidos" }, { status: 400 });
-  }
+    const body = await req.json();
+    const result = registerSchema.safeParse(body);
 
-  const validation = registerSchema.safeParse(body);
-  if (!validation.success) {
-    return NextResponse.json({ error: "Datos inválidos" }, { status: 400 });
-  }
+    if (!result.success) {
+      return NextResponse.json(
+        { error: "Datos inválidos" },
+        { status: 400 }
+      );
+    }
 
-  const supabase = await createClient();
-  const { data, error } = await supabase.auth.signUp({
-    email: validation.data.email,
-    password: validation.data.password,
-    options: {
-      data: { name: validation.data.name },
-      emailRedirectTo: new URL(
-        "/auth/callback",
-        process.env.NEXT_PUBLIC_APP_URL || request.nextUrl.origin,
-      ).toString(),
-    },
-  });
-
-  if (error) {
-    const isDuplicateEmail =
-      error.code === "user_already_exists" ||
-      /already (registered|exists)/i.test(error.message);
+    const user = await authService.register(result.data);
 
     return NextResponse.json(
       {
-        error: isDuplicateEmail
-          ? "El correo ya está registrado"
-          : "No se pudo crear la cuenta. Intenta nuevamente.",
+        data: {
+          user_id: user.user_id,
+          email: user.email,
+        },
       },
-      { status: isDuplicateEmail ? 400 : 500 },
+      { status: 201 }
     );
-  }
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "";
+    if (message === "EMAIL_ALREADY_REGISTERED") {
+      return NextResponse.json(
+        { error: "El correo ya está registrado" },
+        { status: 400 }
+      );
+    }
 
-  const user = isRecord(data.user) ? data.user : null;
-  if (!user || typeof user.id !== "string" || typeof user.email !== "string") {
+    console.error("[AUTH_REGISTER_ERROR]", error);
     return NextResponse.json(
-      { error: "No se pudo crear la cuenta. Intenta nuevamente." },
-      { status: 500 },
+      { error: "Error interno del servidor" },
+      { status: 500 }
     );
   }
-
-  if (user.identities?.length === 0) {
-    return NextResponse.json(
-      { error: "El correo ya está registrado" },
-      { status: 400 },
-    );
-  }
-
-  return NextResponse.json(
-    { data: { user_id: user.id, email: user.email } },
-    { status: 201 },
-  );
 }

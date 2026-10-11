@@ -1,73 +1,54 @@
-import { NextResponse, type NextRequest } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { z } from "zod";
+import { NextResponse } from "next/server";
+import { authService } from "../../../../services/auth";
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
-}
 
-export async function POST(request: NextRequest) {
-  let body: unknown;
+const loginSchema = z.object({
+  email: z.string().email().min(1),
+  password: z.string().min(1),
+});
+
+export async function POST(req: Request) {
   try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ error: "Datos inválidos" }, { status: 400 });
-  }
+    const body = await req.json();
+    const result = loginSchema.safeParse(body);
 
-  const email =
-    isRecord(body) && typeof body.email === "string" ? body.email.trim() : "";
-  const password =
-    isRecord(body) && typeof body.password === "string" ? body.password : "";
+    if (!result.success) {
+      return NextResponse.json(
+        { error: "Correo y contraseÃ±a son obligatorios" },
+        { status: 400 }
+      );
+    }
 
-  if (!email || !password) {
+    const { email, password } = result.data;
+    const user = await authService.login(email, password);
+
     return NextResponse.json(
-      { error: "Correo y contraseña son obligatorios" },
-      { status: 400 },
-    );
-  }
-
-  const supabase = await createClient();
-  const { data: authData, error: authError } =
-    await supabase.auth.signInWithPassword({ email, password });
-
-  if (authError || !authData.user) {
-    return NextResponse.json(
-      { error: "Correo o contraseña incorrectos" },
-      { status: 401 },
-    );
-  }
-
-  const { data: profile, error: profileError } = await supabase
-    .from("users")
-    .select("id, name, email, role")
-    .eq("id", authData.user.id)
-    .single();
-
-  if (profileError || !profile) {
-    return NextResponse.json(
-      { error: "No se pudo completar el inicio de sesión" },
-      { status: 500 },
-    );
-  }
-
-  if (
-    profile.role !== "client" &&
-    profile.role !== "admin" &&
-    profile.role !== "employee"
-  ) {
-    return NextResponse.json(
-      { error: "El perfil de usuario no tiene un rol válido" },
-      { status: 500 },
-    );
-  }
-
-  return NextResponse.json({
-    data: {
-      user: {
-        id: profile.id,
-        name: profile.name,
-        email: profile.email,
-        role: profile.role,
+      {
+        data: {
+          user: {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+          },
+        },
       },
-    },
-  });
+      { status: 200 }
+    );
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "";
+    if (message === "INVALID_CREDENTIALS" || message === "USER_NOT_FOUND_IN_PUBLIC") {
+      return NextResponse.json(
+        { error: "Correo o contraseÃ±a incorrectos" },
+        { status: 401 }
+      );
+    }
+
+    console.error("[AUTH_LOGIN_ERROR]", error);
+    return NextResponse.json(
+      { error: "Error interno del servidor" },
+      { status: 500 }
+    );
+  }
 }

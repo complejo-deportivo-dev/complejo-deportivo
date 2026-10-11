@@ -2,15 +2,40 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
 export async function POST() {
-  const supabase = await createClient();
-  const { error } = await supabase.auth.signOut();
+  try {
+    const supabase = await createClient();
 
-  if (error) {
+    // 1. Verificar sesión activa
+    const { data: { user }, error: sessionError } = await supabase.auth.getUser();
+
+    if (sessionError || !user) {
+      return NextResponse.json(
+        { error: "No autenticado" },
+        { status: 401 }
+      );
+    }
+
+    // 2. Cerrar sesión
+    const { error: signOutError } = await supabase.auth.signOut();
+
+    if (signOutError) {
+      console.error("[AUTH_LOGOUT_ERROR]", signOutError);
+      return NextResponse.json(
+        { error: "Error al cerrar la sesión" },
+        { status: 500 }
+      );
+    }
+
+    // 3. Respuesta exitosa
     return NextResponse.json(
-      { error: "No se pudo cerrar la sesión" },
-      { status: 500 },
+      { data: null },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("[AUTH_LOGOUT_EXCEPTION]", error);
+    return NextResponse.json(
+      { error: "Error interno del servidor" },
+      { status: 500 }
     );
   }
-
-  return NextResponse.json({ success: true });
 }

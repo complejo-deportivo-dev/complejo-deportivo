@@ -4,7 +4,7 @@ import { NextResponse, type NextRequest } from "next/server";
 const roleHomes = {
   admin: "/admin",
   client: "/client",
-  employee: "/employee",
+  employee: "/employee/dashboard",
 } as const;
 
 export async function GET(request: NextRequest) {
