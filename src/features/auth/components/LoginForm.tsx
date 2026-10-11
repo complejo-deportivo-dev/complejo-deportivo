@@ -14,7 +14,7 @@ import type { UserRole } from "@/types/database";
 const roleHomes: Record<UserRole, string> = {
   admin: "/admin",
   client: "/client",
-  employee: "/employee",
+  employee: "/employee/dashboard",
 };
 
 const loginSchema = z.object({
