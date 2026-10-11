@@ -22,7 +22,8 @@ Cada sección termina con **cómo se configura** y **cómo se usa**.
 - **Login con Google:** `supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: `${APP_URL}/auth/callback` } })`. Vuelve por el mismo `/auth/callback`.
 - **Recuperar contraseña:**
   1. `supabase.auth.resetPasswordForEmail(email, { redirectTo: `${APP_URL}/auth/reset` })`.
-  2. En `/auth/reset` el usuario escribe la nueva clave y se llama `supabase.auth.updateUser({ password })`.
+  2. `/auth/reset` verifica el enlace de recuperación y redirige a `/update-password`.
+  3. El formulario envía la contraseña nueva a `POST /api/auth/reset-password`; el servidor actualiza la clave con `supabase.auth.updateUser({ password })`.
 - **Rol del usuario:** tablauserscon columnarole(valor por defectoclient). Se crea con un trigger sobreauth.users(insert). El rol **no** se guarda en `user_metadata` porque el usuario puede editarlo. Los cambios de rol (ej. `admin`) se hacen solo desde servidor o SQL.
 - **Qué cliente se usa** (paquete `@supabase/ssr`):
   - `createBrowserClient` → componentes de cliente (`'use client'`).
