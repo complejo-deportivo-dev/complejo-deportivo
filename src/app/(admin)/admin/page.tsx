@@ -12,10 +12,6 @@ import RecentReservationsTable from "@/features/admin/components/RecentReservati
 import ReservationsByDayChart from "@/features/admin/components/ReservationsByDayChart";
 import ReservationsByStatusChart from "@/features/admin/components/ReservationsByStatusChart";
 import ServiceOccupancyList from "@/features/admin/components/ServiceOccupancyList";
-import {
-  MOCK_DASHBOARD_DATA,
-  MOCK_EMPTY_DASHBOARD_DATA,
-} from "@/features/admin/mock"; // TEMP-MOCK
 import type {
   AdminAccessLog,
   AdminMetrics,
@@ -36,22 +32,6 @@ async function fetchJson<T>(url: string): Promise<T> {
 
 // Carga las 3 peticiones en paralelo
 async function fetchDashboardData(): Promise<DashboardData> {
-  // TEMP-MOCK: Inicio de bloque de datos simulados
-  const mockMode = process.env.NEXT_PUBLIC_USE_MOCK; // TEMP-MOCK
-  if (mockMode === "error") { // TEMP-MOCK
-    await new Promise((resolve) => setTimeout(resolve, 300)); // TEMP-MOCK
-    throw new Error("Error simulado de carga (mock)"); // TEMP-MOCK
-  } // TEMP-MOCK
-  if (mockMode === "empty") { // TEMP-MOCK
-    await new Promise((resolve) => setTimeout(resolve, 300)); // TEMP-MOCK
-    return MOCK_EMPTY_DASHBOARD_DATA; // TEMP-MOCK
-  } // TEMP-MOCK
-  if (mockMode === "true") { // TEMP-MOCK
-    await new Promise((resolve) => setTimeout(resolve, 300)); // TEMP-MOCK
-    return MOCK_DASHBOARD_DATA; // TEMP-MOCK
-  } // TEMP-MOCK
-  // TEMP-MOCK: Fin de bloque de datos simulados
-
   const [metrics, reservations, accessLogs] = await Promise.all([
     fetchJson<AdminMetrics>("/api/admin/metrics"),
     fetchJson<AdminReservation[]>("/api/admin/reservations?limit=5"),

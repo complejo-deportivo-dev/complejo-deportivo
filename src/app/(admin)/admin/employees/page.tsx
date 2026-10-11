@@ -18,13 +18,6 @@ import EmployeeFormModal, {
 import EmployeesTable, {
   type AdminEmployeeRow,
 } from "@/features/admin/components/EmployeesTable";
-import {
-  createMockEmployee,
-  deleteMockEmployee,
-  getMockEmployees,
-  toggleMockEmployee,
-  updateMockEmployee,
-} from "@/features/admin/mock";
 import type { AdminEmployee } from "@/features/admin/types";
 
 const emptyFormValues = (): EmployeeFormValues => ({
@@ -33,11 +26,6 @@ const emptyFormValues = (): EmployeeFormValues => ({
   number_document: "",
   is_active: true,
 });
-
-const isMockEnabled = () => {
-  const mode = process.env.NEXT_PUBLIC_USE_MOCK;
-  return mode === "true" || mode === "empty" || mode === "error";
-};
 
 const normalizeEmployee = (employee: Partial<AdminEmployee>): AdminEmployeeRow => ({
   id: employee.id ?? 0,
@@ -50,24 +38,16 @@ const normalizeEmployee = (employee: Partial<AdminEmployee>): AdminEmployeeRow =
 });
 
 async function fetchEmployees(): Promise<AdminEmployeeRow[]> {
-  if (isMockEnabled()) {
-    return getMockEmployees().map((employee) => normalizeEmployee(employee));
+  const response = await fetch("/api/admin/employees");
+
+  if (!response.ok) {
+    throw new Error("No se pudo cargar la lista de empleados.");
   }
 
-  try {
-    const response = await fetch("/api/admin/employees");
+  const payload = (await response.json()) as { data?: AdminEmployee[] };
+  const items = Array.isArray(payload?.data) ? payload.data : [];
 
-    if (!response.ok) {
-      throw new Error("No se pudo cargar la lista de empleados.");
-    }
-
-    const payload = (await response.json()) as { data?: AdminEmployee[] };
-    const items = Array.isArray(payload?.data) ? payload.data : [];
-
-    return items.map((employee) => normalizeEmployee(employee));
-  } catch {
-    return getMockEmployees().map((employee) => normalizeEmployee(employee));
-  }
+  return items.map((employee) => normalizeEmployee(employee));
 }
 
 export default function EmployeesPage() {
@@ -146,28 +126,6 @@ export default function EmployeesPage() {
     setIsSubmitting(true);
 
     try {
-      if (isMockEnabled()) {
-        if (editingEmployee) {
-          updateMockEmployee(editingEmployee.id, {
-            name: values.name,
-            email: values.email,
-            number_document: values.number_document,
-            is_active: values.is_active,
-          });
-        } else {
-          createMockEmployee({
-            name: values.name,
-            email: values.email,
-            number_document: values.number_document,
-            is_active: values.is_active,
-          });
-        }
-
-        setEmployees(getMockEmployees().map((employee) => normalizeEmployee(employee)));
-        closeFormModal();
-        return;
-      }
-
       const response = await fetch(
         editingEmployee ? `/api/admin/employees/${editingEmployee.id}` : "/api/admin/employees",
         {
@@ -203,12 +161,6 @@ export default function EmployeesPage() {
     setIsSubmitting(true);
 
     try {
-      if (isMockEnabled()) {
-        toggleMockEmployee(employee.id);
-        setEmployees(getMockEmployees().map((item) => normalizeEmployee(item)));
-        return;
-      }
-
       const response = await fetch(`/api/admin/employees/${employee.id}`, {
         method: "PATCH",
         headers: {
@@ -242,19 +194,6 @@ export default function EmployeesPage() {
 
     try {
       const hasAccessRecords = (employeeToDelete.access_logs_count ?? 0) > 0;
-
-      if (isMockEnabled()) {
-        if (hasAccessRecords) {
-          updateMockEmployee(employeeToDelete.id, { is_active: false });
-        } else {
-          deleteMockEmployee(employeeToDelete.id);
-        }
-
-        setEmployees(getMockEmployees().map((employee) => normalizeEmployee(employee)));
-        setIsDeleteOpen(false);
-        setEmployeeToDelete(null);
-        return;
-      }
 
       if (hasAccessRecords) {
         const response = await fetch(`/api/admin/employees/${employeeToDelete.id}`, {

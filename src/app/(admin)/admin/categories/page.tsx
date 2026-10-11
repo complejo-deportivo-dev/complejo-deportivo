@@ -18,24 +18,12 @@ import CategoryFormModal, {
 import ConfirmDeleteModal, {
   type CategoryDeleteTarget,
 } from "@/features/admin/components/ConfirmDeleteModal";
-import {
-  createMockCategory,
-  deleteMockCategory,
-  getMockCategories,
-  toggleMockCategory,
-  updateMockCategory,
-} from "@/features/admin/mock";
 import type { AdminCategory } from "@/features/admin/types";
 
 const emptyFormValues = (): CategoryFormValues => ({
   name: "",
   is_active: true,
 });
-
-const isMockEnabled = () => {
-  const mode = process.env.NEXT_PUBLIC_USE_MOCK;
-  return mode === "true" || mode === "empty" || mode === "error";
-};
 
 const normalizeCategory = (category: {
   id: number;
@@ -55,49 +43,27 @@ const normalizeCategory = (category: {
 });
 
 async function fetchCategories(): Promise<AdminCategoryRow[]> {
-  if (isMockEnabled()) {
-    return getMockCategories().map((category) =>
-      normalizeCategory({
-        id: category.id,
-        name: category.name,
-        activo: category.activo,
-        servicios_count: category.servicios_count,
-      }),
-    );
+  const response = await fetch("/api/admin/categories");
+
+  if (!response.ok) {
+    throw new Error("No se pudo cargar la lista de categorías.");
   }
 
-  try {
-    const response = await fetch("/api/admin/categories");
+  const payload = (await response.json()) as {
+    data?: AdminCategory[];
+  };
 
-    if (!response.ok) {
-      throw new Error("No se pudo cargar la lista de categorías.");
-    }
+  const items = Array.isArray(payload?.data) ? payload.data : [];
 
-    const payload = (await response.json()) as {
-      data?: AdminCategory[];
-    };
-
-    const items = Array.isArray(payload?.data) ? payload.data : [];
-
-    return items.map((category) =>
-      normalizeCategory({
-        id: category.id,
-        name: category.name,
-        is_active: category.is_active,
-        serviceCount: category.serviceCount,
-        services: category.services,
-      }),
-    );
-  } catch {
-    return getMockCategories().map((category) =>
-      normalizeCategory({
-        id: category.id,
-        name: category.name,
-        activo: category.activo,
-        servicios_count: category.servicios_count,
-      }),
-    );
-  }
+  return items.map((category) =>
+    normalizeCategory({
+      id: category.id,
+      name: category.name,
+      is_active: category.is_active,
+      serviceCount: category.serviceCount,
+      services: category.services,
+    }),
+  );
 }
 
 export default function CategoriesPage() {
@@ -174,33 +140,6 @@ export default function CategoriesPage() {
     setIsSubmitting(true);
 
     try {
-      if (isMockEnabled()) {
-        if (editingCategory) {
-          updateMockCategory(editingCategory.id, {
-            name: values.name,
-            is_active: values.is_active,
-          });
-        } else {
-          createMockCategory({
-            name: values.name,
-            is_active: values.is_active,
-          });
-        }
-
-        const nextCategories = getMockCategories().map((category) =>
-          normalizeCategory({
-            id: category.id,
-            name: category.name,
-            activo: category.activo,
-            servicios_count: category.servicios_count,
-          }),
-        );
-
-        setCategories(nextCategories);
-        closeFormModal();
-        return;
-      }
-
       const response = await fetch(
         editingCategory
           ? `/api/admin/categories/${editingCategory.id}`
@@ -238,20 +177,6 @@ export default function CategoriesPage() {
     setIsSubmitting(true);
 
     try {
-      if (isMockEnabled()) {
-        toggleMockCategory(category.id);
-        const nextCategories = getMockCategories().map((item) =>
-          normalizeCategory({
-            id: item.id,
-            name: item.name,
-            activo: item.activo,
-            servicios_count: item.servicios_count,
-          }),
-        );
-        setCategories(nextCategories);
-        return;
-      }
-
       const response = await fetch(`/api/admin/categories/${category.id}`, {
         method: "PATCH",
         headers: {
@@ -289,28 +214,6 @@ export default function CategoriesPage() {
     setIsSubmitting(true);
 
     try {
-      if (isMockEnabled()) {
-        if (hasRelatedServices) {
-          updateMockCategory(categoryToDelete.id, { is_active: false });
-        } else {
-          deleteMockCategory(categoryToDelete.id);
-        }
-
-        const nextCategories = getMockCategories().map((category) =>
-          normalizeCategory({
-            id: category.id,
-            name: category.name,
-            activo: category.activo,
-            servicios_count: category.servicios_count,
-          }),
-        );
-
-        setCategories(nextCategories);
-        setIsDeleteOpen(false);
-        setCategoryToDelete(null);
-        return;
-      }
-
       if (hasRelatedServices) {
         const response = await fetch(`/api/admin/categories/${categoryToDelete.id}`, {
           method: "PATCH",

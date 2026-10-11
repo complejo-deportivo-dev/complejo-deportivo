@@ -18,20 +18,7 @@ import ServicesTable, {
 import ConfirmDeleteServiceModal, {
   type ServiceDeleteTarget,
 } from "@/features/admin/components/ConfirmDeleteServiceModal";
-import {
-  createMockService,
-  deleteMockService,
-  getMockServiceCategories,
-  getMockServices,
-  toggleMockService,
-  updateMockService,
-} from "@/features/admin/mock";
 import type { AdminCategory, AdminService } from "@/features/admin/types";
-
-const isMockEnabled = () => {
-  const mode = process.env.NEXT_PUBLIC_USE_MOCK;
-  return mode === "true" || mode === "empty" || mode === "error";
-};
 
 const normalizeService = (service: Partial<AdminService>): AdminServiceRow => ({
   id: service.id ?? 0,
@@ -58,57 +45,33 @@ const emptyFormValues = (categoryId = 0): ServiceFormValues => ({
 });
 
 async function fetchCategories(): Promise<AdminCategory[]> {
-  if (isMockEnabled()) {
-    return getMockServiceCategories().map((category) => ({
-      id: category.id,
-      name: category.name,
-      is_active: true,
-    }));
+  const response = await fetch("/api/admin/categories");
+
+  if (!response.ok) {
+    throw new Error("No se pudo cargar las categorías.");
   }
 
-  try {
-    const response = await fetch("/api/admin/categories");
+  const payload = (await response.json()) as { data?: AdminCategory[] };
+  const items = Array.isArray(payload?.data) ? payload.data : [];
 
-    if (!response.ok) {
-      throw new Error("No se pudo cargar las categorías.");
-    }
-
-    const payload = (await response.json()) as { data?: AdminCategory[] };
-    const items = Array.isArray(payload?.data) ? payload.data : [];
-
-    return items.map((category) => ({
-      id: category.id,
-      name: category.name,
-      is_active: category.is_active,
-    }));
-  } catch {
-    return getMockServiceCategories().map((category) => ({
-      id: category.id,
-      name: category.name,
-      is_active: true,
-    }));
-  }
+  return items.map((category) => ({
+    id: category.id,
+    name: category.name,
+    is_active: category.is_active,
+  }));
 }
 
 async function fetchServices(): Promise<AdminServiceRow[]> {
-  if (isMockEnabled()) {
-    return getMockServices().map((service) => normalizeService(service));
+  const response = await fetch("/api/admin/services");
+
+  if (!response.ok) {
+    throw new Error("No se pudo cargar la lista de servicios.");
   }
 
-  try {
-    const response = await fetch("/api/admin/services");
+  const payload = (await response.json()) as { data?: AdminService[] };
+  const items = Array.isArray(payload?.data) ? payload.data : [];
 
-    if (!response.ok) {
-      throw new Error("No se pudo cargar la lista de servicios.");
-    }
-
-    const payload = (await response.json()) as { data?: AdminService[] };
-    const items = Array.isArray(payload?.data) ? payload.data : [];
-
-    return items.map((service) => normalizeService(service));
-  } catch {
-    return getMockServices().map((service) => normalizeService(service));
-  }
+  return items.map((service) => normalizeService(service));
 }
 
 export default function ServicesPage() {
@@ -185,37 +148,6 @@ export default function ServicesPage() {
     setIsSubmitting(true);
 
     try {
-      if (isMockEnabled()) {
-        if (editingService) {
-          updateMockService(editingService.id, {
-            name: values.name,
-            category_id: values.category_id,
-            category_name:
-              categories.find((category) => category.id === values.category_id)?.name ??
-              editingService.category_name,
-            capacity: values.capacity,
-            max_companions: values.max_companions,
-            qr_type: values.qr_type,
-            price_per_hour: values.price_per_hour,
-            is_active: values.is_active,
-          });
-        } else {
-          createMockService({
-            name: values.name,
-            category_id: values.category_id,
-            capacity: values.capacity,
-            max_companions: values.max_companions,
-            qr_type: values.qr_type,
-            price_per_hour: values.price_per_hour,
-            is_active: values.is_active,
-          });
-        }
-
-        setServices(getMockServices().map((service) => normalizeService(service)));
-        closeFormModal();
-        return;
-      }
-
       const response = await fetch(
         editingService ? `/api/admin/services/${editingService.id}` : "/api/admin/services",
         {
@@ -249,12 +181,6 @@ export default function ServicesPage() {
     setIsSubmitting(true);
 
     try {
-      if (isMockEnabled()) {
-        toggleMockService(service.id);
-        setServices(getMockServices().map((item) => normalizeService(item)));
-        return;
-      }
-
       const response = await fetch(`/api/admin/services/${service.id}`, {
         method: "PATCH",
         headers: {
@@ -292,19 +218,6 @@ export default function ServicesPage() {
     try {
       if (hasActiveReservations) {
         setError("Este servicio tiene reservas activas y no se puede eliminar.");
-        setIsDeleteOpen(false);
-        setServiceToDelete(null);
-        return;
-      }
-
-      if (isMockEnabled()) {
-        if (hasPastReservations) {
-          updateMockService(serviceToDelete.id, { is_active: false });
-        } else {
-          deleteMockService(serviceToDelete.id);
-        }
-
-        setServices(getMockServices().map((service) => normalizeService(service)));
         setIsDeleteOpen(false);
         setServiceToDelete(null);
         return;

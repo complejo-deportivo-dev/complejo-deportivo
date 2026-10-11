@@ -17,13 +17,6 @@ import TimeSlotFormModal, {
 import TimeSlotsTable, {
   type TimeSlotTableRow,
 } from "@/features/admin/components/TimeSlotsTable";
-import {
-  createMockTimeSlot,
-  deleteMockTimeSlot,
-  getMockServices,
-  getMockTimeSlots,
-  updateMockTimeSlot,
-} from "@/features/admin/mock";
 import type { AdminService, AdminTimeSlot } from "@/features/admin/types";
 
 interface ServiceOption {
@@ -54,47 +47,26 @@ const normalizeTimeSlot = (slot: Partial<AdminTimeSlot>): TimeSlotTableRow => ({
   active_reservations_count: slot.active_reservations_count ?? 0,
 });
 
-const isMockEnabled = () => {
-  const mode = process.env.NEXT_PUBLIC_USE_MOCK;
-  return mode === "true" || mode === "empty" || mode === "error";
-};
-
 async function fetchServices(): Promise<ServiceOption[]> {
-  if (isMockEnabled()) {
-    return getMockServices().map((service) => normalizeService(service));
+  const response = await fetch("/api/admin/services");
+  if (!response.ok) {
+    throw new Error("No se pudieron cargar los servicios.");
   }
 
-  try {
-    const response = await fetch("/api/admin/services");
-    if (!response.ok) {
-      throw new Error("No se pudieron cargar los servicios.");
-    }
-
-    const payload = (await response.json()) as { data?: AdminService[] };
-    const items = Array.isArray(payload?.data) ? payload.data : [];
-    return items.map((service) => normalizeService(service));
-  } catch {
-    return getMockServices().map((service) => normalizeService(service));
-  }
+  const payload = (await response.json()) as { data?: AdminService[] };
+  const items = Array.isArray(payload?.data) ? payload.data : [];
+  return items.map((service) => normalizeService(service));
 }
 
 async function fetchTimeSlots(serviceId: number): Promise<TimeSlotTableRow[]> {
-  if (isMockEnabled()) {
-    return getMockTimeSlots(serviceId).map((slot) => normalizeTimeSlot(slot));
+  const response = await fetch(`/api/admin/time-slots?service_id=${serviceId}`);
+  if (!response.ok) {
+    throw new Error("No se pudieron cargar las franjas horarias.");
   }
 
-  try {
-    const response = await fetch(`/api/admin/time-slots?service_id=${serviceId}`);
-    if (!response.ok) {
-      throw new Error("No se pudieron cargar las franjas horarias.");
-    }
-
-    const payload = (await response.json()) as { data?: AdminTimeSlot[] };
-    const items = Array.isArray(payload?.data) ? payload.data : [];
-    return items.map((slot) => normalizeTimeSlot(slot));
-  } catch {
-    return getMockTimeSlots(serviceId).map((slot) => normalizeTimeSlot(slot));
-  }
+  const payload = (await response.json()) as { data?: AdminTimeSlot[] };
+  const items = Array.isArray(payload?.data) ? payload.data : [];
+  return items.map((slot) => normalizeTimeSlot(slot));
 }
 
 export default function TimeSlotsPage() {
@@ -178,26 +150,6 @@ export default function TimeSlotsPage() {
     setIsSubmitting(true);
 
     try {
-      if (isMockEnabled()) {
-        if (editingSlot) {
-          updateMockTimeSlot(editingSlot.id, {
-            service_id: values.service_id,
-            start_time: values.start_time,
-            end_time: values.end_time,
-          });
-        } else {
-          createMockTimeSlot({
-            service_id: values.service_id,
-            start_time: values.start_time,
-            end_time: values.end_time,
-          });
-        }
-
-        setTimeSlots(getMockTimeSlots(values.service_id).map((slot) => normalizeTimeSlot(slot)));
-        closeFormModal();
-        return;
-      }
-
       const response = await fetch(
         editingSlot ? `/api/admin/time-slots/${editingSlot.id}` : "/api/admin/time-slots",
         {
@@ -238,14 +190,6 @@ export default function TimeSlotsPage() {
     setIsSubmitting(true);
 
     try {
-      if (isMockEnabled()) {
-        deleteMockTimeSlot(slotToDelete.id);
-        setTimeSlots(getMockTimeSlots(selectedServiceId).map((slot) => normalizeTimeSlot(slot)));
-        setIsDeleteOpen(false);
-        setSlotToDelete(null);
-        return;
-      }
-
       const response = await fetch(`/api/admin/time-slots/${slotToDelete.id}`, {
         method: "DELETE",
       });

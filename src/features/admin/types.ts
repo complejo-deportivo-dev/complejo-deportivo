@@ -78,14 +78,6 @@ export interface AdminCategory {
   services?: { id: number; name: string }[]; // TODO-BACKEND
 }
 
-export interface AdminCategoryMockRecord {
-  id: number;
-  name: string;
-  servicios_count?: number; // TODO-BACKEND: campo real del backend para servicios asociados.
-  activo?: boolean; // TODO-BACKEND: bandera real del backend.
-  is_active?: boolean; // TODO-BACKEND: alias del frontend para compatibilidad.
-}
-
 export interface AdminServiceCategoryOption {
   id: number;
   name: string;
@@ -105,20 +97,6 @@ export interface AdminService {
   past_reservations_count?: number; // TODO-BACKEND: historial de reservas pasadas.
 }
 
-export interface AdminServiceMockRecord {
-  id: number;
-  name: string;
-  category_id: number;
-  category_name: string; // TODO-BACKEND: nombre resuelto del backend.
-  capacity: number;
-  max_companions?: number; // TODO-BACKEND
-  qr_type: "group" | "individual";
-  price_per_hour: number;
-  is_active: boolean;
-  active_reservations_count?: number; // TODO-BACKEND
-  past_reservations_count?: number; // TODO-BACKEND
-}
-
 export interface AdminEmployee {
   id: number;
   name: string;
@@ -127,16 +105,6 @@ export interface AdminEmployee {
   is_active: boolean;
   initials?: string; // TODO-BACKEND: se puede calcular en frontend si el backend no lo entrega.
   access_logs_count?: number; // TODO-BACKEND: conteo real del backend.
-}
-
-export interface AdminEmployeeMockRecord {
-  id: number;
-  name: string;
-  email: string;
-  number_document: string;
-  is_active: boolean;
-  initials?: string; // TODO-BACKEND
-  access_logs_count?: number; // TODO-BACKEND
 }
 
 export interface AdminTimeSlot {
@@ -149,11 +117,3 @@ export interface AdminTimeSlot {
   active_reservations_count?: number; // TODO-BACKEND
 }
 
-export interface AdminTimeSlotMockRecord {
-  id: number;
-  service_id: number;
-  start_time: string;
-  end_time: string;
-  is_active?: boolean; // TODO-BACKEND
-  active_reservations_count?: number; // TODO-BACKEND
-}
