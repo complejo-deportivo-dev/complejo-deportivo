@@ -81,8 +81,15 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
   }
 
   // Determinar los nuevos tiempos (fusionando con los existentes)
-  const finalStart = time_start !== undefined ? hhmmToDate(time_start) : existing.time_start;
-  const finalEnd = time_end !== undefined ? hhmmToDate(time_end) : existing.time_end;
+  const finalStart =
+    typeof time_start === 'string'
+      ? hhmmToDate(time_start)
+      : existing.time_start;
+
+  const finalEnd =
+    typeof time_end === 'string'
+      ? hhmmToDate(time_end)
+      : existing.time_end;
 
   // 3. Validar fin > inicio
   if (finalEnd <= finalStart) {
@@ -161,9 +168,14 @@ export async function DELETE(_request: NextRequest, { params }: RouteParams) {
   // saltará un error de Foreign KeyConstraint (P2003). Lo mapeamos a 409 como pide la spec de forma genérica.
   try {
     await prisma.time_slots.delete({ where: { id } });
-  } catch (error: any) {
+  } catch (error) {
     // P2003 es el código de Prisma para Foreign Key Constraint failed
-    if (error?.code === 'P2003') {
+    if (
+      typeof error === 'object' &&
+      error !== null &&
+      'code' in error &&
+      error.code === 'P2003'
+    ) {
       return NextResponse.json({ error: 'La franja tiene reservas asociadas' }, { status: 409 });
     }
     // Relanzar si es otro error

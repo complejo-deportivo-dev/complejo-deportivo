@@ -49,7 +49,11 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     if (typeof body.number_document === 'string' && body.number_document.trim().length === 0) {
       return NextResponse.json({ error: 'Datos inválidos' }, { status: 400 });
     }
-    updateData.number_document = body.number_document ? body.number_document.trim() : null;
+    if (typeof body.number_document === 'string') {
+      updateData.number_document = body.number_document.trim();
+    } else if (body.number_document === null) {
+      updateData.number_document = null;
+    }
   }
 
   if (body.is_active !== undefined) {
