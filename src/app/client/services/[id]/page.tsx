@@ -93,7 +93,7 @@ export default function ServiceBookingPage() {
         setQuantity((current) =>
           Math.min(Math.max(1, current), serviceRes.data.capacity),
         );
-        setUser(userRes?.data || null);
+        setUser(userRes?.error ? null : userRes || null);
         setError(null);
       } catch (err) {
         if (!cancelled) {
