@@ -43,30 +43,71 @@ export default function CategoryServicesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const fetchServices = useCallback(async () => {
+    const data = await fetchData<ServiceData[]>(
+      `/api/services?category_id=${categoryId}`
+    );
+    return Array.isArray(data) ? data : [];
+  }, [categoryId]);
+
   const loadData = useCallback(async () => {
     try {
-      setLoading(true);
+      const servicesList = await fetchServices();
       setError(null);
-      
-      const data = await fetchData<ServiceData[]>(`/api/services?category_id=${categoryId}`);
-      const servicesList = Array.isArray(data) ? data : [];
       setServices(servicesList);
 
       if (servicesList.length > 0) {
-        setCategoryName(servicesList[0].category_name || servicesList[0].category?.name || "Categoría");
+        setCategoryName(
+          servicesList[0].category_name ||
+            servicesList[0].category?.name ||
+            "Categoría"
+        );
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error desconocido");
     } finally {
       setLoading(false);
     }
-  }, [categoryId]);
+  }, [fetchServices]);
 
   useEffect(() => {
-    if (categoryId) {
-      loadData();
+    if (!categoryId) {
+      return;
     }
-  }, [categoryId, loadData]);
+
+    let isCurrent = true;
+    void fetchServices()
+      .then((servicesList) => {
+        if (!isCurrent) {
+          return;
+        }
+
+        setError(null);
+        setServices(servicesList);
+
+        if (servicesList.length > 0) {
+          setCategoryName(
+            servicesList[0].category_name ||
+              servicesList[0].category?.name ||
+              "Categoría"
+          );
+        }
+      })
+      .catch((err: unknown) => {
+        if (isCurrent) {
+          setError(err instanceof Error ? err.message : "Error desconocido");
+        }
+      })
+      .finally(() => {
+        if (isCurrent) {
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      isCurrent = false;
+    };
+  }, [categoryId, fetchServices]);
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -95,7 +136,15 @@ export default function CategoryServicesPage() {
           <Banner variant="error" onClose={() => setError(null)} className="mb-8">
             <p className="font-medium">No pudimos cargar los servicios.</p>
             <p className="mt-1 text-sm">{error}</p>
-            <Button size="sm" className="mt-3" onClick={loadData}>
+            <Button
+              size="sm"
+              className="mt-3"
+              onClick={() => {
+                setLoading(true);
+                setError(null);
+                void loadData();
+              }}
+            >
               Reintentar
             </Button>
           </Banner>

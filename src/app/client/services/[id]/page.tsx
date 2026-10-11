@@ -156,12 +156,10 @@ export default function ServiceBookingPage() {
     });
   };
 
+  const hasQuantitySelector = service?.qr_type === "individual";
+
   const handleSubmit = async () => {
     if (!service || selectedSlots.length === 0 || !selectedDate) return;
-
-    const isCourtService =
-      service.category_name?.trim().toLocaleLowerCase("es") === "canchas";
-    const hasQuantitySelector = isCourtService;
 
     if (
       hasQuantitySelector &&
@@ -169,7 +167,9 @@ export default function ServiceBookingPage() {
         quantity < 1 ||
         quantity > service.capacity)
     ) {
-      alert(`La cantidad debe estar entre 1 y ${service.capacity} personas.`);
+      alert(
+        `La cantidad debe estar entre 1 y ${service.capacity} personas.`,
+      );
       return;
     }
 
@@ -180,7 +180,9 @@ export default function ServiceBookingPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           service_id: service?.id,
-          date: selectedDate ? format(selectedDate, "yyyy-MM-dd") : null,
+          reservation_date: selectedDate
+            ? format(selectedDate, "yyyy-MM-dd")
+            : null,
           time_slot_ids: selectedSlots.map((s) => s.time_slot_id),
           quantity: hasQuantitySelector ? quantity : 1,
           number_document: documentValue || undefined,
@@ -190,17 +192,14 @@ export default function ServiceBookingPage() {
       if (data.error) throw new Error(data.error);
 
       router.push(`/client/payment/${data.data.reservation_id}`);
-    } catch {
-      alert("Error al crear la reserva");
+    } catch (error) {
+      alert(error instanceof Error ? error.message : "Error al crear la reserva");
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const needsDocument = user?.number_document == null;
-  const isCourtService =
-    service?.category_name?.trim().toLocaleLowerCase("es") === "canchas";
-  const hasQuantitySelector = isCourtService;
 
   const handleSelectDate = (date: Date | null) => {
     setLoadingSlots(date !== null);

@@ -38,10 +38,12 @@ export default function ServiceDetail({
           <Users size={18} />
           <span>Hasta {capacity} personas</span>
         </div>
-        <div className="flex items-center gap-2">
-          <UserPlus size={18} />
-          <span>Máximo {maxCompanions} acompañantes</span>
-        </div>
+        {qrType === "group" && (
+          <div className="flex items-center gap-2">
+            <UserPlus size={18} />
+            <span>Máximo {maxCompanions} acompañantes</span>
+          </div>
+        )}
       </div>
 
       <div className="pt-2">
