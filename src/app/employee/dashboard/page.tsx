@@ -1,10 +1,11 @@
 // TEMPORAL: versión con datos hardcodeados para previsualizar. Reemplazar por versión real cuando el login esté listo.
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Camera, CheckCircle, Search } from "lucide-react";
+import { ArrowRight, Camera, CheckCircle, LogOut, Search } from "lucide-react";
 import Avatar from "@/components/ui/Avatar";
 import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
@@ -54,6 +55,20 @@ const recentValidations: {
 
 export default function EmployeeDashboardPage() {
   const router = useRouter();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  async function handleLogout() {
+    if (isLoggingOut) return;
+    setIsLoggingOut(true);
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+    } catch (err) {
+      console.error("Error al cerrar sesión", err);
+    } finally {
+      router.push("/login");
+      router.refresh();
+    }
+  }
 
   return (
     <main className="flex min-h-screen justify-center bg-background">
@@ -68,14 +83,24 @@ export default function EmployeeDashboardPage() {
               priority
             />
           </div>
-          <div className="flex items-center gap-3">
-            <span className="max-w-48 truncate text-sm text-text-primary">
+          <div className="flex items-center gap-2.5">
+            <span className="max-w-36 truncate text-sm text-text-primary">
               {userName}
             </span>
             <Avatar
               name={`${userInitials[0]} ${userInitials.slice(1)}`}
               size="sm"
             />
+            <button
+              type="button"
+              onClick={handleLogout}
+              disabled={isLoggingOut}
+              aria-label="Cerrar sesión"
+              title="Cerrar sesión"
+              className="inline-flex size-9 items-center justify-center rounded-lg border border-border bg-surface text-text-secondary transition-colors hover:border-error/40 hover:bg-error-soft/30 hover:text-error focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-50"
+            >
+              <LogOut className="size-4" aria-hidden="true" />
+            </button>
           </div>
         </header>
 

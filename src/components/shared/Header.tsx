@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   ArrowRight,
   LogIn,
@@ -68,9 +68,11 @@ export default function Header({
   className = "",
   publicMode = false,
 }: HeaderProps) {
+  const router = useRouter();
   const pathname = usePathname();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
@@ -80,6 +82,21 @@ export default function Header({
   const navItems = publicMode ? PUBLIC_NAVIGATION : roleNavigation.items;
   const hasNavigation = navItems.length > 0;
   const isEmployee = role === "employee";
+
+  async function handleLogout() {
+    if (isLoggingOut) return;
+    setIsLoggingOut(true);
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+    } catch (error) {
+      console.error("Error al cerrar sesión:", error);
+    } finally {
+      setIsDropdownOpen(false);
+      setIsMobileMenuOpen(false);
+      router.push("/login");
+      router.refresh();
+    }
+  }
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -273,15 +290,16 @@ export default function Header({
 
                     <div className="my-1 border-t border-border" />
 
-                    <Link
-                      href="/login"
+                    <button
+                      type="button"
                       role="menuitem"
-                      onClick={() => setIsDropdownOpen(false)}
-                      className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-error transition-colors hover:bg-error-soft/30"
+                      onClick={handleLogout}
+                      disabled={isLoggingOut}
+                      className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm text-error transition-colors hover:bg-error-soft/30 disabled:opacity-50"
                     >
                       <LogOut className="size-4 text-error" />
-                      <span>Cerrar sesión</span>
-                    </Link>
+                      <span>{isLoggingOut ? "Cerrando sesión..." : "Cerrar sesión"}</span>
+                    </button>
                   </div>
                 )}
               </div>
@@ -332,7 +350,7 @@ export default function Header({
                 </Link>
               );
             })}
-            {publicMode && (
+            {publicMode ? (
               <>
                 <Link
                   href="/login"
@@ -350,6 +368,19 @@ export default function Header({
                   <UserPlus className="size-4" />
                   <span>Registrarse</span>
                 </Link>
+              </>
+            ) : (
+              <>
+                <div className="my-1 border-t border-border" />
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  disabled={isLoggingOut}
+                  className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-left text-sm font-medium text-error transition-colors hover:bg-error-soft/30 disabled:opacity-50"
+                >
+                  <LogOut className="size-4 text-error" />
+                  <span>{isLoggingOut ? "Cerrando sesión..." : "Cerrar sesión"}</span>
+                </button>
               </>
             )}
           </div>
