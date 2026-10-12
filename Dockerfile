@@ -19,7 +19,21 @@ COPY . .
 
 ENV NEXT_TELEMETRY_DISABLED=1
 
-RUN DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy" npx prisma generate --config=prisma7.config.ts
+# Variables dummy SOLO para build time.
+# En runtime se inyectan con --env-file .env (reemplazan a estas).
+ENV DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy"
+ENV NEXT_PUBLIC_SUPABASE_URL="https://dummy.supabase.co"
+ENV NEXT_PUBLIC_SUPABASE_ANON_KEY="dummy-anon-key"
+ENV SUPABASE_SERVICE_ROLE_KEY="dummy-service-role-key"
+ENV NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY="pk_dummy"
+ENV STRIPE_SECRET_KEY="sk_dummy"
+ENV STRIPE_WEBHOOK_SECRET="whsec_dummy"
+ENV RESEND_API_KEY="re_dummy"
+ENV RESEND_FROM_EMAIL="dummy@resend.dev"
+ENV NEXT_PUBLIC_SITE_URL="https://dummy.local"
+ENV NEXT_PUBLIC_APP_URL="https://dummy.local"
+
+RUN npx prisma generate --config=prisma7.config.ts
 RUN npm run build
 
 # ---- Etapa 3: runner ----
