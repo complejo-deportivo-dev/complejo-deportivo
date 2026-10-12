@@ -15,12 +15,14 @@ export async function GET(request: NextRequest) {
   const services = await prisma.services.findMany({
     where,
     orderBy: { id: 'asc' },
+    include: { categories: { select: { name: true } } },
   });
 
   const data = services.map((svc: typeof services[number]) => ({
     id: svc.id,
     name: svc.name,
     category_id: svc.id_category,
+    category_name: svc.categories?.name ?? null,
     capacity: svc.capacity,
     max_companions: svc.max_companions,
     qr_type: svc.qr_type,

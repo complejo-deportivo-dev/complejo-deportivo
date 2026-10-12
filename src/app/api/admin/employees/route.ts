@@ -71,6 +71,8 @@ export async function POST(request: NextRequest) {
   const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(emailTrimmed);
   
   if (inviteError || !inviteData.user) {
+    console.error("[INVITE_ERROR]", inviteError);
+    console.error("[INVITE_DATA]", inviteData);
     return NextResponse.json({ error: 'Error al enviar la invitación al empleado' }, { status: 500 });
   }
 

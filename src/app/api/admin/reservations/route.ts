@@ -45,7 +45,9 @@ export async function GET(request: NextRequest) {
   const reservations = await prisma.reservations.findMany({
     where,
     include: {
-      users: { select: { id: true, name: true, email: true } },
+      users: {
+        select: { id: true, name: true, email: true, number_document: true },
+      },
       reservation_slots: {
         include: {
           time_slots: {
@@ -62,11 +64,26 @@ export async function GET(request: NextRequest) {
     const service = firstSlot?.time_slots?.services || null;
     
     return {
-      id: res.id,
-      date: firstSlot?.slot_date ? firstSlot.slot_date.toISOString().split('T')[0] : null,
+      reservation_id: res.id,
+      reservation_date: firstSlot?.slot_date
+        ? firstSlot.slot_date.toISOString().split('T')[0]
+        : null,
       status: res.status,
       quantity: res.quantity,
-      user: res.users,
+      user: res.users
+        ? {
+            id: res.users.id,
+            name: res.users.name,
+            email: res.users.email,
+            ...(res.users.number_document
+              ? {
+                  document_last4: res.users.number_document
+                    .replace(/\D/g, '')
+                    .slice(-4),
+                }
+              : {}),
+          }
+        : null,
       service,
       slots: res.reservation_slots.map(rs => ({
         id: rs.id_time_slot,

@@ -47,23 +47,51 @@ export async function GET(request: NextRequest) {
     include: {
       users: { select: { id: true, name: true, email: true } },
       qr_codes: { select: { id: true, token: true } },
+      reservations: {
+        include: {
+          users: { select: { name: true } },
+          reservation_slots: {
+            include: {
+              time_slots: {
+                include: { services: { select: { name: true } } },
+              },
+            },
+          },
+        },
+      },
     },
     orderBy: { scanned_at: 'desc' },
   });
 
-  const data = logs.map(log => ({
-    id: log.id,
-    reservation_id: log.id_reservation,
-    qr_code_id: log.id_qr_code,
-    entry_type: log.entry_type,
-    result: log.result,
-    scanned_at: log.scanned_at,
-    employee: log.users ? {
-      id: log.users.id,
-      name: log.users.name,
-      email: log.users.email,
-    } : null,
-  }));
+  const data = logs.map(log => {
+    const firstSlot = log.reservations?.reservation_slots[0];
+
+    return {
+      id: log.id,
+      reservation_id: log.id_reservation,
+      qr_code_id: log.id_qr_code,
+      entry_type: log.entry_type,
+      result: log.result,
+      scanned_at: log.scanned_at,
+      employee: log.users ? {
+        id: log.users.id,
+        name: log.users.name,
+        email: log.users.email,
+      } : null,
+      ...(log.reservations
+        ? {
+            reservation: {
+              ...(log.reservations.users
+                ? { user: { name: log.reservations.users.name } }
+                : {}),
+              ...(firstSlot?.time_slots?.services
+                ? { service: { name: firstSlot.time_slots.services.name } }
+                : {}),
+            },
+          }
+        : {}),
+    };
+  });
 
   return NextResponse.json({ data }, { status: 200 });
 }
