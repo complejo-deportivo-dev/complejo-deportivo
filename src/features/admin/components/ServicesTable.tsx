@@ -7,11 +7,11 @@ export interface AdminServiceRow {
   id: number;
   name: string;
   category_id: number;
-  category_name: string;
+  category_name?: string | null;
   capacity: number;
   max_companions?: number; // TODO-BACKEND: campo real del backend.
   qr_type: "group" | "individual";
-  price_per_hour: number;
+  hour_price: number;
   is_active: boolean;
   active_reservations_count?: number; // TODO-BACKEND: conteo real del backend.
   past_reservations_count?: number; // TODO-BACKEND: historial de reservas pasadas.
@@ -57,7 +57,7 @@ export default function ServicesTable({
                 style: "currency",
                 currency: "CLP",
                 maximumFractionDigits: 0,
-              }).format(service.price_per_hour);
+              }).format(service.hour_price);
 
               return (
                 <tr key={service.id} className="border-t border-white/10 bg-transparent">
@@ -66,7 +66,7 @@ export default function ServicesTable({
                     {service.name}
                   </td>
                   <td className="w-[16%] px-4 py-4 text-sm text-slate-300">
-                    {service.category_name}
+                    {service.category_name || "—"}
                   </td>
                   <td className="w-[12%] px-4 py-4 text-sm text-slate-300">
                     {service.capacity}

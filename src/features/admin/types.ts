@@ -74,7 +74,7 @@ export interface AdminCategory {
   id: number;
   name: string;
   is_active: boolean;
-  serviceCount?: number; // TODO-BACKEND: conteo real del backend.
+  services_count?: number;
   services?: { id: number; name: string }[]; // TODO-BACKEND
 }
 
@@ -87,11 +87,11 @@ export interface AdminService {
   id: number;
   name: string;
   category_id: number;
-  category_name: string; // TODO-BACKEND: nombre de categoría resuelto en frontend si no viene del backend.
+  category_name?: string | null;
   capacity: number;
   max_companions?: number; // TODO-BACKEND: valor real del backend; opcional para compatibilidad.
   qr_type: "group" | "individual";
-  price_per_hour: number;
+  hour_price: number;
   is_active: boolean;
   active_reservations_count?: number; // TODO-BACKEND: conteo real del backend.
   past_reservations_count?: number; // TODO-BACKEND: historial de reservas pasadas.
@@ -116,4 +116,3 @@ export interface AdminTimeSlot {
   duration_minutes?: number; // TODO-BACKEND: se puede calcular en frontend si no viene del backend.
   active_reservations_count?: number; // TODO-BACKEND
 }
-

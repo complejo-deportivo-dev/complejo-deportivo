@@ -24,11 +24,11 @@ const normalizeService = (service: Partial<AdminService>): AdminServiceRow => ({
   id: service.id ?? 0,
   name: service.name ?? "Sin nombre",
   category_id: service.category_id ?? 0,
-  category_name: service.category_name ?? "Sin categoría",
+  category_name: service.category_name,
   capacity: Number(service.capacity ?? 0),
   max_companions: service.max_companions ?? 0,
   qr_type: service.qr_type === "individual" ? "individual" : "group",
-  price_per_hour: Number(service.price_per_hour ?? 0),
+  hour_price: Number(service.hour_price ?? 0),
   is_active: service.is_active ?? true,
   active_reservations_count: Number(service.active_reservations_count ?? 0),
   past_reservations_count: Number(service.past_reservations_count ?? 0),
@@ -40,7 +40,7 @@ const emptyFormValues = (categoryId = 0): ServiceFormValues => ({
   capacity: 0,
   max_companions: 0,
   qr_type: "group",
-  price_per_hour: 0,
+  hour_price: 0,
   is_active: true,
 });
 
@@ -402,7 +402,7 @@ export default function ServicesPage() {
                     capacity: editingService.capacity,
                     max_companions: editingService.max_companions ?? 0,
                     qr_type: editingService.qr_type,
-                    price_per_hour: editingService.price_per_hour,
+                    hour_price: editingService.hour_price,
                     is_active: editingService.is_active,
                   }
                 : emptyFormValues(categories[0]?.id ?? 0)

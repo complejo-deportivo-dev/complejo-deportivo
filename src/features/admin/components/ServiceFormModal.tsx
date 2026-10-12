@@ -13,7 +13,7 @@ export interface ServiceFormValues {
   capacity: number;
   max_companions: number;
   qr_type: "group" | "individual";
-  price_per_hour: number;
+  hour_price: number;
   is_active: boolean;
 }
 
@@ -43,7 +43,7 @@ export default function ServiceFormModal({
   const [capacity, setCapacity] = useState(String(initialValues.capacity));
   const [maxCompanions, setMaxCompanions] = useState(String(initialValues.max_companions));
   const [qrType, setQrType] = useState<ServiceFormValues["qr_type"]>(initialValues.qr_type);
-  const [pricePerHour, setPricePerHour] = useState(String(initialValues.price_per_hour));
+  const [hourPrice, setHourPrice] = useState(String(initialValues.hour_price));
   const [isActive, setIsActive] = useState(initialValues.is_active);
 
   const qrTypeIsLocked = isEditing && activeReservationsCount > 0;
@@ -54,7 +54,7 @@ export default function ServiceFormModal({
     const trimmedName = name.trim();
     const nextCapacity = Number(capacity);
     const nextMaxCompanions = Number(maxCompanions);
-    const nextPricePerHour = Number(pricePerHour);
+    const nextHourPrice = Number(hourPrice);
 
     if (!trimmedName) {
       return;
@@ -68,7 +68,7 @@ export default function ServiceFormModal({
       return;
     }
 
-    if (Number.isNaN(nextPricePerHour) || nextPricePerHour < 0) {
+    if (Number.isNaN(nextHourPrice) || nextHourPrice < 0) {
       return;
     }
 
@@ -82,7 +82,7 @@ export default function ServiceFormModal({
       capacity: nextCapacity,
       max_companions: nextMaxCompanions,
       qr_type: qrType,
-      price_per_hour: nextPricePerHour,
+      hour_price: nextHourPrice,
       is_active: isActive,
     });
   };
@@ -163,8 +163,8 @@ export default function ServiceFormModal({
             label="Precio por hora"
             type="number"
             placeholder="45000"
-            value={pricePerHour}
-            onChange={(event) => setPricePerHour(event.target.value)}
+            value={hourPrice}
+            onChange={(event) => setHourPrice(event.target.value)}
             disabled={isSubmitting}
             required
           />

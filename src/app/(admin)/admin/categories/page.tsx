@@ -31,14 +31,14 @@ const normalizeCategory = (category: {
   is_active?: boolean;
   activo?: boolean;
   servicios_count?: number;
-  serviceCount?: number;
+  services_count?: number;
   services?: { id: number; name: string }[];
 }): AdminCategoryRow => ({
   id: category.id,
   name: category.name,
   is_active: category.is_active ?? category.activo ?? true,
-  serviceCount:
-    category.serviceCount ?? category.servicios_count ?? category.services?.length ?? 0,
+  services_count:
+    category.services_count ?? category.servicios_count ?? category.services?.length ?? 0,
   services: category.services ?? [],
 });
 
@@ -60,7 +60,7 @@ async function fetchCategories(): Promise<AdminCategoryRow[]> {
       id: category.id,
       name: category.name,
       is_active: category.is_active,
-      serviceCount: category.serviceCount,
+      services_count: category.services_count,
       services: category.services,
     }),
   );
@@ -347,7 +347,7 @@ export default function CategoriesPage() {
                   setCategoryToDelete({
                     id: category.id,
                     name: category.name,
-                    serviceCount: category.serviceCount,
+                    serviceCount: category.services_count,
                     services: category.services,
                   });
                   setIsDeleteOpen(true);

@@ -13,7 +13,8 @@ export async function GET(request: NextRequest) {
 
   let toDate = new Date();
   let fromDate = new Date();
-  fromDate.setDate(fromDate.getDate() - 7); // Últimos 7 días por defecto
+  fromDate.setUTCHours(0, 0, 0, 0);
+  fromDate.setUTCDate(fromDate.getUTCDate() - 6); // Últimos 7 días por defecto
 
   if (fromParam) {
     const parsedFrom = new Date(fromParam);
@@ -54,6 +55,43 @@ export async function GET(request: NextRequest) {
     }
   });
 
+  const dailyTotals = new Map<string, number>();
+  const dailyDates: string[] = [];
+  const dayCursor = new Date(fromDate);
+  dayCursor.setUTCHours(0, 0, 0, 0);
+  const lastDay = new Date(toDate);
+  lastDay.setUTCHours(0, 0, 0, 0);
+
+  while (dayCursor <= lastDay) {
+    const date = dayCursor.toISOString().slice(0, 10);
+    dailyDates.push(date);
+    dailyTotals.set(date, 0);
+    dayCursor.setUTCDate(dayCursor.getUTCDate() + 1);
+  }
+
+  const rangeDays = dailyDates.length;
+  const activeServices = await prisma.services.findMany({
+    where: { is_active: true },
+    select: {
+      id: true,
+      name: true,
+      time_slots: {
+        select: {
+          reservation_slots: {
+            where: {
+              is_active: true,
+              slot_date: { gte: fromDate, lte: toDate },
+              reservations: {
+                is: { status: { in: ['confirmed', 'completed'] } },
+              },
+            },
+            select: { id: true },
+          },
+        },
+      },
+    },
+  });
+
   let total_revenue = 0;
   const by_status: Record<string, number> = {
     pending: 0,
@@ -66,6 +104,13 @@ export async function GET(request: NextRequest) {
   const serviceMap = new Map<number, { service_id: number; name: string; count: number; revenue: number }>();
 
   reservations.forEach(res => {
+    if (res.created_at) {
+      const date = res.created_at.toISOString().slice(0, 10);
+      if (dailyTotals.has(date)) {
+        dailyTotals.set(date, dailyTotals.get(date)! + 1);
+      }
+    }
+
     // Conteos por estado
     const status = res.status || 'unknown';
     if (by_status[status] !== undefined) {
@@ -111,13 +156,47 @@ export async function GET(request: NextRequest) {
     else if (log.result === 'denied') entries.denied = log._count.result;
   });
 
+  const service_occupancy = activeServices.map(service => {
+    const availableSlots = service.time_slots.length * rangeDays;
+    const bookedSlots = service.time_slots.reduce(
+      (total, timeSlot) => total + timeSlot.reservation_slots.length,
+      0,
+    );
+
+    return {
+      id: service.id,
+      name: service.name,
+      occupancy: availableSlots > 0 ? (bookedSlots / availableSlots) * 100 : 0,
+    };
+  });
+
+  const [categoriesCount, servicesCount, employeesCount] = await Promise.all([
+    prisma.categories.count({ where: { is_active: true } }),
+    prisma.services.count({ where: { is_active: true } }),
+    prisma.public_users.count({
+      where: { role: 'employee', is_active: true },
+    }),
+  ]);
+
   return NextResponse.json(
     {
-      total_reservations: reservations.length,
-      by_status,
-      total_revenue,
-      by_service: Array.from(serviceMap.values()),
-      entries
+      data: {
+        total_reservations: reservations.length,
+        by_status,
+        total_revenue,
+        by_service: Array.from(serviceMap.values()),
+        entries,
+        daily_reservations: dailyDates.map(date => ({
+          date,
+          total: dailyTotals.get(date) ?? 0,
+        })),
+        service_occupancy,
+        counts: {
+          categories: categoriesCount,
+          services: servicesCount,
+          employees: employeesCount,
+        },
+      },
     },
     { status: 200 }
   );

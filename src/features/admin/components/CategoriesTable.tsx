@@ -7,7 +7,7 @@ export interface AdminCategoryRow {
   id: number;
   name: string;
   is_active: boolean;
-  serviceCount?: number; // TODO-BACKEND: conteo real del backend.
+  services_count?: number;
   services?: { id: number; name: string }[]; // TODO-BACKEND
 }
 
@@ -44,7 +44,7 @@ export default function CategoriesTable({
 
           <tbody>
             {categories.map((category, index) => {
-              const serviceCount = category.serviceCount ?? category.services?.length ?? 0;
+              const services_count = category.services_count ?? category.services?.length ?? 0;
 
               return (
                 <tr key={category.id} className="border-t border-white/10 bg-transparent">
@@ -53,7 +53,7 @@ export default function CategoriesTable({
                     {category.name}
                   </td>
                   <td className="w-[25%] px-4 py-4 text-sm text-slate-300">
-                    {serviceCount === 1 ? "1 servicio" : `${serviceCount} servicios`}
+                    {services_count === 1 ? "1 servicio" : `${services_count} servicios`}
                   </td>
                   <td className="w-[15%] px-4 py-4">
                     <Badge variant={category.is_active ? "success" : "neutral"} size="sm">
