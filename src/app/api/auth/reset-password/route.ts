@@ -33,6 +33,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // TODO: This endpoint assumes the active session belongs to the user accepting the invitation.
     await authService.resetPassword(result.data.password);
 
     return NextResponse.json(
