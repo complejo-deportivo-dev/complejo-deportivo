@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Download, X } from "lucide-react";
+import QRCode from "qrcode";
 
 import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
@@ -33,9 +34,33 @@ export default function ModalQR({
   peopleCount,
   used = false,
 }: ModalQRProps) {
+  const [isDownloading, setIsDownloading] = useState(false);
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   const onCloseRef = useRef(onClose);
+
+  const handleDownload = async () => {
+    if (isDownloading || !qrToken) return;
+    setIsDownloading(true);
+    try {
+      const dataUrl = await QRCode.toDataURL(qrToken, {
+        errorCorrectionLevel: "H",
+        margin: 2,
+        width: 600,
+      });
+
+      const link = document.createElement("a");
+      link.href = dataUrl;
+      link.download = `QR-reserva-${reservationId}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error("Error al descargar el código QR:", error);
+    } finally {
+      setIsDownloading(false);
+    }
+  };
 
   useEffect(() => {
     onCloseRef.current = onClose;
@@ -159,7 +184,13 @@ export default function ModalQR({
         {used ? (
           <p className="text-sm text-white/60">Este código ya fue utilizado.</p>
         ) : (
-          <Button className="w-full max-w-80 sm:w-80" size="lg">
+          <Button
+            className="w-full max-w-80 sm:w-80"
+            disabled={isDownloading}
+            loading={isDownloading}
+            onClick={handleDownload}
+            size="lg"
+          >
             <Download size={18} />
             Descargar QR
           </Button>
