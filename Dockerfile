@@ -19,7 +19,7 @@ COPY . .
 
 ENV NEXT_TELEMETRY_DISABLED=1
 
-RUN npx prisma generate --config=prisma7.config.ts
+RUN DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy" npx prisma generate --config=prisma7.config.ts
 RUN npm run build
 
 # ---- Etapa 3: runner ----
