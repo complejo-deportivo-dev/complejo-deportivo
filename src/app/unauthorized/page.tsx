@@ -2,7 +2,14 @@ import Link from "next/link";
 import { ShieldX } from "lucide-react";
 import Button from "@/components/ui/Button";
 
-export default function UnauthorizedPage() {
+interface UnauthorizedPageProps {
+  searchParams: Promise<{ reason?: string }>;
+}
+
+export default async function UnauthorizedPage({ searchParams }: UnauthorizedPageProps) {
+  const { reason } = await searchParams;
+  const isInactive = reason === 'inactive';
+
   return (
     <main className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="w-full max-w-md text-center">
@@ -10,11 +17,12 @@ export default function UnauthorizedPage() {
           <ShieldX className="size-16" aria-hidden="true" />
         </div>
         <h1 className="mt-6 font-heading text-2xl font-bold text-text-primary">
-          Acceso no autorizado
+          {isInactive ? "Acceso denegado" : "Acceso no autorizado"}
         </h1>
         <p className="mt-2 text-sm text-text-secondary">
-          No tienes permisos para ver esta sección. Inicia sesión con la cuenta
-          correcta o vuelve al inicio.
+          {isInactive
+            ? "Su acceso a este sitio ha sido retirado. Por favor, comuníquese con el administrador."
+            : "No tienes permisos para ver esta sección. Inicia sesión con la cuenta correcta o vuelve al inicio."}
         </p>
         <div className="mt-8 space-y-3">
           <Link href="/login" className="block">

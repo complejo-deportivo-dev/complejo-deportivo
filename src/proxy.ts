@@ -38,6 +38,18 @@ export async function proxy(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
+  if (user) {
+    const { data: publicUser } = await supabase
+      .from("users")
+      .select("is_active")
+      .eq("id", user.id)
+      .single();
+
+    if (publicUser && !publicUser.is_active) {
+      return NextResponse.redirect(new URL("/unauthorized?reason=inactive", request.url));
+    }
+  }
+
   const { pathname } = request.nextUrl;
 
   if (pathname.startsWith("/admin") && user?.app_metadata?.role !== "admin") {
