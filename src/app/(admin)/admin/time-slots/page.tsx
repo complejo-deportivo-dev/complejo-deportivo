@@ -275,10 +275,10 @@ export default function TimeSlotsPage() {
     <>
       <Header role="admin" userName="Admin" userInitials="AD" />
 
-      <main className="min-h-screen bg-[#0B0F19] px-4 py-6 md:px-6">
+      <main className="min-h-screen bg-transparent px-4 py-6 md:px-6">
         <div className="mx-auto max-w-7xl">
           <Link
-            className="inline-flex items-center gap-2 text-sm font-medium text-blue-300 transition-colors hover:text-blue-200"
+            className="inline-flex mt-4 items-center gap-2 text-sm font-medium text-blue-300 transition-colors hover:text-blue-200"
             href="/admin"
           >
             <ArrowLeft className="h-4 w-4" />

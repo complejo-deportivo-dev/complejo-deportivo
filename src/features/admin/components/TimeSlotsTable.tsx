@@ -57,7 +57,7 @@ export default function TimeSlotsTable({ timeSlots, onEdit, onDelete }: TimeSlot
     <div className="overflow-hidden rounded-2xl border border-white/10 bg-[#101827]">
       <div className="overflow-x-auto">
         <table className="min-w-full border-collapse">
-          <thead className="bg-[#0B0F19] text-left text-[10px] uppercase tracking-[0.2em] text-slate-400">
+          <thead className="bg-transparent text-left text-[10px] uppercase tracking-[0.2em] text-slate-400">
             <tr>
               <th className="w-[5%] px-4 py-3 font-medium">#</th>
               <th className="w-[20%] px-4 py-3 font-medium">Hora inicio</th>

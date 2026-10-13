@@ -46,7 +46,7 @@ export default function ConfirmDeleteTimeSlotModal({
         ) : (
           <>
             <p>¿Deseas eliminar esta franja horaria?</p>
-            <div className="rounded-xl border border-white/10 bg-[#0B0F19] px-3 py-2 text-xs text-slate-300">
+            <div className="rounded-xl border border-white/10 bg-transparent px-3 py-2 text-xs text-slate-300">
               {slot.start_time} - {slot.end_time}
             </div>
           </>

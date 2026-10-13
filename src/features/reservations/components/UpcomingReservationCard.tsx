@@ -94,7 +94,7 @@ export default function UpcomingReservationCard({
 
       <Link
         href="/client/reservations"
-        className="mt-auto inline-flex items-center gap-1.5 text-sm font-medium text-primary transition-colors hover:text-primary-hover"
+        className="mt-auto inline-flex items-center gap-2 text-sm font-medium text-primary transition-colors hover:text-primary-hover"
       >
         Ver QR
         <ArrowRight aria-hidden="true" size={16} />
