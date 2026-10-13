@@ -256,7 +256,7 @@ export default function ClientDashboardPage() {
           </Banner>
         )}
 
-        <div className="grid gap-6 lg:grid-cols-2">
+        <div className="grid items-stretch gap-6 lg:grid-cols-2">
           <Card
             variant="highlighted"
             padding="lg"
@@ -285,12 +285,14 @@ export default function ClientDashboardPage() {
             </Link>
           </Card>
 
-          <section className="space-y-4">
+          <div className="flex h-full flex-col gap-4">
             <h2 className="font-heading text-h3 font-semibold text-text-primary">
               Próxima reserva
             </h2>
-            <UpcomingReservationCard reservation={upcoming} loading={loading} />
-          </section>
+            <div className="flex-1">
+              <UpcomingReservationCard reservation={upcoming} loading={loading} />
+            </div>
+          </div>
         </div>
 
         <QRList items={qrItems} loading={loading} onOpenQR={setSelectedQR} />

@@ -70,7 +70,7 @@ export default function ServiceBookingPage() {
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(() => new Date());
   const [selectedSlots, setSelectedSlots] = useState<ServiceSlot[]>([]);
   const [quantity, setQuantity] = useState(1);
   const [documentValue, setDocumentValue] = useState("");
@@ -289,7 +289,7 @@ export default function ServiceBookingPage() {
 
               {/* Derecha (40%) */}
               <div className="lg:col-span-5">
-                <div className="space-y-6">
+                <div className="space-y-6 lg:sticky lg:top-8">
                   {hasQuantitySelector && (
                     <div className="rounded-xl border border-border bg-surface p-5">
                       <QuantitySelector
