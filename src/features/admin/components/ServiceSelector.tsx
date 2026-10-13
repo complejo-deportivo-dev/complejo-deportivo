@@ -28,7 +28,7 @@ export default function ServiceSelector({
       <div className="space-y-2">
         <label className="block text-sm font-medium text-slate-200">Selecciona un servicio</label>
         <select
-          className="h-11 w-full rounded-xl border border-white/10 bg-[#0B0F19] px-3 text-sm text-slate-100 outline-none transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+          className="h-11 w-full rounded-xl border border-white/10 bg-transparent px-3 text-sm text-slate-100 outline-none transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 disabled:cursor-not-allowed disabled:opacity-50"
           disabled={disabled || activeServices.length === 0}
           onChange={(event) => {
             const selectedValue = Number(event.target.value);

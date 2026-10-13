@@ -139,7 +139,7 @@ export default function Header({
   const avatarName = userName || userInitials || (isEmployee ? "E" : "U");
 
   return (
-    <header className={`sticky top-6 z-40 mx-6 lg:mx-16 ${className}`}>
+    <header className={`sticky top-4 z-40 mx-6 lg:mx-16 ${className}`}>
       <div className="relative flex h-16 items-center justify-between rounded-xl border border-border bg-surface px-4 sm:px-6 shadow-md backdrop-blur-md">
         <Link
           href={homeHref}
