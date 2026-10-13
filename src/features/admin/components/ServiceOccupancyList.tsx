@@ -29,7 +29,9 @@ export default function ServiceOccupancyList({
             <li key={service.id}>
               <div className="mb-1 flex justify-between text-sm">
                 <span className="text-text-primary">{service.name}</span>
-                <span className="text-text-secondary">{service.occupancy}%</span>
+                <span className="text-text-secondary">
+                  {Math.floor(service.occupancy)}%
+                </span>
               </div>
               {/* Barra de progreso: el ancho de la barra interna es el porcentaje */}
               <div className="h-2 w-full overflow-hidden rounded-full bg-primary-soft">

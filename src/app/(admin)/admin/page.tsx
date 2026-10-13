@@ -98,9 +98,9 @@ export default function AdminDashboardPage() {
     <>
       <Header role="admin" userName="Admin" userInitials="AD" />
 
-      <main className="mx-auto max-w-7xl space-y-6 px-4 py-6 md:px-6">
+      <main className="mx-auto w-full max-w-7xl space-y-6 px-4 py-6 md:px-6">
         <div>
-          <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-text-secondary">
+          <p className="mt-4 mb-2 text-xs font-semibold uppercase tracking-wider text-text-secondary">
             PANEL DE ADMINISTRACIÓN
           </p>
           <h1 className="font-heading text-3xl font-bold text-text-primary">
