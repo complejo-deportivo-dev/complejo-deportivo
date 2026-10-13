@@ -88,7 +88,7 @@ export default function ClubCinemaHero() {
             <Button
               size="lg"
               className="group rounded-xl"
-              onClick={() => router.push("/reservations")}
+              onClick={() => router.push("/login")}
             >
               Reservar ahora
               <ArrowRight
