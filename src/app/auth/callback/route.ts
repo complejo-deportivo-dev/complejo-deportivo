@@ -1,6 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse, type NextRequest } from "next/server";
 
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+
 const roleHomes = {
   admin: "/admin",
   client: "/client",
@@ -29,13 +31,13 @@ export async function GET(request: NextRequest) {
         (role === "admin" || role === "client" || role === "employee")
       ) {
         return NextResponse.redirect(
-          new URL(roleHomes[role], requestUrl.origin),
+          new URL(roleHomes[role], BASE_URL),
         );
       }
     }
   }
 
   return NextResponse.redirect(
-    new URL("/login?error=auth_callback", requestUrl.origin),
+    new URL("/login?error=auth_callback", BASE_URL),
   );
 }
