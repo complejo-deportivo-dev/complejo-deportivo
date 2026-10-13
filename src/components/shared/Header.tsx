@@ -4,7 +4,6 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  ArrowRight,
   LogIn,
   Menu,
   UserPlus,
@@ -58,7 +57,9 @@ const ROLE_NAVIGATION: Record<
 const PUBLIC_NAVIGATION: NavItem[] = [
   { label: "Instalaciones", href: "#instalaciones" },
   { label: "Servicios", href: "#servicios" },
+  { label: "¿Quiénes somos?", href: "#nosotros" },
   { label: "Experiencia", href: "#experiencia" },
+  { label: "Preguntas frecuentes", href: "#preguntas-frecuentes" },
 ];
 
 export default function Header({
@@ -164,7 +165,7 @@ export default function Header({
         {hasNavigation && (
           <nav
             aria-label="Navegación principal"
-            className="hidden md:flex items-center gap-8"
+            className="hidden items-center gap-8 md:flex xl:absolute xl:left-1/2 xl:-translate-x-1/2"
           >
             {navItems.map((item) => {
               const active = isLinkActive(item.href);
@@ -204,26 +205,13 @@ export default function Header({
                 </Link>
                 <Link
                   href="/register"
-                  className="hidden items-center gap-1.5 rounded-lg border border-border bg-surface-elevated/40 px-3.5 py-1.5 text-sm font-medium text-text-primary transition-colors hover:bg-surface-elevated lg:inline-flex"
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface-elevated/40 px-3.5 py-1.5 text-sm font-medium text-text-primary transition-colors hover:bg-surface-elevated"
                 >
                   <UserPlus className="size-4" />
                   <span>Registrarse</span>
                 </Link>
-                <Link
-                  href="/reservations"
-                  className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:bg-primary-hover active:scale-[0.98]"
-                >
-                  <span>Reservar</span>
-                  <ArrowRight className="size-4" />
-                </Link>
               </div>
               <div className="flex items-center gap-2 md:hidden">
-                <Link
-                  href="/reservations"
-                  className="inline-flex items-center justify-center rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-white shadow-sm"
-                >
-                  Reservar
-                </Link>
                 <button
                   type="button"
                   onClick={() => setIsMobileMenuOpen((prev) => !prev)}
