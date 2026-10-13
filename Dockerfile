@@ -14,24 +14,31 @@ FROM node:20-alpine AS builder
 RUN apk add --no-cache libc6-compat openssl
 WORKDIR /app
 
+# Build args para variables públicas (se embeben en el bundle JS)
+ARG NEXT_PUBLIC_SUPABASE_URL
+ARG NEXT_PUBLIC_SUPABASE_ANON_KEY
+ARG NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+ARG NEXT_PUBLIC_SITE_URL
+ARG NEXT_PUBLIC_APP_URL
+
+ENV NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL
+ENV NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY
+ENV NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=$NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+ENV NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL
+ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
+
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Variables dummy SOLO para build time.
-# En runtime se inyectan con --env-file .env (reemplazan a estas).
+# Estas sí son dummy (solo runtime, no se embeben)
 ENV DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy"
-ENV NEXT_PUBLIC_SUPABASE_URL="https://dummy.supabase.co"
-ENV NEXT_PUBLIC_SUPABASE_ANON_KEY="dummy-anon-key"
 ENV SUPABASE_SERVICE_ROLE_KEY="dummy-service-role-key"
-ENV NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY="pk_dummy"
 ENV STRIPE_SECRET_KEY="sk_dummy"
 ENV STRIPE_WEBHOOK_SECRET="whsec_dummy"
 ENV RESEND_API_KEY="re_dummy"
 ENV RESEND_FROM_EMAIL="dummy@resend.dev"
-ENV NEXT_PUBLIC_SITE_URL="https://dummy.local"
-ENV NEXT_PUBLIC_APP_URL="https://dummy.local"
 
 RUN npx prisma generate --config=prisma7.config.ts
 RUN npm run build
