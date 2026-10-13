@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import Header from "@/components/shared/Header";
+import ClubAboutSection from "@/components/home/ClubAboutSection";
 import ClubCinemaHero from "@/components/home/ClubCinemaHero";
+import ClubFAQSection from "@/components/home/ClubFAQSection";
+import ClubFooter from "@/components/home/ClubFooter";
 import ClubServicesSlider from "@/components/home/ClubServicesSlider";
 
 export default function Home() {
@@ -23,6 +26,8 @@ export default function Home() {
           <ClubServicesSlider />
         </div>
       </section>
+
+      <ClubAboutSection />
 
       <section
         id="experiencia"
@@ -50,6 +55,8 @@ export default function Home() {
           </Link>
         </div>
       </section>
+      <ClubFAQSection />
+      <ClubFooter />
     </main>
   );
 }
