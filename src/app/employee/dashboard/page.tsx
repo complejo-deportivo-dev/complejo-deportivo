@@ -1,7 +1,6 @@
-// TEMPORAL: versión con datos hardcodeados para previsualizar. Reemplazar por versión real cuando el login esté listo.
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -11,51 +10,89 @@ import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 
-const userName = "Empleado Test";
-const userInitials = "ET";
-const validationsToday = 12;
-
-const recentValidations: {
-  name: string;
+type RecentValidation = {
+  id: number;
+  holder_name: string;
   service: string;
   time: string;
   result: "granted" | "denied";
-}[] = [
-  {
-    name: "Laura Martínez",
-    service: "Piscina climatizada",
-    time: "09:42",
-    result: "granted",
-  },
-  {
-    name: "Andrés Gómez",
-    service: "Gimnasio",
-    time: "09:35",
-    result: "granted",
-  },
-  {
-    name: "Camila Rodríguez",
-    service: "Cancha de fútbol",
-    time: "09:21",
-    result: "denied",
-  },
-  {
-    name: "Mateo Sánchez",
-    service: "Zonas húmedas",
-    time: "09:10",
-    result: "granted",
-  },
-  {
-    name: "Valentina López",
-    service: "Piscina climatizada",
-    time: "08:54",
-    result: "granted",
-  },
-];
+};
 
 export default function EmployeeDashboardPage() {
   const router = useRouter();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [userName, setUserName] = useState<string>("");
+  const [userInitials, setUserInitials] = useState<string>("");
+  const [validationsToday, setValidationsToday] = useState<number>(0);
+  const [recentValidations, setRecentValidations] = useState<
+    RecentValidation[]
+  >([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let isActive = true;
+
+    async function loadDashboard() {
+      try {
+        const [profileResponse, statsResponse] = await Promise.all([
+          fetch("/api/users/me"),
+          fetch("/api/access/stats"),
+        ]);
+
+        if (!profileResponse.ok || !statsResponse.ok) {
+          throw new Error("No se pudieron cargar los datos del dashboard");
+        }
+
+        const profile: { name: string } = await profileResponse.json();
+        const stats: {
+          data: {
+            validations_today: number;
+            recent_validations: {
+              id: number;
+              holder_name: string;
+              service_name: string;
+              time: string;
+              result: "granted" | "denied";
+            }[];
+          };
+        } = await statsResponse.json();
+
+        if (!isActive) return;
+
+        setUserName(profile.name);
+        setUserInitials(
+          profile.name
+            .trim()
+            .split(/\s+/)
+            .filter(Boolean)
+            .slice(0, 2)
+            .map((word) => word[0])
+            .join("")
+            .toLocaleUpperCase(),
+        );
+        setValidationsToday(stats.data.validations_today);
+        setRecentValidations(
+          stats.data.recent_validations.map((validation) => ({
+            id: validation.id,
+            holder_name: validation.holder_name,
+            service: validation.service_name,
+            time: validation.time,
+            result: validation.result,
+          })),
+        );
+      } catch (error) {
+        console.error("Error al cargar el dashboard del empleado", error);
+      } finally {
+        if (isActive) setLoading(false);
+      }
+    }
+
+    void loadDashboard();
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
 
   async function handleLogout() {
     if (isLoggingOut) return;
@@ -87,10 +124,7 @@ export default function EmployeeDashboardPage() {
             <span className="max-w-36 truncate text-sm text-text-primary">
               {userName}
             </span>
-            <Avatar
-              name={`${userInitials[0]} ${userInitials.slice(1)}`}
-              size="sm"
-            />
+            <Avatar name={userName} size="sm" />
             <button
               type="button"
               onClick={handleLogout}
@@ -106,7 +140,7 @@ export default function EmployeeDashboardPage() {
 
         <section className="mt-8">
           <h1 className="font-heading text-2xl font-bold text-text-primary">
-            Hola, {userName}
+            Hola, {userName || userInitials}
           </h1>
           <p className="mt-1 text-sm text-text-secondary">
             Valida los accesos desde tu celular.
@@ -123,7 +157,7 @@ export default function EmployeeDashboardPage() {
             className="size-5 shrink-0 text-primary"
           />
           <p className="text-base font-medium text-text-primary">
-            {validationsToday} accesos validados hoy
+            {loading ? "" : validationsToday} accesos validados hoy
           </p>
         </Card>
 
@@ -161,16 +195,16 @@ export default function EmployeeDashboardPage() {
           </h2>
           <ul className="mt-3 space-y-3">
             {recentValidations.map((validation) => (
-              <li key={`${validation.name}-${validation.time}`}>
+              <li key={validation.id}>
                 <Card
                   as="article"
                   padding="sm"
                   className="flex items-center gap-3"
                 >
-                  <Avatar name={validation.name} size="sm" />
+                  <Avatar name={validation.holder_name} size="sm" />
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium text-text-primary">
-                      {validation.name}
+                      {validation.holder_name}
                     </p>
                     <p className="truncate text-xs text-text-secondary">
                       {validation.service}
