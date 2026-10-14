@@ -6,9 +6,9 @@ import { ArrowRight, CalendarDays } from "lucide-react";
 
 import Header from "@/components/shared/Header";
 import ModalQR from "@/components/shared/ModalQR";
+import ImmersiveBackground from "@/components/shared/ImmersiveBackground";
 import Banner from "@/components/ui/Banner";
 import Button from "@/components/ui/Button";
-import Card from "@/components/ui/Card";
 import Skeleton from "@/components/ui/Skeleton";
 import UpcomingReservationCard, {
   type UpcomingReservation,
@@ -228,20 +228,30 @@ export default function ClientDashboardPage() {
   const qrItems = payload?.qrItems ?? [];
   const history = payload?.history ?? [];
 
+  const upcomingQrItem = upcoming
+    ? qrItems.find((q) => q.reservationId === upcoming.reservationId) ?? null
+    : null;
+
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="relative flex min-h-screen flex-col">
+      <ImmersiveBackground
+        fallbackSrc="/images/cancha.webp"
+        alt="Complejo deportivo"
+      />
+
       <Header role="client" userName={displayName || undefined} />
 
-      <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-12 px-6 pb-16 pt-10 lg:px-16">
+      <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-10 px-6 pb-20 pt-8 lg:px-16">
+        {/* SALUDO AL CLIENTE */}
         <section className="space-y-2">
           {loading && !displayName ? (
             <Skeleton width={240} height={40} />
           ) : (
-            <h1 className="font-heading text-h1 font-semibold text-text-primary">
+            <h1 className="font-heading text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
               Hola, {displayName || "usuario"}
             </h1>
           )}
-          <p className="text-lg text-text-secondary">
+          <p className="text-sm text-slate-300 sm:text-base">
             Todo listo para tu próxima visita al complejo.
           </p>
         </section>
@@ -256,47 +266,77 @@ export default function ClientDashboardPage() {
           </Banner>
         )}
 
-        <div className="grid gap-6 lg:grid-cols-2">
-          <Card
-            variant="highlighted"
-            padding="lg"
-            className="flex h-full flex-col gap-5 sm:flex-row sm:items-center sm:justify-between"
-          >
-            <div className="flex items-start gap-4">
-              <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-white/15 text-white">
-                <CalendarDays aria-hidden="true" className="size-6" />
-              </span>
-              <div>
-                <h2 className="font-heading text-h3 font-semibold text-white">
-                  Hacer una reserva
-                </h2>
-                <p className="mt-1 text-sm text-white/80">
-                  Elige entre canchas, piscinas, gimnasio y zonas húmedas y
-                  asegura tu franja al instante.
-                </p>
+        {/* DOS COLUMNAS: HACER UNA RESERVA Y PRÓXIMA RESERVA */}
+        <div className="grid items-stretch gap-6 lg:grid-cols-2">
+          {/* Columna 1: Hacer una reserva */}
+          <section className="flex flex-col gap-3">
+            <h2 className="font-heading text-lg font-bold text-white">
+              Nueva Reserva
+            </h2>
+            <div className="relative flex flex-1 flex-col justify-between overflow-hidden rounded-2xl border border-white/10 bg-[#0c1322]/75 p-6 shadow-2xl backdrop-blur-2xl">
+              <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-sky-400 via-teal-400 to-transparent shadow-xs shadow-sky-400/40" />
+              <div className="flex items-start gap-4">
+                <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl border border-sky-400/20 bg-sky-500/15 text-[#38bdf8]">
+                  <CalendarDays aria-hidden="true" className="size-6" />
+                </span>
+                <div className="space-y-1">
+                  <h3 className="font-heading text-xl font-bold tracking-tight text-white">
+                    Hacer una reserva
+                  </h3>
+                  <p className="text-xs text-slate-300 leading-relaxed sm:text-sm">
+                    Elige entre canchas sintéticas, piscina semiolímpica, gimnasio y zonas húmedas. Selecciona tu horario y asegura tu franja al instante.
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-6 border-t border-white/10 pt-4">
+                <Link
+                  href="/client/categories"
+                  className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-sky-400/30 bg-[#0284c7] px-6 text-xs font-bold text-white shadow-lg shadow-sky-500/30 transition-all hover:bg-[#0369a1]"
+                >
+                  <span>Hacer una reserva</span>
+                  <ArrowRight aria-hidden="true" size={16} />
+                </Link>
               </div>
             </div>
-            <Link
-              href="/client/categories"
-              className="inline-flex h-12 shrink-0 items-center justify-center gap-2 rounded-md bg-white px-6 text-base font-medium text-primary transition-colors duration-200 hover:bg-white/90 focus:outline-none focus:ring-2 focus:ring-white/60"
-            >
-              Hacer una reserva
-              <ArrowRight aria-hidden="true" size={18} />
-            </Link>
-          </Card>
+          </section>
 
-          <section className="space-y-4">
-            <h2 className="font-heading text-h3 font-semibold text-text-primary">
-              Próxima reserva
-            </h2>
-            <UpcomingReservationCard reservation={upcoming} loading={loading} />
+          {/* Columna 2: Próxima reserva */}
+          <section className="flex flex-col gap-3">
+            <div className="flex items-center justify-between">
+              <h2 className="font-heading text-lg font-bold text-white">
+                Próxima reserva
+              </h2>
+              {upcoming && (
+                <Link
+                  href="/client/reservations"
+                  className="text-xs font-semibold text-[#38bdf8] hover:text-white transition-colors"
+                >
+                  Ver todas →
+                </Link>
+              )}
+            </div>
+            <div className="flex-1">
+              <UpcomingReservationCard
+                reservation={upcoming}
+                loading={loading}
+                onOpenQR={
+                  upcomingQrItem
+                    ? () => setSelectedQR(upcomingQrItem)
+                    : undefined
+                }
+              />
+            </div>
           </section>
         </div>
 
+        {/* MIS QRS ACTIVOS */}
         <QRList items={qrItems} loading={loading} onOpenQR={setSelectedQR} />
 
+        {/* HISTORIAL RECIENTE */}
         <RecentHistory items={history} loading={loading} />
 
+        {/* MODAL QR PARA VER Y DESCARGAR */}
         {selectedQR && (
           <ModalQR
             isOpen

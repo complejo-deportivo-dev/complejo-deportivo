@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { createClient } from "@/lib/supabase/server";
 import { calculateReservationAmount } from "@/lib/reservation-amount";
+import { reconcileReservationPayment } from "@/lib/reservation-reconciliation";
 import type { ApiError, ApiResponse } from "@/types/api";
 import { formatInTimeZone } from "date-fns-tz";
 import { NextResponse } from "next/server";
@@ -60,7 +61,7 @@ export async function GET(
   }
 
   try {
-    const reservation = await prisma.reservations.findUnique({
+    let reservation = await prisma.reservations.findUnique({
       where: { id: reservationId },
       include: {
         reservation_slots: {
@@ -83,6 +84,13 @@ export async function GET(
         { error: "Reserva no encontrada" },
         { status: 404 }
       );
+    }
+
+    if (reservation.status === "pending" || reservation.qr_codes.length === 0) {
+      const reconciled = await reconcileReservationPayment(reservation.id);
+      if (reconciled) {
+        reservation = reconciled;
+      }
     }
 
     const orderedSlots = [...reservation.reservation_slots].sort(

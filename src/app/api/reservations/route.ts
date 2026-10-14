@@ -5,6 +5,7 @@ import {
   calculateReservationAmount,
   timeInMilliseconds,
 } from "@/lib/reservation-amount";
+import { reconcileUserPendingReservations } from "@/lib/reservation-reconciliation";
 import { Prisma } from "@/generated/prisma/client";
 import type {
   ApiError,
@@ -104,10 +105,11 @@ function serializeReservation(reservation: {
     time_slots: {
       time_start: Date;
       time_end: Date;
-      services: { id: number; name: string; hour_price: Prisma.Decimal } | null;
+      services: { id: number; name: string; hour_price: Prisma.Decimal; qr_type?: string } | null;
     } | null;
   }>;
   payments: { amount: Prisma.Decimal } | null;
+  qr_codes?: Array<{ id: number; token: string; used_at: Date | null }> | null;
 }) {
   const orderedSlots = [...reservation.reservation_slots].sort(
     (left, right) => left.slot_date.getTime() - right.slot_date.getTime()
@@ -148,6 +150,15 @@ function serializeReservation(reservation: {
           })
         : 0;
 
+  const qrCodes =
+    reservation.status === "confirmed" && reservation.qr_codes
+      ? reservation.qr_codes.map((qr) => ({
+          qr_id: qr.id,
+          token: qr.token,
+          used: Boolean(qr.used_at),
+        }))
+      : [];
+
   return {
     reservation_id: reservation.id,
     service: {
@@ -162,6 +173,7 @@ function serializeReservation(reservation: {
     quantity: reservation.quantity,
     amount,
     expires_at: reservation.expires_at?.toISOString() ?? null,
+    qr_codes: qrCodes,
   };
 }
 
@@ -223,6 +235,8 @@ export async function GET(request: NextRequest) {
   }
 
   try {
+    await reconcileUserPendingReservations(user.id);
+
     const reservations = await prisma.reservations.findMany({
       where: {
         id_user: user.id,
@@ -243,6 +257,7 @@ export async function GET(request: NextRequest) {
           },
         },
         payments: true,
+        qr_codes: true,
       },
     });
 

@@ -24,8 +24,7 @@ interface QRListProps {
   onOpenQR?: (item: QRItemData) => void;
 }
 
-const listClasses =
-  "grid grid-flow-col auto-cols-max gap-4 overflow-x-auto pb-2 lg:grid-flow-row lg:grid-cols-3 lg:overflow-visible";
+const listClasses = "flex flex-wrap gap-4 pb-2";
 
 export default function QRList({ items, loading = false, onOpenQR }: QRListProps) {
   return (
