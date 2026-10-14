@@ -2,12 +2,14 @@ import { type EmailOtpType } from "@supabase/supabase-js";
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const token_hash = searchParams.get("token_hash");
   const type = searchParams.get("type") as EmailOtpType | null;
   const redirect_to = searchParams.get("redirect_to") ?? "/";
-  const redirectUrl = new URL(redirect_to, request.url);
+  const redirectUrl = new URL(redirect_to, BASE_URL);
   let response = NextResponse.redirect(redirectUrl);
 
   if (token_hash && type) {
@@ -21,15 +23,15 @@ export async function GET(request: NextRequest) {
           },
           setAll(cookiesToSet) {
             cookiesToSet.forEach(({ name, value }) =>
-              request.cookies.set(name, value)
+              request.cookies.set(name, value),
             );
             response = NextResponse.redirect(redirectUrl);
             cookiesToSet.forEach(({ name, value, options }) =>
-              response.cookies.set(name, value, options)
+              response.cookies.set(name, value, options),
             );
           },
         },
-      }
+      },
     );
 
     const { error } = await supabase.auth.verifyOtp({
@@ -45,6 +47,6 @@ export async function GET(request: NextRequest) {
   }
 
   return NextResponse.redirect(
-    new URL("/login?error=verification_failed", request.url)
+    new URL("/login?error=verification_failed", BASE_URL),
   );
 }
