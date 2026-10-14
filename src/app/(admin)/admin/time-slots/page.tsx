@@ -41,8 +41,8 @@ const normalizeService = (service: Partial<AdminService>): ServiceOption => ({
 const normalizeTimeSlot = (slot: Partial<AdminTimeSlot>): TimeSlotTableRow => ({
   id: slot.id ?? 0,
   service_id: slot.service_id ?? 0,
-  start_time: slot.start_time ?? "08:00",
-  end_time: slot.end_time ?? "09:00",
+  start_time: slot.time_start ?? "08:00",
+  end_time: slot.time_end ?? "09:00",
   is_active: slot.is_active ?? true,
   active_reservations_count: slot.active_reservations_count ?? 0,
 });
@@ -159,8 +159,8 @@ export default function TimeSlotsPage() {
           },
           body: JSON.stringify({
             service_id: values.service_id,
-            start_time: values.start_time,
-            end_time: values.end_time,
+            time_start: values.time_start,
+            time_end: values.time_end,
           }),
         },
       );
@@ -349,14 +349,14 @@ export default function TimeSlotsPage() {
                 ? {
                     id: editingSlot.id,
                     service_id: editingSlot.service_id,
-                    start_time: editingSlot.start_time,
-                    end_time: editingSlot.end_time,
+                    time_start: editingSlot.start_time,
+                    time_end: editingSlot.end_time,
                   }
                 : {
                     id: undefined,
                     service_id: selectedServiceId ?? 0,
-                    start_time: "08:00",
-                    end_time: "09:00",
+                    time_start: "08:00",
+                    time_end: "09:00",
                   }
             }
             isEditing={Boolean(editingSlot)}
