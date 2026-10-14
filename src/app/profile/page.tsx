@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Header from "@/components/shared/Header";
+import ImmersiveBackground from "@/components/shared/ImmersiveBackground";
 import ProfileForm from "@/features/auth/components/ProfileForm";
 import Skeleton from "@/components/ui/Skeleton";
 
@@ -50,10 +51,14 @@ export default function ProfilePage() {
   }, [router]);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="relative min-h-screen flex flex-col">
+      <ImmersiveBackground
+        ambient
+        alt="Perfil de socio deportivo"
+      />
       <Header role={role} />
 
-      <main className="px-4 py-6 md:px-6 lg:px-8">
+      <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-6 pb-20 pt-8 lg:px-16">
         {loading ? (
           <div className="mx-auto max-w-[720px] space-y-5 rounded-[28px] border border-border bg-surface p-6 shadow-md">
             <div className="flex flex-col items-center gap-3">

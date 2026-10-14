@@ -235,7 +235,7 @@ export default function ClientDashboardPage() {
   return (
     <div className="relative flex min-h-screen flex-col">
       <ImmersiveBackground
-        fallbackSrc="/images/cancha.webp"
+        ambient
         alt="Complejo deportivo"
       />
 

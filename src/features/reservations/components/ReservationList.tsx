@@ -2,11 +2,13 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { CalendarDays, Clock3, History, ListFilter, Plus } from "lucide-react";
+import { ArrowLeft, CalendarDays, Clock3, History, ListFilter, Plus, Sparkles } from "lucide-react";
 
 import ModalQR from "@/components/shared/ModalQR";
+import ImmersiveBackground from "@/components/shared/ImmersiveBackground";
 import Banner from "@/components/ui/Banner";
 import Button from "@/components/ui/Button";
+
 import Card from "@/components/ui/Card";
 import Skeleton from "@/components/ui/Skeleton";
 import ReservationCard from "@/features/reservations/components/ReservationCard";
@@ -168,37 +170,68 @@ export default function ReservationList() {
 
   return (
     <>
-      <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-6 pb-16 pt-10 lg:px-16">
-        <div className="mb-8 flex flex-col gap-2">
-          <p className="text-sm font-semibold uppercase text-secondary">
-            Tu actividad
-          </p>
-          <h1 className="font-heading text-h1 font-semibold text-text-primary">
-            Mis reservas
-          </h1>
-          <p className="max-w-2xl text-text-secondary">
-            Consulta tus próximos horarios, revisa el historial y accede a tus códigos de entrada.
-          </p>
-        </div>
+      <ImmersiveBackground
+        ambient
+        alt="Escenarios deportivos"
+      />
+      <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-6 pb-20 pt-8 lg:px-16">
+        <Link
+          href="/client"
+          className="mb-8 inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-[#0c1322]/50 px-4 py-1.5 text-xs font-medium text-slate-300 shadow-sm backdrop-blur-md transition-all hover:border-white/20 hover:bg-[#0c1322]/80 hover:text-white"
+        >
+          <ArrowLeft size={14} aria-hidden="true" />
+          <span>Volver al inicio</span>
+        </Link>
 
+        {/* HERO BANNER DE RESERVAS */}
+        <section className="relative mb-8 overflow-hidden rounded-3xl border border-white/10 bg-[#0c1322]/75 p-6 shadow-2xl backdrop-blur-2xl sm:p-8">
+          <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-sky-400 via-teal-400 to-transparent shadow-xs shadow-sky-400/40" />
+
+          <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+            <div className="space-y-2 max-w-2xl">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-sky-400/25 bg-sky-500/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-[#38bdf8]">
+                <Sparkles size={13} />
+                Gestión de Visitas y Accesos
+              </span>
+
+              <h1 className="font-heading text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
+                Mis reservas
+              </h1>
+
+              <p className="text-sm text-slate-300 sm:text-base leading-relaxed">
+                Consulta tus franjas horarias programadas, accede a tus códigos QR para ingreso en portería y revisa tu historial deportivo.
+              </p>
+            </div>
+
+            <Link
+              href="/client/categories"
+              className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-sky-400/30 bg-[#0284c7] px-5 text-xs font-bold text-white shadow-lg shadow-sky-500/30 transition-all hover:bg-[#0369a1]"
+            >
+              <Plus aria-hidden="true" size={16} />
+              <span>Nueva reserva</span>
+            </Link>
+          </div>
+        </section>
+
+        {/* SELECTOR DE FILTROS */}
         <div
           aria-label="Filtrar reservas"
-          className="scrollbar-hide mb-6 flex w-full gap-2 overflow-x-auto rounded-lg border border-border bg-surface p-1 sm:w-fit"
+          className="scrollbar-hide mb-6 flex w-full gap-2 overflow-x-auto rounded-2xl border border-white/10 bg-[#0c1322]/75 p-1.5 shadow-lg backdrop-blur-xl sm:w-fit"
           role="group"
         >
           {FILTERS.map(({ id, label, icon: Icon }) => (
             <button
               key={id}
               aria-pressed={filter === id}
-              className={`inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-md px-4 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 ${
+              className={`inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-xl px-4 text-xs font-bold transition-all focus:outline-none ${
                 filter === id
-                  ? "bg-primary text-white"
-                  : "text-text-secondary hover:bg-surface-elevated hover:text-text-primary"
+                  ? "border border-sky-400/30 bg-[#0284c7] text-white shadow-md shadow-sky-500/25"
+                  : "text-slate-300 hover:bg-white/5 hover:text-white"
               }`}
               onClick={() => changeFilter(id)}
               type="button"
             >
-              <Icon aria-hidden="true" size={16} />
+              <Icon aria-hidden="true" size={15} />
               {label}
             </button>
           ))}
@@ -217,7 +250,7 @@ export default function ReservationList() {
         {loading ? (
           <div aria-label="Cargando reservas" className="space-y-4" role="status">
             {[0, 1, 2].map((item) => (
-              <Card key={item} className="space-y-5" padding="lg">
+              <div key={item} className="space-y-5 rounded-2xl border border-white/10 bg-[#0c1322]/75 p-6 shadow-xl backdrop-blur-xl">
                 <div className="flex items-center justify-between gap-4">
                   <Skeleton height={24} width="42%" />
                   <Skeleton height={22} width={96} />
@@ -228,29 +261,31 @@ export default function ReservationList() {
                   <Skeleton height={18} width="60%" />
                 </div>
                 <Skeleton height={42} width="100%" />
-              </Card>
+              </div>
             ))}
           </div>
         ) : !error && reservations.length === 0 ? (
-          <Card className="flex flex-col items-center gap-3 px-6 py-14 text-center">
-            <span className="flex size-12 items-center justify-center rounded-full bg-primary-soft text-primary">
-              <Clock3 aria-hidden="true" className="size-6" />
+          <div className="flex flex-col items-center gap-4 rounded-3xl border border-dashed border-white/15 bg-[#0c1322]/60 px-6 py-16 text-center shadow-xl backdrop-blur-xl">
+            <span className="flex size-14 items-center justify-center rounded-2xl border border-sky-400/20 bg-sky-500/15 text-[#38bdf8]">
+              <Clock3 aria-hidden="true" className="size-7" />
             </span>
-            <div>
-              <h2 className="font-heading text-h4 font-semibold text-text-primary">
+            <div className="max-w-md">
+              <h2 className="font-heading text-xl font-bold text-white">
                 {getEmptyMessage(filter)}
               </h2>
-              <p className="mt-1 text-sm text-text-secondary">
-                Cuando reserves un servicio, aparecerá aquí.
+              <p className="mt-1.5 text-xs sm:text-sm text-slate-300">
+                {filter === "upcoming"
+                  ? "No tienes reservas agendadas en este momento. Elige una disciplina y asegura tu cupo en tiempo real."
+                  : "Cuando reserves un servicio, aparecerá listado aquí con su código QR y comprobante."}
               </p>
             </div>
             <Link href="/client/categories">
               <Button className="mt-2" size="md">
                 <Plus aria-hidden="true" size={17} />
-                Reservar ahora
+                Explorar escenarios
               </Button>
             </Link>
-          </Card>
+          </div>
         ) : !error ? (
           <div aria-label={`${reservations.length} reservas`} className="space-y-4">
             {reservations.map((reservation) => (

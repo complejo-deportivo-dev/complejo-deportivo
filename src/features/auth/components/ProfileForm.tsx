@@ -2,8 +2,9 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { z } from "zod";
-import { LogOut } from "lucide-react";
+import { ArrowLeft, ArrowRight, CalendarDays, Check, LogOut, ShieldCheck } from "lucide-react";
 import Avatar from "@/components/ui/Avatar";
 import Badge from "@/components/ui/Badge";
 import Banner from "@/components/ui/Banner";
@@ -206,99 +207,152 @@ export default function ProfileForm() {
 
   return (
     <>
-      <Card
-        as="section"
-        padding="lg"
-        variant="default"
-        className="mx-auto w-full max-w-[720px] rounded-[28px] border border-border bg-surface/90 shadow-[0_30px_80px_-40px_rgba(15,23,42,0.55)] backdrop-blur-[18px]"
-      >
-        <div className="flex flex-col items-center text-center">
-          <Avatar name={name || user.name} size="xl" className="size-[96px]" />
-          <h2 className="mt-5 font-heading text-h3 font-bold text-text-primary">
-            {name || user.name}
-          </h2>
-          <div className="mt-3">
-            <Badge variant="primary" size="md">
-              {roleLabels[user.role]}
-            </Badge>
-          </div>
-        </div>
+      <div className="mx-auto w-full max-w-[720px]">
+        <Link
+          href={user.role === "admin" ? "/admin" : user.role === "employee" ? "/employee" : "/client"}
+          className="mb-6 inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-[#0c1322]/50 px-4 py-1.5 text-xs font-medium text-slate-300 shadow-sm backdrop-blur-md transition-all hover:border-white/20 hover:bg-[#0c1322]/80 hover:text-white"
+        >
+          <ArrowLeft size={14} aria-hidden="true" />
+          <span>Volver al panel principal</span>
+        </Link>
 
-        <div className="my-6 h-px w-full bg-border" />
+        <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-[#0c1322]/80 p-6 sm:p-8 shadow-2xl backdrop-blur-2xl">
+          <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-sky-400 via-teal-400 to-transparent shadow-xs shadow-sky-400/40" />
 
-        <form className="space-y-5" noValidate onSubmit={handleSave}>
-          {banner && (
-            <Banner variant={banner.type}>{banner.text}</Banner>
-          )}
+          {/* CABECERA DE PERFIL */}
+          <div className="flex flex-col items-center text-center">
+            <div className="relative">
+              <Avatar
+                name={name || user.name}
+                size="xl"
+                className="size-[96px] ring-4 ring-sky-400/20 shadow-xl"
+              />
+              <span
+                className="absolute bottom-0 right-0 flex size-6 items-center justify-center rounded-full border-2 border-[#0c1322] bg-emerald-500 text-white shadow-md"
+                title="Usuario activo"
+              >
+                <Check size={12} strokeWidth={3} />
+              </span>
+            </div>
 
-          <div className="grid gap-5 md:grid-cols-2">
-            <Input
-              label="Nombre completo"
-              name="name"
-              onChange={(event) => setName(event.target.value)}
-              placeholder="Tu nombre"
-              required
-              value={name}
-            />
+            <h1 className="mt-4 font-heading text-2xl font-bold tracking-tight text-white sm:text-3xl">
+              {name || user.name}
+            </h1>
 
-            <Input
-              disabled
-              help="El correo no se puede cambiar. El correo es únicamente informativo y no debe poder modificarse desde la interfaz."
-              label="Correo electrónico"
-              name="email"
-              onChange={() => undefined}
-              value={user.email}
-            />
-          </div>
-
-          <div className="grid gap-5 md:grid-cols-2">
-            <Input
-              disabled={isDocumentBlocked}
-              label="Cédula"
-              maxLength={20}
-              name="document"
-              onChange={(event) => setDocument(sanitizeDocument(event.target.value))}
-              placeholder={isDocumentBlocked ? "Cédula registrada" : "Sin registrar"}
-              type="text"
-              value={document}
-            />
-
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-text-primary">
-                Rol
-              </label>
-              <div className="flex h-10 items-center rounded-full border border-border bg-surface-elevated px-3 text-sm text-text-secondary">
+            <div className="mt-2.5 flex items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-sky-400/30 bg-sky-500/10 px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-[#38bdf8]">
+                <ShieldCheck size={14} />
                 {roleLabels[user.role]}
-              </div>
+              </span>
             </div>
           </div>
 
-          <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:justify-end">
-            <Button
-              className="w-full sm:w-auto"
-              disabled={isSaving || isLoggingOut}
-              loading={isSaving}
-              size="lg"
-              type="submit"
-            >
-              Guardar cambios
-            </Button>
+          {/* ATAJO RÁPIDO PARA CLIENTES: MIS RESERVAS */}
+          {user.role === "client" && (
+            <div className="my-6 flex items-center justify-between rounded-2xl border border-white/10 bg-black/40 p-4 shadow-inner backdrop-blur-md">
+              <div className="flex items-center gap-3">
+                <span className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-sky-400/20 bg-sky-500/15 text-[#38bdf8]">
+                  <CalendarDays size={18} />
+                </span>
+                <div>
+                  <p className="text-xs font-bold text-white">Tus reservas y pases QR</p>
+                  <p className="text-[11px] text-slate-300">
+                    Consulta tus horarios y descarga tus pases de acceso
+                  </p>
+                </div>
+              </div>
+              <Link
+                href="/client/reservations"
+                className="inline-flex items-center gap-1 text-xs font-bold text-[#38bdf8] hover:text-white transition-colors shrink-0"
+              >
+                <span>Ver reservas</span>
+                <ArrowRight size={14} />
+              </Link>
+            </div>
+          )}
 
-            <Button
-              className="w-full border border-error/30 bg-transparent text-error hover:bg-error-soft sm:w-auto"
-              disabled={isSaving || isLoggingOut}
-              loading={isLoggingOut}
-              onClick={() => setIsLogoutModalOpen(true)}
-              size="lg"
-              type="button"
-              variant="danger"
-            >
-              <LogOut className="size-4" />
-              Cerrar sesión
-            </Button>
-          </div>
-        </form>
-      </Card>
+          <div className="my-6 h-px w-full bg-white/10" />
+
+          {/* FORMULARIO DE EDICIÓN */}
+          <form className="space-y-6" noValidate onSubmit={handleSave}>
+            {banner && (
+              <Banner variant={banner.type}>{banner.text}</Banner>
+            )}
+
+            <div className="grid gap-5 md:grid-cols-2">
+              <Input
+                label="Nombre completo"
+                name="name"
+                onChange={(event) => setName(event.target.value)}
+                placeholder="Tu nombre"
+                required
+                value={name}
+              />
+
+              <Input
+                disabled
+                help="El correo asociado a tu cuenta está verificado y no puede modificarse directamente."
+                label="Correo electrónico"
+                name="email"
+                onChange={() => undefined}
+                value={user.email}
+              />
+            </div>
+
+            <div className="grid gap-5 md:grid-cols-2">
+              <Input
+                disabled={isDocumentBlocked}
+                help={
+                  isDocumentBlocked
+                    ? "Cédula asegurada y registrada en el sistema para control de acceso en portería."
+                    : "Ingresa tu documento de identidad para agilizar el ingreso con QR."
+                }
+                label="Cédula / Documento de identidad"
+                maxLength={20}
+                name="document"
+                onChange={(event) => setDocument(sanitizeDocument(event.target.value))}
+                placeholder={isDocumentBlocked ? "Cédula registrada" : "Ej: 1020304050"}
+                type="text"
+                value={document}
+              />
+
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-text-primary">
+                  Tipo de cuenta
+                </label>
+                <div className="flex h-11 items-center rounded-xl border border-white/10 bg-white/5 px-3.5 text-xs font-medium text-slate-300">
+                  {roleLabels[user.role]} del Complejo Deportivo
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-3 pt-3 sm:flex-row sm:justify-end">
+              <Button
+                className="w-full sm:w-auto font-bold shadow-lg shadow-sky-500/20"
+                disabled={isSaving || isLoggingOut}
+                loading={isSaving}
+                size="lg"
+                type="submit"
+              >
+                Guardar cambios
+              </Button>
+
+              <Button
+                className="w-full border border-error/30 bg-transparent text-error hover:bg-error-soft sm:w-auto"
+                disabled={isSaving || isLoggingOut}
+                loading={isLoggingOut}
+                onClick={() => setIsLogoutModalOpen(true)}
+                size="lg"
+                type="button"
+                variant="danger"
+              >
+                <LogOut className="size-4" />
+                Cerrar sesión
+              </Button>
+            </div>
+          </form>
+        </section>
+      </div>
 
       <Modal
         isOpen={isLogoutModalOpen}

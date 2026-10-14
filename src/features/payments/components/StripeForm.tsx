@@ -9,7 +9,7 @@ import {
   useStripe,
 } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
-import { LockKeyhole } from "lucide-react";
+import { LockKeyhole, ShieldCheck } from "lucide-react";
 
 import Banner from "@/components/ui/Banner";
 import Button from "@/components/ui/Button";
@@ -79,23 +79,39 @@ function CheckoutForm({
           <p role="alert">{error}</p>
         </Banner>
       )}
-      <p className="flex items-center justify-center gap-2 text-sm text-text-secondary">
-        <LockKeyhole aria-hidden="true" size={16} />
-        Pago seguro · Modo prueba
-      </p>
+
       <Button
-        className="w-full"
-        disabled={!stripe || !elements || disabled}
+        className="w-full font-bold shadow-lg shadow-sky-500/25 text-sm"
+        disabled={!stripe || !elements || disabled || processing}
         loading={processing}
         size="lg"
         type="submit"
       >
-        Pagar {new Intl.NumberFormat("es-CO", {
-          style: "currency",
-          currency: "COP",
-          maximumFractionDigits: 0,
-        }).format(amount)}
+        {processing
+          ? "Procesando pago seguro..."
+          : `Pagar ${new Intl.NumberFormat("es-CO", {
+              style: "currency",
+              currency: "COP",
+              maximumFractionDigits: 0,
+            }).format(amount)}`}
       </Button>
+
+      {processing && (
+        <p className="text-center text-xs text-sky-400 animate-pulse">
+          Validando credenciales bancarias. Por favor no cierres esta ventana...
+        </p>
+      )}
+
+      <div className="flex items-center justify-center gap-4 pt-1 text-[11px] text-slate-400">
+        <span className="inline-flex items-center gap-1.5">
+          <LockKeyhole aria-hidden="true" size={13} className="text-slate-400" />
+          Cifrado SSL 256 bits
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <ShieldCheck aria-hidden="true" size={13} className="text-emerald-400" />
+          Stripe Verified
+        </span>
+      </div>
     </form>
   );
 }
@@ -121,11 +137,11 @@ export default function StripeForm({
         appearance: {
           theme: "night",
           variables: {
-            colorPrimary: "#3a83bf",
-            colorBackground: "#111827",
+            colorPrimary: "#0284c7",
+            colorBackground: "#0c1322",
             colorText: "#f1f5f9",
             colorDanger: "#ef4444",
-            borderRadius: "8px",
+            borderRadius: "12px",
           },
         },
       }}

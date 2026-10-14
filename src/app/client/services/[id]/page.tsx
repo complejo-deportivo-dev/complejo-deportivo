@@ -77,6 +77,7 @@ export default function ServiceBookingPage() {
   const [quantity, setQuantity] = useState(1);
   const [documentValue, setDocumentValue] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -161,6 +162,7 @@ export default function ServiceBookingPage() {
   const hasQuantitySelector = service?.qr_type === "individual";
 
   const handleSubmit = async () => {
+    setSubmitError(null);
     if (!service || selectedSlots.length === 0 || !selectedDate) return;
 
     if (
@@ -169,7 +171,7 @@ export default function ServiceBookingPage() {
         quantity < 1 ||
         quantity > service.capacity)
     ) {
-      alert(
+      setSubmitError(
         `La cantidad debe estar entre 1 y ${service.capacity} personas.`,
       );
       return;
@@ -195,7 +197,9 @@ export default function ServiceBookingPage() {
 
       router.push(`/client/payment/${data.data.reservation_id}`);
     } catch (error) {
-      alert(error instanceof Error ? error.message : "Error al crear la reserva");
+      setSubmitError(
+        error instanceof Error ? error.message : "Error al crear la reserva",
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -335,6 +339,15 @@ export default function ServiceBookingPage() {
                   )}
 
                   <div id="reservation-summary-card">
+                    {submitError && (
+                      <Banner
+                        variant="error"
+                        onClose={() => setSubmitError(null)}
+                        className="mb-4"
+                      >
+                        <p className="text-xs font-semibold sm:text-sm">{submitError}</p>
+                      </Banner>
+                    )}
                     <ReservationSummary
                       serviceName={service.name}
                       hourPrice={service.hour_price}
