@@ -92,11 +92,11 @@ export default function DateSelector({
 
   return (
     <div className="space-y-3">
-      <h3 className="font-heading text-lg font-medium text-text-primary">
+      <h3 className="font-heading text-lg font-bold text-white">
         Elige una fecha
       </h3>
-      <p className="flex items-center gap-1.5 text-sm text-text-secondary">
-        <Info aria-hidden="true" size={14} className="shrink-0 text-primary" />
+      <p className="flex items-center gap-1.5 text-xs text-slate-400">
+        <Info aria-hidden="true" size={14} className="shrink-0 text-[#38bdf8]" />
         Puedes reservar con hasta {DAYS_AHEAD} días de anticipación
       </p>
 
@@ -107,13 +107,13 @@ export default function DateSelector({
           onClick={scrollLeft}
           disabled={!canScrollLeft}
           aria-label="Días anteriores"
-          className={`flex size-9 shrink-0 items-center justify-center rounded-full border border-border bg-surface text-text-secondary transition-all ${
+          className={`flex size-8 shrink-0 items-center justify-center rounded-full border border-white/10 bg-slate-900/60 text-slate-300 backdrop-blur-md transition-all ${
             canScrollLeft
-              ? "hover:border-primary/50 hover:bg-surface-elevated hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary/50 cursor-pointer"
-              : "opacity-30 cursor-not-allowed"
+              ? "hover:border-sky-400/50 hover:bg-slate-800/80 hover:text-white focus:outline-none focus:ring-2 focus:ring-sky-500/50 cursor-pointer"
+              : "opacity-20 cursor-not-allowed"
           }`}
         >
-          <ChevronLeft size={18} aria-hidden="true" />
+          <ChevronLeft size={16} aria-hidden="true" />
         </button>
 
         {/* Carrusel de fechas */}
@@ -124,7 +124,7 @@ export default function DateSelector({
           tabIndex={0}
           role="listbox"
           aria-label="Selecciona una fecha"
-          className="flex min-w-0 flex-1 gap-3 overflow-x-auto px-1 pb-2 scrollbar-hide focus:outline-none"
+          className="flex min-w-0 flex-1 gap-2.5 overflow-x-auto px-1 pb-2 scrollbar-hide focus:outline-none"
         >
           {dates.map((date, i) => {
             const isSelected = selectedDate && isSameDay(date, selectedDate);
@@ -136,17 +136,17 @@ export default function DateSelector({
                 role="option"
                 aria-selected={!!isSelected}
                 onClick={() => onSelect(date)}
-                className={`flex min-w-20 flex-col items-center justify-center rounded-xl border p-3 transition-colors ${
+                className={`flex min-w-[72px] flex-col items-center justify-center rounded-2xl border p-3 transition-all ${
                   isSelected
-                    ? "border-primary bg-primary-soft text-primary shadow-sm"
-                    : "border-border bg-surface text-text-secondary hover:border-primary/50 hover:bg-surface-elevated"
+                    ? "border-2 border-[#0284c7] bg-[#0c2a47]/90 text-white shadow-lg shadow-[#0284c7]/30"
+                    : "border-white/10 bg-[#0c1322]/60 backdrop-blur-md text-slate-400 hover:border-white/20 hover:text-slate-200"
                 }`}
               >
-                <span className="text-xs font-medium uppercase">
+                <span className={`text-[10px] font-bold uppercase tracking-wider ${isSelected ? "text-[#38bdf8]" : "text-slate-400"}`}>
                   {isToday ? "Hoy" : format(date, "EEE", { locale: es })}
                 </span>
                 <span
-                  className={`text-xl font-bold ${isSelected ? "text-primary" : "text-text-primary"}`}
+                  className={`mt-0.5 font-heading ${isSelected ? "text-2xl font-black text-white" : "text-lg font-bold text-white"}`}
                 >
                   {format(date, "d")}
                 </span>
@@ -161,13 +161,13 @@ export default function DateSelector({
           onClick={scrollRight}
           disabled={!canScrollRight}
           aria-label="Días siguientes"
-          className={`flex size-9 shrink-0 items-center justify-center rounded-full border border-border bg-surface text-text-secondary transition-all ${
+          className={`flex size-8 shrink-0 items-center justify-center rounded-full border border-white/10 bg-slate-900/60 text-slate-300 backdrop-blur-md transition-all ${
             canScrollRight
-              ? "hover:border-primary/50 hover:bg-surface-elevated hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary/50 cursor-pointer"
-              : "opacity-30 cursor-not-allowed"
+              ? "hover:border-sky-400/50 hover:bg-slate-800/80 hover:text-white focus:outline-none focus:ring-2 focus:ring-sky-500/50 cursor-pointer"
+              : "opacity-20 cursor-not-allowed"
           }`}
         >
-          <ChevronRight size={18} aria-hidden="true" />
+          <ChevronRight size={16} aria-hidden="true" />
         </button>
       </div>
     </div>

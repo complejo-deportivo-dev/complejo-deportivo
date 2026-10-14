@@ -17,32 +17,32 @@ export default function QuantitySelector({
     <div className="flex items-center justify-between gap-4">
       {/* Etiqueta con icono */}
       <div className="space-y-0.5">
-        <div className="flex items-center gap-2">
-          <span className="flex size-7 items-center justify-center rounded-lg bg-primary-soft text-primary">
+        <div className="flex items-center gap-2.5">
+          <span className="flex size-8 items-center justify-center rounded-lg border border-sky-500/25 bg-sky-500/15 text-[#38bdf8]">
             <Users size={16} aria-hidden="true" />
           </span>
-          <span className="text-sm font-semibold text-text-primary">
+          <span className="text-sm font-bold text-white">
             Personas
           </span>
         </div>
-        <p className="text-xs text-text-secondary pl-9">
+        <p className="pl-10 text-xs text-slate-400">
           Máximo {max} {max === 1 ? "persona" : "personas"}
         </p>
       </div>
 
       {/* Control interactivo con botones estilizados */}
-      <div className="flex items-center gap-1 rounded-xl border border-border/80 bg-surface-elevated/60 p-1 shadow-sm">
+      <div className="flex items-center gap-1 rounded-xl border border-white/10 bg-black/40 p-1 shadow-inner">
         <button
           type="button"
           disabled={quantity <= 1}
           onClick={() => onChange(quantity - 1)}
           aria-label="Disminuir personas"
-          className="flex size-9 items-center justify-center rounded-lg border border-transparent bg-surface text-text-secondary transition-all hover:border-border hover:text-text-primary hover:shadow-xs active:scale-95 disabled:pointer-events-none disabled:opacity-30 cursor-pointer"
+          className="flex size-8 items-center justify-center rounded-lg text-slate-400 transition-all hover:bg-white/5 hover:text-white active:scale-95 disabled:pointer-events-none disabled:opacity-20 cursor-pointer"
         >
-          <Minus size={15} />
+          <Minus size={14} />
         </button>
 
-        <span className="w-10 text-center font-heading text-base font-bold text-text-primary">
+        <span className="w-8 text-center font-heading text-base font-bold text-white">
           {quantity}
         </span>
 
@@ -51,9 +51,9 @@ export default function QuantitySelector({
           disabled={quantity >= max}
           onClick={() => onChange(quantity + 1)}
           aria-label="Aumentar personas"
-          className="flex size-9 items-center justify-center rounded-lg border border-transparent bg-primary text-white shadow-xs transition-all hover:bg-primary-hover active:scale-95 disabled:pointer-events-none disabled:opacity-30 cursor-pointer"
+          className="flex size-8 items-center justify-center rounded-lg border border-sky-400/30 bg-[#0284c7] text-white shadow-md shadow-[#0284c7]/40 transition-all hover:bg-[#0369a1] active:scale-95 disabled:pointer-events-none disabled:opacity-20 cursor-pointer"
         >
-          <Plus size={15} />
+          <Plus size={14} />
         </button>
       </div>
     </div>

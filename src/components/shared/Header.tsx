@@ -140,7 +140,7 @@ export default function Header({
 
   return (
     <header className={`sticky top-6 z-40 mx-6 lg:mx-16 ${className}`}>
-      <div className="relative flex h-16 items-center justify-between rounded-xl border border-border bg-surface px-4 sm:px-6 shadow-md backdrop-blur-md">
+      <div className="relative flex h-16 items-center justify-between rounded-2xl border border-white/10 bg-[#0a0f1e]/40 px-4 sm:px-6 shadow-xl backdrop-blur-xl">
         <Link
           href={homeHref}
           onClick={() => {

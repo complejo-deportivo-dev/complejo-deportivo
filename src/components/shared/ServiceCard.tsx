@@ -1,7 +1,5 @@
 "use client";
 
-import Card from "@/components/ui/Card";
-import Badge from "@/components/ui/Badge";
 import Image from "next/image";
 import { Dumbbell, Trophy, UserPlus, Users, ArrowRight } from "lucide-react";
 
@@ -34,95 +32,107 @@ export default function ServiceCard({
   hourPrice,
   onClick,
 }: ServiceCardProps) {
-  const qrBadge =
-    qrType === "group" ? (
-      <Badge variant="primary">Grupal</Badge>
-    ) : (
-      <Badge variant="warning">Individual</Badge>
-    );
-
-  const contentIcon =
+  const isGym =
     categoryName.toLowerCase().includes("atlet") ||
     categoryName.toLowerCase().includes("fitness") ||
-    categoryName.toLowerCase().includes("gimnas") ? (
-      <Dumbbell aria-hidden="true" className="size-12 text-primary/70" />
-    ) : (
-      <Trophy aria-hidden="true" className="size-12 text-primary/70" />
-    );
+    categoryName.toLowerCase().includes("gimnas");
 
   return (
-    <Card
-      variant="default"
-      padding="none"
+    <article
       onClick={onClick}
-      className="w-full max-w-[420px] overflow-hidden"
-      as="article"
+      className="group relative flex w-full flex-col justify-between overflow-hidden rounded-2xl border border-white/10 bg-[#0c1322]/75 shadow-2xl backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:border-sky-400/40 hover:shadow-sky-500/10 cursor-pointer"
     >
-      <div className="relative h-[140px] w-full overflow-hidden rounded-t-[20px]">
-        {image ? (
-          <Image
-            src={image}
-            alt={name}
-            fill
-            className="object-cover"
-            sizes="(max-width: 768px) 100vw, 420px"
-          />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary-soft to-surface">
-            <div className="opacity-70">{contentIcon}</div>
-          </div>
-        )}
+      <div>
+        {/* Cabecera con imagen o ilustración */}
+        <div className="relative h-[160px] w-full overflow-hidden bg-black/40">
+          {image ? (
+            <Image
+              src={image}
+              alt={name}
+              fill
+              className="object-cover transition-transform duration-500 group-hover:scale-105"
+              sizes="(max-width: 768px) 100vw, 420px"
+            />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-sky-950/40 to-slate-900">
+              {isGym ? (
+                <Dumbbell className="size-12 text-sky-400/60" />
+              ) : (
+                <Trophy className="size-12 text-sky-400/60" />
+              )}
+            </div>
+          )}
 
-        <div className="absolute left-4 top-4 z-10">{qrBadge}</div>
-      </div>
+          {/* Gradiente inferior en la imagen para contraste */}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0c1322] via-transparent to-black/30" />
 
-      <div className="space-y-4 p-5">
-        <div>
-          <h3 className="font-heading text-xl font-medium text-text-primary">
-            {name}
-          </h3>
-
-          {description ? (
-            <p className="mt-1 line-clamp-2 text-sm text-text-secondary">
-              {description}
-            </p>
-          ) : null}
-        </div>
-
-        <div className="flex items-center gap-4 text-sm text-text-secondary">
-          <div className="flex items-center gap-2">
-            <Users aria-hidden="true" className="h-4 w-4" />
-            <span>Hasta {capacity} personas</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <UserPlus aria-hidden="true" className="h-4 w-4" />
-            <span>Máximo {maxCompanions} acompañantes</span>
+          {/* Badge de tipo de acceso en la esquina */}
+          <div className="absolute left-3.5 top-3.5 z-10">
+            {qrType === "group" ? (
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-sky-400/30 bg-[#0c1322]/85 px-3 py-0.5 text-xs font-semibold text-[#38bdf8] backdrop-blur-md">
+                <span className="size-1.5 rounded-full bg-[#38bdf8]" />
+                Grupal
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-400/30 bg-[#0c1322]/85 px-3 py-0.5 text-xs font-semibold text-amber-300 backdrop-blur-md">
+                <span className="size-1.5 rounded-full bg-amber-400" />
+                Individual
+              </span>
+            )}
           </div>
         </div>
 
-        <div className="mt-4 border-t border-border pt-4">
-          <div className="flex items-end justify-between gap-3">
-            <div>
-              <p className="text-[12px] text-text-secondary">Precio por hora</p>
-              <p className="font-heading text-xl font-bold text-primary">
-                {currencyFormatter.format(hourPrice)}
+        {/* Detalles del escenario */}
+        <div className="space-y-3.5 p-5">
+          <div>
+            <h3 className="font-heading text-xl font-bold tracking-tight text-white group-hover:text-[#38bdf8] transition-colors">
+              {name}
+            </h3>
+
+            {description ? (
+              <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-slate-400">
+                {description}
               </p>
+            ) : null}
+          </div>
+
+          <div className="flex flex-wrap items-center gap-4 text-xs text-slate-400">
+            <div className="flex items-center gap-1.5">
+              <Users size={14} className="text-[#38bdf8]" />
+              <span>
+                Hasta <strong className="font-semibold text-white">{capacity}</strong> personas
+              </span>
             </div>
 
-            <button
-              type="button"
-              onClick={(event) => {
-                event.stopPropagation();
-                onClick?.();
-              }}
-              className="inline-flex items-center gap-1 text-sm font-medium text-primary transition-colors hover:text-primary-hover"
-              aria-label={`Reservar ${name}`}
-            >
-              Reservar <ArrowRight aria-hidden="true" className="size-4" />
-            </button>
+            {maxCompanions > 0 && (
+              <div className="flex items-center gap-1.5">
+                <UserPlus size={14} className="text-[#38bdf8]" />
+                <span>
+                  Máx <strong className="font-semibold text-white">{maxCompanions}</strong> acomp.
+                </span>
+              </div>
+            )}
           </div>
         </div>
       </div>
-    </Card>
+
+      {/* Pie con precio y botón de reserva */}
+      <div className="border-t border-white/10 p-5 pt-4 bg-black/20">
+        <div className="flex items-end justify-between gap-3">
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+              Tarifa por hora
+            </p>
+            <p className="font-heading text-xl font-black text-[#38bdf8]">
+              {currencyFormatter.format(hourPrice)}
+            </p>
+          </div>
+
+          <span className="inline-flex items-center gap-1.5 rounded-xl border border-sky-400/30 bg-[#0284c7] px-4 py-2 text-xs font-bold text-white shadow-md shadow-sky-500/30 transition-all group-hover:bg-[#0369a1] active:scale-95">
+            Reservar <ArrowRight size={14} />
+          </span>
+        </div>
+      </div>
+    </article>
   );
 }

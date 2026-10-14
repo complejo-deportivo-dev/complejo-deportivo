@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import { format } from "date-fns";
 
 import Header from "@/components/shared/Header";
@@ -15,12 +15,14 @@ import DateSelector from "@/features/reservations/components/DateSelector";
 import TimeSlotPicker from "@/features/reservations/components/TimeSlotPicker";
 import QuantitySelector from "@/features/reservations/components/QuantitySelector";
 import ReservationSummary from "@/features/reservations/components/ReservationSummary";
+import ImmersiveBackground from "@/components/shared/ImmersiveBackground";
 
 import type { ServiceSlot } from "@/types/api";
 
 interface ServiceData {
   id: number;
   name: string;
+  image_url?: string | null;
   category_name?: string;
   category_id: number;
   capacity: number;
@@ -206,17 +208,49 @@ export default function ServiceBookingPage() {
     setSelectedDate(date);
   };
 
+  const getServiceFallback = (name?: string) => {
+    const lower = name?.toLowerCase() || "";
+    if (lower.includes("piscina")) return "/images/piscina.webp";
+    if (lower.includes("cancha")) return "/images/cancha.webp";
+    if (lower.includes("gym") || lower.includes("gimnasio")) return "/images/gym.webp";
+    if (
+      lower.includes("humed") ||
+      lower.includes("húmed") ||
+      lower.includes("sauna") ||
+      lower.includes("turco")
+    ) {
+      return "/images/zonas-humedas.webp";
+    }
+    return "/images/piscina.webp";
+  };
+
+  const mobileTotal = new Intl.NumberFormat("es-CO", {
+    style: "currency",
+    currency: "COP",
+    maximumFractionDigits: 0,
+  }).format(
+    (service?.hour_price || 0) *
+      selectedSlots.length *
+      (hasQuantitySelector ? quantity : 1),
+  );
+
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="relative flex min-h-screen flex-col">
+      <ImmersiveBackground
+        src={service?.image_url}
+        alt={service?.name}
+        fallbackSrc={getServiceFallback(service?.name)}
+      />
+
       <Header role="client" />
 
-      <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-6 pb-16 pt-8 lg:px-16">
+      <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-6 pb-28 pt-8 lg:px-16 lg:pb-16">
         <Link
           href={`/client/categories/${service?.category_id || ""}`}
-          className="mb-8 inline-flex w-fit items-center gap-2 text-sm font-medium text-text-secondary transition-colors hover:text-primary"
+          className="mb-8 inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-[#0c1322]/50 px-4 py-1.5 text-xs font-medium text-slate-300 shadow-sm backdrop-blur-md transition-all hover:border-white/20 hover:bg-[#0c1322]/80 hover:text-white"
         >
-          <ArrowLeft size={16} aria-hidden="true" />
-          Volver a servicios
+          <ArrowLeft size={14} aria-hidden="true" />
+          <span>Volver a servicios</span>
         </Link>
 
         {error && (
@@ -259,7 +293,7 @@ export default function ServiceBookingPage() {
                 />
 
                 {selectedDate && (
-                  <div className="pt-2">
+                  <div className="pt-2 transition-all duration-300">
                     {loadingSlots ? (
                       <div className="grid grid-cols-4 gap-3">
                         {Array.from({ length: 8 }).map((_, i) => (
@@ -289,9 +323,9 @@ export default function ServiceBookingPage() {
 
               {/* Derecha (40%) */}
               <div className="lg:col-span-5">
-                <div className="space-y-6 lg:sticky lg:top-8">
+                <div className="space-y-4 lg:sticky lg:top-28">
                   {hasQuantitySelector && (
-                    <div className="rounded-xl border border-border bg-surface p-5">
+                    <div className="rounded-2xl border border-white/10 bg-[#0c1322]/70 p-4 shadow-2xl backdrop-blur-xl">
                       <QuantitySelector
                         quantity={quantity}
                         onChange={setQuantity}
@@ -300,24 +334,66 @@ export default function ServiceBookingPage() {
                     </div>
                   )}
 
-                  <ReservationSummary
-                    serviceName={service.name}
-                    hourPrice={service.hour_price}
-                    selectedDate={selectedDate}
-                    selectedSlots={selectedSlots}
-                    quantity={hasQuantitySelector ? quantity : 1}
-                    needsDocument={needsDocument}
-                    documentValue={documentValue}
-                    onDocumentChange={setDocumentValue}
-                    onSubmit={handleSubmit}
-                    isSubmitting={isSubmitting}
-                  />
+                  <div id="reservation-summary-card">
+                    <ReservationSummary
+                      serviceName={service.name}
+                      hourPrice={service.hour_price}
+                      selectedDate={selectedDate}
+                      selectedSlots={selectedSlots}
+                      quantity={hasQuantitySelector ? quantity : 1}
+                      needsDocument={needsDocument}
+                      documentValue={documentValue}
+                      onDocumentChange={setDocumentValue}
+                      onSubmit={handleSubmit}
+                      isSubmitting={isSubmitting}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
           )
         )}
       </main>
+
+      {/* Barra móvil flotante inferior para continuar con comodidad */}
+      {service && (
+        <aside
+          aria-label="Resumen rápido móvil"
+          className="fixed bottom-0 inset-x-0 z-30 p-3.5 border-t border-white/10 bg-[#0a0f1e]/90 backdrop-blur-xl shadow-2xl lg:hidden"
+        >
+          <div className="mx-auto flex max-w-md items-center justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                {selectedSlots.length > 0 ? (
+                  <span className="text-[#38bdf8]">
+                    {selectedSlots.length} hr{selectedSlots.length > 1 ? "s" : ""}{" "}
+                    {hasQuantitySelector && quantity > 1 ? `· ${quantity} pers.` : ""}
+                  </span>
+                ) : (
+                  "Elige tu horario"
+                )}
+              </p>
+              <p className="font-heading text-lg font-black text-white truncate">
+                {selectedSlots.length > 0 ? mobileTotal : "$ 0"}
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                const card = document.getElementById("reservation-summary-card");
+                if (card) {
+                  card.scrollIntoView({ behavior: "smooth", block: "start" });
+                }
+              }}
+              className="flex items-center gap-1.5 rounded-xl border border-sky-400/30 bg-[#0284c7] px-4 py-2.5 text-xs font-bold text-white shadow-lg shadow-sky-500/30 active:scale-95 transition-all cursor-pointer shrink-0"
+            >
+              <span>Ver ticket</span>
+              <ArrowRight size={14} />
+            </button>
+          </div>
+        </aside>
+      )}
     </div>
   );
 }
