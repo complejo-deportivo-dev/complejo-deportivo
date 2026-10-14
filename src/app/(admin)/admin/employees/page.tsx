@@ -263,10 +263,10 @@ export default function EmployeesPage() {
     <>
       <Header role="admin" userName="Admin" userInitials="AD" />
 
-      <main className="min-h-screen bg-[#0B0F19] px-4 py-6 md:px-6">
+      <main className="min-h-screen bg-transparent px-4 py-6 md:px-6">
         <div className="mx-auto max-w-7xl">
           <Link
-            className="inline-flex items-center gap-2 text-sm font-medium text-blue-300 transition-colors hover:text-blue-200"
+            className="inline-flex mt-4 items-center gap-2 text-sm font-medium text-blue-300 transition-colors hover:text-blue-200"
             href="/admin"
           >
             <ArrowLeft className="h-4 w-4" />
@@ -298,7 +298,7 @@ export default function EmployeesPage() {
             <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
               <div className="w-full xl:max-w-xl">
                 <Input
-                  className="bg-[#0B0F19]"
+                  className="bg-transparent"
                   icon={<Search className="h-4 w-4" />}
                   onChange={(event) => setSearch(event.target.value)}
                   placeholder="Buscar por nombre, email o cédula..."

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 
 import Badge from "@/components/ui/Badge";
 import { CARD_CLASS } from "@/features/admin/constants";
@@ -32,10 +33,11 @@ export default function RecentAccessLogsTable({
           Últimos accesos validados
         </h2>
         <Link
-          className="text-sm font-medium text-primary hover:underline"
+          className="flex items-center gap-1 text-sm font-medium text-primary hover:underline"
           href="/admin/access-logs"
         >
-          Ver todos &rarr;
+          Ver todos
+          <ArrowRight aria-hidden="true" size={16} />
         </Link>
       </div>
 

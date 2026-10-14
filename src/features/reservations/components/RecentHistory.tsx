@@ -42,7 +42,7 @@ export default function RecentHistory({ items, loading = false }: RecentHistoryP
         </h2>
         <Link
           href="/client/reservations"
-          className="inline-flex items-center gap-1 text-sm font-medium text-primary transition-colors hover:text-primary-hover"
+          className="inline-flex items-center gap-2 text-sm font-medium text-primary transition-colors hover:text-primary-hover"
         >
           Ver todas
           <ArrowRight aria-hidden="true" size={16} />

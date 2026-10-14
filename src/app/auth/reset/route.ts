@@ -1,6 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+
 export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url);
   const tokenHash = requestUrl.searchParams.get("token_hash");
@@ -25,7 +27,7 @@ export async function GET(request: NextRequest) {
       isValidRecoveryLink
         ? "/update-password"
         : "/update-password?error=invalid-link",
-      requestUrl.origin,
+      BASE_URL,
     ),
     {
       headers: {

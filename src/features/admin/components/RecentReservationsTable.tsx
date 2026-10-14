@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 
 import Badge from "@/components/ui/Badge";
 import { CARD_CLASS, RESERVATION_STATUS } from "@/features/admin/constants";
@@ -58,10 +59,11 @@ export default function RecentReservationsTable({
           Últimas reservas
         </h2>
         <Link
-          className="text-sm font-medium text-primary hover:underline"
+          className="flex items-center gap-1 text-sm font-medium text-primary hover:underline"
           href="/admin/reservations"
         >
-          Ver todas &rarr;
+          Ver todas
+          <ArrowRight size={16} />
         </Link>
       </div>
 

@@ -291,10 +291,10 @@ export default function ServicesPage() {
     <>
       <Header role="admin" userName="Admin" userInitials="AD" />
 
-      <main className="min-h-screen bg-[#0B0F19] px-4 py-6 md:px-6">
+      <main className="min-h-screen bg-transparent px-4 py-6 md:px-6">
         <div className="mx-auto max-w-7xl">
           <Link
-            className="inline-flex items-center gap-2 text-sm font-medium text-blue-300 transition-colors hover:text-blue-200"
+            className="inline-flex mt-4 items-center gap-2 text-sm font-medium text-blue-300 transition-colors hover:text-blue-200"
             href="/admin"
           >
             <ArrowLeft className="h-4 w-4" />
@@ -328,7 +328,7 @@ export default function ServicesPage() {
                 <div className="w-full md:max-w-md">
                   <Input
                     aria-label="Buscar servicio"
-                    className="bg-[#0B0F19]"
+                    className="bg-transparent"
                     icon={<Search className="h-4 w-4" />}
                     onChange={(event) => setSearch(event.target.value)}
                     placeholder="Buscar servicio..."
@@ -338,7 +338,7 @@ export default function ServicesPage() {
 
                 <div className="w-full md:max-w-xs">
                   <select
-                    className="h-11 w-full rounded-md border border-border bg-[#0B0F19] px-3 text-sm text-text-primary outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary-soft"
+                    className="h-11 w-full rounded-md border border-border bg-transparent px-3 text-sm text-text-primary outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary-soft"
                     value={selectedCategoryId}
                     onChange={(event) =>
                       setSelectedCategoryId(

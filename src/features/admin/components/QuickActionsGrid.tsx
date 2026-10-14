@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CalendarClock, LayoutGrid, Package, Users } from "lucide-react";
+import { ArrowRight, CalendarClock, LayoutGrid, Package, Users } from "lucide-react";
 
 import { CARD_CLASS } from "@/features/admin/constants";
 import type { AdminMetrics } from "@/features/admin/types";
@@ -18,7 +18,7 @@ export default function QuickActionsGrid({ counts }: QuickActionsGridProps) {
         : "Categorías del complejo",
       href: "/admin/categories",
       icon: LayoutGrid,
-      actionText: "Gestionar \u2192",
+      actionText: "Gestionar",
     },
     {
       title: "Servicios",
@@ -27,14 +27,14 @@ export default function QuickActionsGrid({ counts }: QuickActionsGridProps) {
         : "Servicios disponibles",
       href: "/admin/services",
       icon: Package,
-      actionText: "Gestionar \u2192",
+      actionText: "Gestionar",
     },
     {
       title: "Horarios / Franjas",
       description: "Configurar franjas por servicio",
       href: "/admin/time-slots",
       icon: CalendarClock,
-      actionText: "Configurar \u2192",
+      actionText: "Configurar",
     },
     {
       title: "Empleados",
@@ -43,7 +43,7 @@ export default function QuickActionsGrid({ counts }: QuickActionsGridProps) {
         : "Personal del complejo",
       href: "/admin/employees",
       icon: Users,
-      actionText: "Gestionar \u2192",
+      actionText: "Gestionar",
     },
   ];
 
@@ -75,8 +75,9 @@ export default function QuickActionsGrid({ counts }: QuickActionsGridProps) {
                 {action.description}
               </p>
             </div>
-            <span className="mt-4 text-xs font-medium text-primary">
+            <span className="mt-4 flex items-center gap-1 text-xs font-medium text-primary">
               {action.actionText}
+              <ArrowRight size={14} />
             </span>
           </Link>
         ))}

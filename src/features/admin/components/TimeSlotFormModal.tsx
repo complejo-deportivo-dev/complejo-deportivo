@@ -9,8 +9,8 @@ import Modal from "@/components/ui/Modal";
 export interface TimeSlotFormValues {
   id?: number;
   service_id: number;
-  start_time: string;
-  end_time: string;
+  time_start: string;
+  time_end: string;
 }
 
 interface ExistingTimeSlot {
@@ -45,8 +45,8 @@ export default function TimeSlotFormModal({
   onClose,
   onSubmit,
 }: TimeSlotFormModalProps) {
-  const [startTime, setStartTime] = useState(initialValues.start_time);
-  const [endTime, setEndTime] = useState(initialValues.end_time);
+  const [startTime, setStartTime] = useState(initialValues.time_start);
+  const [endTime, setEndTime] = useState(initialValues.time_end);
   const [formError, setFormError] = useState<string | null>(null);
 
   const currentServiceLabel = useMemo(
@@ -89,8 +89,8 @@ export default function TimeSlotFormModal({
     await onSubmit({
       id: initialValues.id,
       service_id: initialValues.service_id,
-      start_time: startTime,
-      end_time: endTime,
+      time_start: startTime,
+      time_end: endTime,
     });
   };
 
