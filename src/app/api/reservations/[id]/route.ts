@@ -94,7 +94,15 @@ export async function GET(
     }
 
     const orderedSlots = [...reservation.reservation_slots].sort(
-      (left, right) => left.slot_date.getTime() - right.slot_date.getTime()
+      (left, right) => {
+        const dateComparison = left.slot_date.getTime() - right.slot_date.getTime();
+        if (dateComparison !== 0) return dateComparison;
+        
+        // Sort by time if date is the same
+        const leftTime = left.time_slots ? left.time_slots.time_start.getTime() : 0;
+        const rightTime = right.time_slots ? right.time_slots.time_start.getTime() : 0;
+        return leftTime - rightTime;
+      }
     );
 
     const serviceEntry =

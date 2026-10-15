@@ -81,7 +81,8 @@ export function calculateSlotAvailability(
   slots: TimeSlot[],
   reservationSlots: ReservationSlot[],
   service: { qr_type: QrType; capacity: number },
-  date: { isToday: boolean; currentTime: string }
+  date: { isToday: boolean; currentTime: string },
+  userReservationIds: number[] = []
 ): ServiceSlot[] {
   const reservationsBySlot = new Map<number, number[]>();
 
@@ -102,13 +103,14 @@ export function calculateSlotAvailability(
     const timeEnd = formatTime(slot.time_end);
     const hasStarted = date.isToday && timeStart <= date.currentTime;
     const quantities = reservationsBySlot.get(slot.id) ?? [];
+    const hasUserReservation = userReservationIds.includes(slot.id);
 
     if (service.qr_type === "group") {
       return {
         time_slot_id: slot.id,
         time_start: timeStart,
         time_end: timeEnd,
-        available: !hasStarted && quantities.length === 0,
+        available: !hasStarted && quantities.length === 0 && !hasUserReservation,
       };
     }
 
@@ -121,8 +123,9 @@ export function calculateSlotAvailability(
       time_slot_id: slot.id,
       time_start: timeStart,
       time_end: timeEnd,
-      available: !hasStarted && remainingCapacity > 0,
+      available: !hasStarted && remainingCapacity > 0 && !hasUserReservation,
       remaining_capacity: remainingCapacity,
+      is_user_reservation: hasUserReservation,
     };
   });
 }

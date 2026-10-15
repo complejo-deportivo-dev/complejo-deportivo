@@ -63,6 +63,7 @@ export interface ServiceSlot {
   time_end: string;
   available: boolean;
   remaining_capacity?: number;
+  is_user_reservation?: boolean;
 }
 
 // --- Reservations ---
