@@ -109,9 +109,12 @@ export async function GET(
         slot_date: date.date,
         is_active: true,
         reservations: {
-          OR: [
-            { status: "confirmed" },
-          ],
+          is: {
+            OR: [
+              { status: "confirmed" },
+              { status: "pending", expires_at: { gt: now } },
+            ],
+          },
         },
       },
       select: {
@@ -162,7 +165,11 @@ export async function GET(
 
     const data = calculateSlotAvailability(
       timeSlots,
-      reservationSlots.filter(rs => rs.reservations?.status === "confirmed"),
+      reservationSlots.filter(
+        (rs) =>
+          rs.reservations?.status === "confirmed" ||
+          rs.reservations?.status === "pending"
+      ),
       { qr_type: service.qr_type, capacity: service.capacity },
       date,
       userReservationIds

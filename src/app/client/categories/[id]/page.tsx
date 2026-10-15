@@ -54,20 +54,26 @@ export default function CategoryServicesPage() {
   }, [categoryId]);
 
   const loadData = useCallback(async () => {
-    try {
-      const [servicesList, categoriesData] = await Promise.all([
-        fetchServices(),
-        fetchData<Array<{ id: number; name: string; image: string }>>(
-          "/api/categories",
-        ).catch(() => []),
-      ]);
+    const [servicesList, categoriesData] = await Promise.all([
+      fetchServices(),
+      fetchData<Array<{ id: number; name: string; image: string }>>(
+        "/api/categories",
+      ).catch(() => []),
+    ]);
+    const currentCategory = Array.isArray(categoriesData)
+      ? categoriesData.find((c) => c.id === Number(categoryId))
+      : null;
 
+    return { servicesList, currentCategory };
+  }, [categoryId, fetchServices]);
+
+  const applyLoadedData = useCallback(
+    ({
+      servicesList,
+      currentCategory,
+    }: Awaited<ReturnType<typeof loadData>>) => {
       setError(null);
       setServices(servicesList);
-
-      const currentCategory = Array.isArray(categoriesData)
-        ? categoriesData.find((c) => c.id === Number(categoryId))
-        : null;
 
       if (currentCategory) {
         setCategoryName(currentCategory.name);
@@ -81,19 +87,47 @@ export default function CategoryServicesPage() {
             "Categoría",
         );
       }
+    },
+    [],
+  );
+
+  const loadAndApplyData = useCallback(async () => {
+    try {
+      applyLoadedData(await loadData());
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error desconocido");
     } finally {
       setLoading(false);
     }
-  }, [categoryId, fetchServices]);
+  }, [applyLoadedData, loadData]);
 
   useEffect(() => {
     if (!categoryId) {
       return;
     }
-    void loadData();
-  }, [categoryId, loadData]);
+
+    let cancelled = false;
+    void loadData()
+      .then((data) => {
+        if (!cancelled) {
+          applyLoadedData(data);
+        }
+      })
+      .catch((err: unknown) => {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : "Error desconocido");
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [categoryId, loadData, applyLoadedData]);
 
   const getCategoryFallback = (name: string) => {
     const lower = name.toLowerCase();
@@ -224,7 +258,7 @@ export default function CategoryServicesPage() {
               onClick={() => {
                 setLoading(true);
                 setError(null);
-                void loadData();
+                void loadAndApplyData();
               }}
             >
               Reintentar

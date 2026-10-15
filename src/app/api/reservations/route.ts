@@ -486,7 +486,10 @@ export async function POST(request: Request) {
         }
 
         const activeReservationFilter = {
-          status: "confirmed",
+          OR: [
+            { status: "confirmed" },
+            { status: "pending", expires_at: { gt: transactionNow } },
+          ],
         };
 
         const userReservations = await tx.reservation_slots.findMany({
@@ -494,8 +497,10 @@ export async function POST(request: Request) {
             slot_date: reservationDate.date,
             is_active: true,
             reservations: {
-              id_user: profile.id,
-              ...activeReservationFilter,
+              is: {
+                id_user: profile.id,
+                ...activeReservationFilter,
+              },
             },
           },
           select: {
@@ -519,22 +524,19 @@ export async function POST(request: Request) {
                   timeInMilliseconds(existingSlot.time_end)
             )
         );
-        // Desactivamos temporalmente esta validación mientras depuramos
-        /* 
         if (hasUserConflict) {
           throw new ReservationRequestError(
             "Conflicto de horario: ya tienes una reserva en esa franja",
             400
           );
         }
-        */
 
         const occupiedSlots = await tx.reservation_slots.findMany({
           where: {
             id_time_slot: { in: body.time_slot_ids },
             slot_date: reservationDate.date,
             is_active: true,
-            reservations: activeReservationFilter,
+            reservations: { is: activeReservationFilter },
           },
           select: {
             id_time_slot: true,

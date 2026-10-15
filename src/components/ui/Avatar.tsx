@@ -1,3 +1,5 @@
+import Image from 'next/image';
+
 export type AvatarSize = 'sm' | 'md' | 'lg' | 'xl';
 
 export interface AvatarProps {
@@ -43,7 +45,14 @@ export default function Avatar({
   if (src) {
     return (
       <span className={base}>
-        <img src={src} alt={name} className="size-full object-cover" />
+        <Image
+          src={src}
+          alt={name}
+          width={96}
+          height={96}
+          unoptimized
+          className="size-full object-cover"
+        />
       </span>
     );
   }

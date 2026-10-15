@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useCallback, useState, useEffect } from "react";
+import { useRef, useCallback, useState, useEffect, useMemo } from "react";
 import { format, addDays, isSameDay } from "date-fns";
 import { es } from "date-fns/locale";
 import { ChevronLeft, ChevronRight, Info } from "lucide-react";
@@ -17,9 +17,13 @@ export default function DateSelector({
   selectedDate,
   onSelect,
 }: DateSelectorProps) {
-  const today = new Date();
-  const dates = Array.from({ length: DAYS_AHEAD }).map((_, i) =>
-    addDays(today, i),
+  const today = useMemo(() => new Date(), []);
+  const dates = useMemo(
+    () =>
+      Array.from({ length: DAYS_AHEAD }).map((_, i) =>
+        addDays(today, i),
+      ),
+    [today],
   );
 
   const scrollRef = useRef<HTMLDivElement>(null);

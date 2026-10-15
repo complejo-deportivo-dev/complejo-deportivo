@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import {
-  ArrowRight,
   CalendarDays,
   CalendarX2,
   Clock,
