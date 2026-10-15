@@ -1,3 +1,4 @@
+import { createClient } from "@/lib/supabase/server";
 import { MAX_SMALLINT_ID } from "@/lib/catalog";
 import {
   calculateSlotAvailability,
@@ -59,6 +60,11 @@ export async function GET(
     );
   }
 
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   try {
     const service = await prisma.services.findUnique({
       where: { id: serviceId },
@@ -116,19 +122,65 @@ export async function GET(
         reservations: {
           select: {
             quantity: true,
+            status: true,
           },
         },
       },
     });
 
+    let userReservationIds: number[] = [];
+    if (user) {
+      const userReservations = await prisma.reservations.findMany({
+        where: {
+          id_user: user.id,
+          // Status check will be done in the mapping
+        },
+        select: {
+          id: true,
+          status: true,
+        },
+      });
+      const reservationIds = userReservations.map((r) => r.id);
+      if (reservationIds.length > 0) {
+        const slots = await prisma.reservation_slots.findMany({
+          where: {
+            id_reservation: { in: reservationIds },
+            id_time_slot: { in: timeSlots.map(({ id }) => id) },
+            slot_date: date.date,
+            is_active: true,
+            // Check status here or filter later
+            reservations: {
+                status: "confirmed"
+            }
+          },
+          select: {
+            id_time_slot: true,
+          },
+        });
+        userReservationIds = slots
+          .map((rs) => rs.id_time_slot)
+          .filter((id): id is number => id !== null);
+      }
+    }
+
     const data = calculateSlotAvailability(
       timeSlots,
-      reservationSlots,
+      reservationSlots.filter(
+        (rs) =>
+          rs.reservations?.status === "confirmed" ||
+          rs.reservations?.status === "pending"
+      ),
       { qr_type: service.qr_type, capacity: service.capacity },
-      date
+      date,
+      userReservationIds
     );
 
-    return NextResponse.json<ApiResponse<ServiceSlot[]>>({ data });
+    return NextResponse.json<ApiResponse<ServiceSlot[]>>({ 
+      data: data.map(slot => ({
+        ...slot,
+        userHasReservation: userReservationIds.includes(slot.time_slot_id)
+      })) 
+    });
   } catch (error) {
     console.error("Error al obtener la disponibilidad de las franjas:", error);
     return NextResponse.json<ApiError>(

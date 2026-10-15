@@ -3,10 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { calculateReservationAmount } from "@/lib/reservation-amount";
 import { reconcileReservationPayment } from "@/lib/reservation-reconciliation";
 import type { ApiError, ApiResponse } from "@/types/api";
-import { formatInTimeZone } from "date-fns-tz";
 import { NextResponse } from "next/server";
-
-const TIME_ZONE = "America/Bogota";
 
 function parseReservationId(value: string): number | null {
   if (!/^\d+$/.test(value)) {
@@ -19,12 +16,10 @@ function parseReservationId(value: string): number | null {
     : null;
 }
 
-function formatDateOnly(value: Date): string {
-  return formatInTimeZone(value, TIME_ZONE, "yyyy-MM-dd");
-}
-
 function formatTimeOnly(value: Date): string {
-  return formatInTimeZone(value, TIME_ZONE, "HH:mm");
+  const hours = String(value.getUTCHours()).padStart(2, "0");
+  const minutes = String(value.getUTCMinutes()).padStart(2, "0");
+  return `${hours}:${minutes}`;
 }
 
 export async function GET(
@@ -94,7 +89,15 @@ export async function GET(
     }
 
     const orderedSlots = [...reservation.reservation_slots].sort(
-      (left, right) => left.slot_date.getTime() - right.slot_date.getTime()
+      (left, right) => {
+        const dateComparison = left.slot_date.getTime() - right.slot_date.getTime();
+        if (dateComparison !== 0) return dateComparison;
+        
+        // Sort by time if date is the same
+        const leftTime = left.time_slots ? left.time_slots.time_start.getTime() : 0;
+        const rightTime = right.time_slots ? right.time_slots.time_start.getTime() : 0;
+        return leftTime - rightTime;
+      }
     );
 
     const serviceEntry =
@@ -137,8 +140,8 @@ export async function GET(
         id: serviceEntry?.id ?? 0,
         name: serviceEntry?.name ?? "",
       },
-      reservation_date: orderedSlots[0]?.slot_date
-        ? formatDateOnly(orderedSlots[0].slot_date)
+      reservation_date: orderedSlots[0]
+        ? orderedSlots[0].slot_date.toISOString().split("T")[0]
         : "",
       slots,
       status: reservation.status ?? "pending",

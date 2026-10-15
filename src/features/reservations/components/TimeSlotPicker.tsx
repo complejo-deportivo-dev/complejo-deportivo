@@ -51,7 +51,10 @@ export default function TimeSlotPicker({
           );
           const isDisabled =
             !slot.available || (!isSelected && !canSelectSlot(slot));
-          const timeLabel = slot.time_start.slice(0, 5); // "06:00:00" -> "06:00"
+          const startLabel = slot.time_start.slice(0, 5);
+          const endLabel = slot.time_end.slice(0, 5);
+          const timeLabel = `${startLabel} - ${endLabel}`;
+          const isUserReservation = slot.is_user_reservation;
 
           return (
             <button
@@ -59,16 +62,18 @@ export default function TimeSlotPicker({
               type="button"
               disabled={isDisabled}
               onClick={() => onToggleSlot(slot)}
-              aria-label={`${timeLabel}${isDisabled && slot.available ? ", no consecutiva con el rango seleccionado" : ""}`}
+              aria-label={`Franja ${timeLabel}${isDisabled && slot.available ? ", no consecutiva con el rango seleccionado" : ""}`}
               className={`flex flex-col items-center justify-center rounded-xl border py-2 px-2 text-center transition-all ${
                 isDisabled
-                  ? "cursor-not-allowed border-transparent bg-slate-900/30 text-slate-600 opacity-25"
+                  ? !slot.available
+                    ? "cursor-not-allowed border-rose-500/30 bg-rose-900/20 text-rose-300"
+                    : "cursor-not-allowed border-transparent bg-slate-900/30 text-slate-600 opacity-25"
                   : isSelected
                     ? "border-sky-400 bg-[#0284c7] text-white shadow-md shadow-[#0284c7]/40 font-semibold"
                     : "border-white/10 bg-[#0c1322]/60 text-slate-300 backdrop-blur-md hover:border-sky-400/40 hover:text-white"
               }`}
             >
-              <span className="text-sm font-semibold">{timeLabel}</span>
+              <span className="text-xs font-semibold">{timeLabel}</span>
               {slot.remaining_capacity !== undefined && slot.available && (
                 <span
                   className={`mt-0.5 text-[10px] leading-tight font-medium ${
@@ -82,6 +87,11 @@ export default function TimeSlotPicker({
                   {slot.remaining_capacity <= 5
                     ? `${slot.remaining_capacity} cupos`
                     : `${slot.remaining_capacity} disp.`}
+                </span>
+              )}
+              {!slot.available && (
+                <span className="mt-0.5 text-[10px] leading-tight font-medium text-rose-400/80">
+                  {isUserReservation ? "Apartada" : "Ocupada"}
                 </span>
               )}
             </button>
