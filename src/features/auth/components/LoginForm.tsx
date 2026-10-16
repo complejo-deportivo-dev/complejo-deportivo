@@ -271,7 +271,7 @@ export default function LoginForm({ passwordUpdated = false }: LoginFormProps) {
         role="separator"
       >
         <span className="h-px flex-1 bg-border" />
-        <span aria-hidden="true">O</span>
+        <span aria-hidden="true">O continúa con</span>
         <span className="h-px flex-1 bg-border" />
       </div>
 

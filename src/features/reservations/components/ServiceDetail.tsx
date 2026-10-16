@@ -1,5 +1,4 @@
 import { Users, UserPlus } from "lucide-react";
-import Badge from "@/components/ui/Badge";
 
 interface ServiceDetailProps {
   name: string;
