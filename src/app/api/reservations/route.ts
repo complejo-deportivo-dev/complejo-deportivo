@@ -247,7 +247,6 @@ export async function GET(request: NextRequest) {
       },
       include: {
         reservation_slots: {
-          where: { is_active: true },
           include: {
             time_slots: {
               include: {

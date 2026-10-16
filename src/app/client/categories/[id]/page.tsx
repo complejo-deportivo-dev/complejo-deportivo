@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Search, Sparkles, X } from "lucide-react";
+import { ArrowLeft, Search, Activity, X } from "lucide-react";
 
 import Header from "@/components/shared/Header";
 import ServiceCard from "@/components/shared/ServiceCard";
@@ -163,7 +163,7 @@ export default function CategoryServicesPage() {
           <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div className="space-y-2 max-w-2xl">
               <span className="inline-flex items-center gap-1.5 rounded-full border border-sky-400/25 bg-sky-500/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-[#38bdf8]">
-                <Sparkles size={13} />
+                <Activity size={13} />
                 {getDisciplineBadge(categoryName)}
               </span>
 

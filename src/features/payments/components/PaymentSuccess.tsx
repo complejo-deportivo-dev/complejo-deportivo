@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { ArrowLeft, Check, CalendarDays, Clock3, Sparkles, Users } from "lucide-react";
+import { ArrowLeft, Check, CalendarDays, Clock3, ShieldCheck, Users } from "lucide-react";
 
 import Header from "@/components/shared/Header";
 import ImmersiveBackground from "@/components/shared/ImmersiveBackground";
@@ -110,7 +110,7 @@ export default function PaymentSuccess() {
               <Check aria-hidden="true" className="size-10" strokeWidth={3} />
             </span>
             <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-emerald-400">
-              <Sparkles size={13} />
+              <ShieldCheck size={13} />
               Pago Aprobado con Éxito
             </span>
             <h1 className="mt-3 font-heading text-3xl font-extrabold tracking-tight text-white sm:text-4xl">

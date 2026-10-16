@@ -129,7 +129,60 @@ export async function reconcileReservationPayment(reservationId: number) {
 }
 
 /**
- * Reconciles any pending reservations for a given user that have already been paid in Stripe.
+ * Expires any pending reservations that have exceeded their expires_at timestamp
+ * and releases their reserved slots by setting is_active = false.
+ */
+export async function expireOutdatedReservations(userId?: string) {
+  try {
+    const now = new Date();
+    const expiredReservations = await prisma.reservations.findMany({
+      where: {
+        status: "pending",
+        expires_at: {
+          lt: now,
+        },
+        ...(userId ? { id_user: userId } : {}),
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (expiredReservations.length === 0) {
+      return;
+    }
+
+    const ids = expiredReservations.map((r) => r.id);
+
+    await prisma.$transaction(async (tx) => {
+      await tx.reservations.updateMany({
+        where: {
+          id: { in: ids },
+          status: "pending",
+        },
+        data: {
+          status: "expired",
+        },
+      });
+
+      await tx.reservation_slots.updateMany({
+        where: {
+          id_reservation: { in: ids },
+          is_active: true,
+        },
+        data: {
+          is_active: false,
+        },
+      });
+    });
+  } catch (error) {
+    console.error("Error expiring outdated reservations:", error);
+  }
+}
+
+/**
+ * Reconciles any pending reservations for a given user that have already been paid in Stripe,
+ * and automatically marks any expired pending reservations as expired.
  */
 export async function reconcileUserPendingReservations(userId: string) {
   try {
@@ -149,6 +202,8 @@ export async function reconcileUserPendingReservations(userId: string) {
     for (const item of pendingWithPayment) {
       await reconcileReservationPayment(item.id);
     }
+
+    await expireOutdatedReservations(userId);
   } catch (error) {
     console.error("Error reconciling user pending reservations:", error);
   }

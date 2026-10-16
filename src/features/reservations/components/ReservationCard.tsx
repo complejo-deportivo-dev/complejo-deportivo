@@ -18,7 +18,7 @@ const STATUS_PRESENTATION: Record<
   confirmed: { label: "Confirmada", variant: "success" },
   completed: { label: "Completada", variant: "primary" },
   failed: { label: "Fallida", variant: "error" },
-  expired: { label: "Expirada", variant: "neutral" },
+  expired: { label: "Expirada", variant: "error" },
 };
 
 interface ReservationCardProps {
@@ -39,7 +39,14 @@ export default function ReservationCard({
   onViewQr,
 }: ReservationCardProps) {
   const [detailsOpen, setDetailsOpen] = useState(false);
-  const status = STATUS_PRESENTATION[reservation.status];
+  const isExpired =
+    reservation.status === "expired" ||
+    (reservation.status === "pending" &&
+      reservation.expires_at !== null &&
+      new Date(reservation.expires_at) <= new Date());
+
+  const effectiveStatus = isExpired ? "expired" : reservation.status;
+  const status = STATUS_PRESENTATION[effectiveStatus];
   const qrCodes = reservation.status === "confirmed"
     ? reservation.qr_codes ?? []
     : [];
@@ -85,7 +92,7 @@ export default function ReservationCard({
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          {reservation.status === "pending" && (
+          {reservation.status === "pending" && !isExpired && (
             <Link href={`/client/payment/${reservation.reservation_id}`}>
               <Button size="sm" className="gap-1.5 shadow-md shadow-sky-500/25">
                 <CreditCard size={15} />
@@ -134,7 +141,7 @@ export default function ReservationCard({
             <dt className="text-xs text-text-secondary">Estado</dt>
             <dd className="mt-1 font-medium">{status.label}</dd>
           </div>
-          {reservation.expires_at && reservation.status === "pending" && (
+          {reservation.expires_at && reservation.status === "pending" && !isExpired && (
             <div className="sm:col-span-2">
               <dt className="text-xs text-text-secondary">Vence el pago</dt>
               <dd className="mt-1 font-medium">

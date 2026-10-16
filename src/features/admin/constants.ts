@@ -31,8 +31,8 @@ export const RESERVATION_STATUS: Record<ReservationStatus, StatusConfig> = {
   expired: {
     label: "Expirada",
     pluralLabel: "Expiradas",
-    variant: "neutral",
-    color: "#94a3b8",
+    variant: "error",
+    color: "#ef4444",
   },
   failed: {
     label: "Fallida",

@@ -65,7 +65,6 @@ export async function GET(
       where: { id: reservationId },
       include: {
         reservation_slots: {
-          where: { is_active: true },
           include: {
             time_slots: {
               include: {
@@ -91,6 +90,24 @@ export async function GET(
       if (reconciled) {
         reservation = reconciled;
       }
+    }
+
+    if (
+      reservation.status === "pending" &&
+      reservation.expires_at !== null &&
+      reservation.expires_at < new Date()
+    ) {
+      await prisma.$transaction(async (tx) => {
+        await tx.reservations.update({
+          where: { id: reservation.id },
+          data: { status: "expired" },
+        });
+        await tx.reservation_slots.updateMany({
+          where: { id_reservation: reservation.id, is_active: true },
+          data: { is_active: false },
+        });
+      });
+      reservation.status = "expired";
     }
 
     const orderedSlots = [...reservation.reservation_slots].sort(
