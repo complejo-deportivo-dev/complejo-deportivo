@@ -3,7 +3,7 @@
 import { useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { LockKeyhole, Mail, UserRound } from "lucide-react";
+import { Check, LockKeyhole, Mail, UserRound } from "lucide-react";
 import { z } from "zod";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
@@ -12,7 +12,11 @@ import { createClient } from "@/lib/supabase/client";
 
 const registerSchema = z
   .object({
-    name: z.string().trim().min(1, "El nombre es obligatorio.").max(50, "El nombre no puede superar 50 caracteres."),
+    name: z
+      .string()
+      .trim()
+      .min(1, "El nombre es obligatorio.")
+      .max(50, "El nombre no puede superar 50 caracteres."),
     email: z
       .string()
       .trim()
@@ -145,7 +149,9 @@ export default function RegisterForm() {
           );
         }
 
-        router.push(`/verify-email?email=${encodeURIComponent(validation.data.email)}`);
+        router.push(
+          `/verify-email?email=${encodeURIComponent(validation.data.email)}`,
+        );
         return;
       }
 
@@ -173,7 +179,8 @@ export default function RegisterForm() {
     if (!acceptedTerms) {
       setFieldErrors((current) => ({
         ...current,
-        acceptedTerms: "Debes aceptar los Términos y la Política de Privacidad.",
+        acceptedTerms:
+          "Debes aceptar los Términos y la Política de Privacidad.",
       }));
       return;
     }
@@ -209,19 +216,24 @@ export default function RegisterForm() {
   return (
     <Card
       as="section"
-      padding="lg"
+      padding="none"
       variant="default"
-      className="w-full max-w-[720px] rounded-[28px] border border-white/10 bg-[#1d2a38]/90 shadow-[0_30px_80px_-40px_rgba(15,23,42,0.95)] backdrop-blur-xl"
+      className="relative mx-auto w-full max-w-[380px] overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] px-8 py-6 !shadow-[0_8px_32px_0_rgba(0,0,0,0.37)] !backdrop-blur-2xl"
     >
-      <h2 className="mb-6 font-heading text-h2 font-bold leading-tight text-text-primary">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -top-24 -right-24 h-48 w-48 rounded-full bg-white/10 blur-[60px]"
+      />
+      <h2 className="mb-1 font-heading text-2xl font-bold text-text-primary">
         Crear cuenta
       </h2>
+      <p className="mb-4 text-sm text-text-secondary">
+        Completa tus datos para empezar a reservar.
+      </p>
 
-       
-
-      <form className="space-y-4" noValidate onSubmit={handleSubmit}>
+      <form className="space-y-1.5" noValidate onSubmit={handleSubmit}>
         <Input
-          className="space-y-1.5"
+          className="space-y-1 [&_label]:!mb-1"
           disabled={isBusy}
           error={fieldErrors.name}
           icon={<UserRound />}
@@ -238,7 +250,7 @@ export default function RegisterForm() {
           value={name}
         />
         <Input
-          className="space-y-1.5"
+          className="space-y-1 [&_label]:!mb-1"
           disabled={isBusy}
           error={fieldErrors.email}
           icon={<Mail />}
@@ -255,7 +267,7 @@ export default function RegisterForm() {
           value={email}
         />
         <Input
-          className="space-y-1.5"
+          className="space-y-1 [&_label]:!mb-1"
           disabled={isBusy}
           error={fieldErrors.password}
           icon={<LockKeyhole />}
@@ -272,7 +284,7 @@ export default function RegisterForm() {
           value={password}
         />
         <Input
-          className="space-y-1.5"
+          className="space-y-1 [&_label]:!mb-1"
           disabled={isBusy}
           error={fieldErrors.confirmPassword}
           icon={<LockKeyhole />}
@@ -289,19 +301,30 @@ export default function RegisterForm() {
           value={confirmPassword}
         />
 
-        <div className="space-y-1 pt-1">
-          <label className="flex cursor-pointer items-start gap-2 text-sm text-text-secondary">
+        <div className="mt-2 space-y-1">
+          <label className="flex cursor-pointer select-none items-start gap-2 text-xs text-text-secondary">
             <input
               checked={acceptedTerms}
-              className="mt-0.5 h-4 w-4 shrink-0 rounded border-border bg-surface accent-primary focus:ring-2 focus:ring-primary/50"
+              className="peer sr-only"
               disabled={isBusy}
               onChange={(event) => {
                 setAcceptedTerms(event.target.checked);
-                setFieldErrors((current) => ({ ...current, acceptedTerms: "" }));
+                setFieldErrors((current) => ({
+                  ...current,
+                  acceptedTerms: "",
+                }));
               }}
               type="checkbox"
             />
-            <span>
+            <span className="mt-1 flex size-5 shrink-0 items-center justify-center rounded-md border border-border bg-surface transition-colors duration-200 peer-checked:border-primary peer-checked:bg-primary peer-focus-visible:ring-2 peer-focus-visible:ring-primary/50">
+              <Check
+                aria-hidden="true"
+                className={`size-[14px] text-white transition-opacity duration-200 ${
+                  acceptedTerms ? "opacity-100" : "opacity-0"
+                }`}
+              />
+            </span>
+            <span className="flex-1 mt-1.5 mb-2">
               Acepto los{" "}
               <Link
                 className="text-primary underline underline-offset-2 hover:text-primary-hover"
@@ -337,7 +360,7 @@ export default function RegisterForm() {
         )}
 
         <Button
-          className="w-full !rounded-full"
+          className="!h-8 !w-full !rounded-lg !text-sm !font-medium"
           disabled={isBusy}
           loading={isSubmitting}
           size="lg"
@@ -348,27 +371,28 @@ export default function RegisterForm() {
       </form>
 
       <div
-        aria-label="o continúa con"
-        className="my-6 flex items-center gap-3 text-xs text-text-secondary"
         role="separator"
+        aria-label="o continúa con"
+        className="my-3 flex items-center gap-3 text-xs uppercase"
       >
-        <span className="h-px flex-1 bg-border" />
-        <span aria-hidden="true">O continúa con</span>
-        <span className="h-px flex-1 bg-border" />
+        <span aria-hidden="true" className="h-px flex-1 bg-border" />
+        <span className="shrink-0 text-text-secondary tracking-wider">
+          O continúa con
+        </span>
+        <span aria-hidden="true" className="h-px flex-1 bg-border" />
       </div>
 
       <Button
-        className="w-full !rounded-full !border-border !bg-surface-elevated !text-text-primary hover:!bg-surface"
+        className="!h-8 !w-full !rounded-lg !border-border !bg-surface !text-sm !font-medium hover:!bg-surface/80"
         disabled={isBusy}
         loading={isGoogleLoading}
         onClick={handleGoogleRegister}
-        variant="secondary"
       >
         <GoogleIcon />
-        Google
+        Continuar con Google
       </Button>
 
-      <p className="mt-6 text-center text-sm text-text-secondary">
+      <p className="mt-4 text-center text-xs text-text-secondary">
         ¿Ya tienes cuenta?{" "}
         <Link
           className="font-semibold text-primary transition-colors hover:text-primary-hover"
@@ -377,6 +401,10 @@ export default function RegisterForm() {
           Inicia sesión
         </Link>
       </p>
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"
+      />
     </Card>
   );
 }

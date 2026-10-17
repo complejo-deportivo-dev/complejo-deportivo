@@ -35,7 +35,6 @@ export default function Layout({ children }: { children: ReactNode }) {
                 ? "Elige una contraseña segura"
                 : "Reserva canchas, piscinas, zonas húmedas y gimnasio en segundos."
       }
-      reservation={null}
     >
       {children}
     </AuthLayout>

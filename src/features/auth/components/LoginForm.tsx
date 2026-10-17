@@ -3,7 +3,7 @@
 import { useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight, LockKeyhole, Mail } from "lucide-react";
+import { ArrowRight, Check, LockKeyhole, Mail } from "lucide-react";
 import { z } from "zod";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
@@ -25,7 +25,10 @@ const loginSchema = z.object({
     .email("El correo debe tener un formato válido."),
   password: z
     .string()
-    .refine((value) => value.trim().length > 0, "La contraseña es obligatoria."),
+    .refine(
+      (value) => value.trim().length > 0,
+      "La contraseña es obligatoria.",
+    ),
 });
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -145,15 +148,19 @@ export default function LoginForm({ passwordUpdated = false }: LoginFormProps) {
   return (
     <Card
       as="section"
-      padding="lg"
+      padding="none"
       variant="default"
-      className="w-full max-w-[720px] rounded-[28px] border border-white/10 bg-[#1d2a38]/90 shadow-[0_30px_80px_-40px_rgba(15,23,42,0.95)] backdrop-blur-xl"
+      className="relative w-full overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] p-6 !shadow-none !backdrop-blur-2xl"
     >
-      <div className="mb-6">
-        <h2 className="font-heading text-3xl font-bold leading-tight text-text-primary">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -top-24 -right-24 h-48 w-48 rounded-full bg-white/10 blur-[60px]"
+      />
+      <div>
+        <h2 className="mb-1 font-heading text-2xl font-bold leading-tight text-text-primary">
           Bienvenido de vuelta
         </h2>
-        <p className="mt-1 text-sm text-text-secondary">
+        <p className="mb-6 text-sm text-text-secondary">
           Ingresa tus datos para continuar con tus reservas.
         </p>
       </div>
@@ -170,7 +177,7 @@ export default function LoginForm({ passwordUpdated = false }: LoginFormProps) {
           )}
 
           <Input
-            className="space-y-1.5"
+            className="space-y-1.5 [&_label]:!mb-1.5"
             disabled={isBusy}
             error={fieldErrors.email}
             icon={<Mail />}
@@ -198,7 +205,7 @@ export default function LoginForm({ passwordUpdated = false }: LoginFormProps) {
           <div className="space-y-1.5">
             <div className="flex items-center justify-between gap-3">
               <label
-                className="block text-sm font-medium text-text-primary"
+                className="mb-1.5 block text-sm font-medium text-text-primary"
                 htmlFor="login-password"
               >
                 Contraseña
@@ -230,15 +237,23 @@ export default function LoginForm({ passwordUpdated = false }: LoginFormProps) {
             />
           </div>
 
-          <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-sm">
-            <label className="inline-flex cursor-pointer items-center gap-1.5 text-text-secondary">
+          <div className="flex h-5 items-center">
+            <label className="inline-flex h-5 cursor-pointer select-none items-center gap-2 text-sm text-text-secondary">
               <input
                 checked={rememberMe}
-                className="h-4 w-4 rounded border-border bg-surface accent-primary focus:ring-2 focus:ring-primary/50"
+                className="peer sr-only"
                 disabled={isBusy}
                 onChange={(event) => setRememberMe(event.target.checked)}
                 type="checkbox"
               />
+              <span className="flex size-5 items-center justify-center rounded-md border border-border bg-surface transition-colors duration-200 peer-checked:border-primary peer-checked:bg-primary peer-focus-visible:ring-2 peer-focus-visible:ring-primary/50">
+                <Check
+                  aria-hidden="true"
+                  className={`size-[14px] text-white transition-opacity duration-200 ${
+                    rememberMe ? "opacity-100" : "opacity-0"
+                  }`}
+                />
+              </span>
               Mantener la sesión iniciada
             </label>
           </div>
@@ -254,39 +269,41 @@ export default function LoginForm({ passwordUpdated = false }: LoginFormProps) {
         </div>
 
         <Button
-          className="w-full !rounded-full"
+          className="!h-10 !w-full !gap-2 !rounded-lg !px-4 !text-sm !font-medium transition-colors hover:!bg-primary-hover"
           disabled={isBusy}
           loading={isSubmitting}
           size="md"
           type="submit"
         >
           Iniciar sesión
-          <ArrowRight aria-hidden="true" className="h-4 w-4" />
+          <ArrowRight aria-hidden="true" size={16} />
         </Button>
       </form>
 
       <div
-        aria-label="o continúa con"
-        className="my-6 flex items-center gap-3 text-xs text-text-secondary"
         role="separator"
+        aria-label="o continúa con"
+        className="my-4 flex items-center gap-3 text-xs uppercase"
       >
-        <span className="h-px flex-1 bg-border" />
-        <span aria-hidden="true">O continúa con</span>
-        <span className="h-px flex-1 bg-border" />
+        <span aria-hidden="true" className="h-px flex-1 bg-border" />
+        <span className="shrink-0 text-text-secondary tracking-wider">
+          O continúa con
+        </span>
+        <span aria-hidden="true" className="h-px flex-1 bg-border" />
       </div>
 
       <Button
-        className="w-full !rounded-full !border-border !bg-surface-elevated !text-text-primary hover:!bg-surface"
+        className="!h-10 !w-full !gap-2 !cursor-pointer !rounded-lg !border-border !bg-surface !px-4 !text-sm !font-medium !text-text-primary hover:!bg-surface/80"
         disabled={isBusy}
         loading={isGoogleLoading}
         onClick={handleGoogleLogin}
         variant="secondary"
       >
         <GoogleIcon />
-        Google
+        Continuar con Google
       </Button>
 
-      <p className="mt-6 text-center text-sm text-text-secondary">
+      <p className="mt-5 text-center text-sm text-text-secondary">
         ¿No tienes cuenta?{" "}
         <Link
           className="font-semibold text-primary transition-colors hover:text-primary-hover"
@@ -295,32 +312,31 @@ export default function LoginForm({ passwordUpdated = false }: LoginFormProps) {
           Regístrate
         </Link>
       </p>
-
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"
+      />
     </Card>
   );
 }
 
 function GoogleIcon() {
   return (
-    <svg
-      aria-hidden="true"
-      className="h-4 w-4 shrink-0"
-      viewBox="0 0 48 48"
-    >
+    <svg aria-hidden="true" className="h-5 w-5 shrink-0" viewBox="0 0 48 48">
       <path
-        fill="#FFC107"
+        fill="#4285F4"
         d="M43.6 24.5c0-1.4-.1-2.8-.4-4.1H24v7.8h11a9.4 9.4 0 0 1-4.1 6.2v5.1h6.6c3.9-3.6 6.1-8.8 6.1-15Z"
       />
       <path
-        fill="#FF3D00"
+        fill="#34A853"
         d="M24 44c5.5 0 10.1-1.8 13.5-4.8l-6.6-5.1c-1.8 1.2-4.1 1.9-6.9 1.9-5.3 0-9.8-3.6-11.4-8.4H5.8v5.3A20 20 0 0 0 24 44Z"
       />
       <path
-        fill="#4CAF50"
+        fill="#FBBC05"
         d="M12.6 27.6a12 12 0 0 1 0-7.2v-5.3H5.8a20 20 0 0 0 0 17.8l6.8-5.3Z"
       />
       <path
-        fill="#1976D2"
+        fill="#EA4335"
         d="M24 12c3 0 5.7 1 7.8 3l5.8-5.8C34.1 5.9 29.5 4 24 4A20 20 0 0 0 5.8 15.1l6.8 5.3C14.2 15.6 18.7 12 24 12Z"
       />
     </svg>
