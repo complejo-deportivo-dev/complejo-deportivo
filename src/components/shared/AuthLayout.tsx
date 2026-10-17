@@ -1,6 +1,7 @@
 import type { CSSProperties, ReactNode } from "react";
 import Image from "next/image";
 import { Zap, QrCode, CheckCircle, CalendarCheck, MapPin } from "lucide-react";
+import Link from "next/link";
 
 export interface AuthFeature {
   icon: ReactNode;
@@ -25,7 +26,10 @@ interface AuthLayoutProps {
 }
 
 const DEFAULT_FEATURES: AuthFeature[] = [
-  { icon: <Zap size={20} className="text-primary" />, text: "Reserva en segundos" },
+  {
+    icon: <Zap size={20} className="text-primary" />,
+    text: "Reserva en segundos",
+  },
   { icon: <QrCode size={20} className="text-white" />, text: "Ingreso con QR" },
   {
     icon: <CheckCircle size={20} className="text-secondary" />,
@@ -89,14 +93,20 @@ export default function AuthLayout({
 
         <div className="relative z-10 flex h-full w-full flex-col gap-4">
           <div className="shrink-0">
-            <Image
-              src="/brand/imagotipo-dark.svg"
-              alt="Otium"
-              width={160}
-              height={40}
-              className="otium-rise mb-8 h-8 w-auto"
-              priority
-            />
+            <Link
+              href="/"
+              className="otium-rise mb-8 block w-fit transition-opacity hover:opacity-80"
+              title="Volver al inicio"
+            >
+              <Image
+                src="/brand/imagotipo-dark.svg"
+                alt="Otium - Volver al inicio"
+                width={160}
+                height={40}
+                className="h-8 w-auto"
+                priority
+              />
+            </Link>
             <h1
               className="otium-rise mb-3 font-heading text-3xl font-bold leading-tight text-text-primary lg:text-4xl"
               style={{ animationDelay: ".1s" }}
@@ -119,75 +129,77 @@ export default function AuthLayout({
                   className="pointer-events-none absolute left-1/2 top-1/2 h-[400px] w-[400px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-sky-500/15 blur-[100px]"
                 />
                 <div className="relative w-full max-w-[340px]">
-                <div
-                  className="otium-anim relative overflow-hidden rounded-2xl border border-white/25 bg-white/[0.12] p-5 shadow-[0_20px_60px_-15px_rgba(0,0,0,.6)] backdrop-blur-xl"
-                  style={
-                    {
-                      "--r": "-3deg",
-                      animation: "otium-bob 6s ease-in-out infinite",
-                    } as CSSProperties
-                  }
-                >
                   <div
-                    aria-hidden="true"
-                    className="otium-anim pointer-events-none absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r from-transparent via-white/25 to-transparent"
-                    style={{ animation: "otium-shine 5s ease-in-out infinite" }}
-                  />
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="space-y-1.5">
-                      <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-400/20 px-2 py-0.5 text-[11px] font-medium text-emerald-200">
-                        <span className="relative flex h-2 w-2">
-                          <span
-                            className="otium-anim absolute inset-0 rounded-full bg-emerald-400"
-                            style={{
-                              animation: "otium-ping 2s ease-out infinite",
-                            }}
-                          />
-                          <span className="relative h-2 w-2 rounded-full bg-emerald-400" />
-                        </span>
-                        {reservation.status}
-                      </span>
-                      <p className="text-sm font-semibold">
-                        {reservation.title}
-                      </p>
-                      <p className="flex items-center gap-1.5 text-xs text-white/70">
-                        <CalendarCheck size={13} /> {reservation.date}
-                      </p>
-                      <p className="flex items-center gap-1.5 text-xs text-white/70">
-                        <MapPin size={13} /> {reservation.place}
-                      </p>
-                    </div>
-
-                    <div className="grid shrink-0 grid-cols-7 gap-[2px] rounded-lg bg-white p-1.5">
-                      {QR.flatMap((row, y) =>
-                        row
-                          .split("")
-                          .map((c, x) => (
+                    className="otium-anim relative overflow-hidden rounded-2xl border border-white/25 bg-white/[0.12] p-5 shadow-[0_20px_60px_-15px_rgba(0,0,0,.6)] backdrop-blur-xl"
+                    style={
+                      {
+                        "--r": "-3deg",
+                        animation: "otium-bob 6s ease-in-out infinite",
+                      } as CSSProperties
+                    }
+                  >
+                    <div
+                      aria-hidden="true"
+                      className="otium-anim pointer-events-none absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r from-transparent via-white/25 to-transparent"
+                      style={{
+                        animation: "otium-shine 5s ease-in-out infinite",
+                      }}
+                    />
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="space-y-1.5">
+                        <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-400/20 px-2 py-0.5 text-[11px] font-medium text-emerald-200">
+                          <span className="relative flex h-2 w-2">
                             <span
-                              key={`${y}-${x}`}
-                              className={`h-[6px] w-[6px] rounded-[1px] ${
-                                c === "1" ? "bg-[#06121a]" : "bg-transparent"
-                              }`}
+                              className="otium-anim absolute inset-0 rounded-full bg-emerald-400"
+                              style={{
+                                animation: "otium-ping 2s ease-out infinite",
+                              }}
                             />
-                          )),
-                      )}
+                            <span className="relative h-2 w-2 rounded-full bg-emerald-400" />
+                          </span>
+                          {reservation.status}
+                        </span>
+                        <p className="text-sm font-semibold">
+                          {reservation.title}
+                        </p>
+                        <p className="flex items-center gap-1.5 text-xs text-white/70">
+                          <CalendarCheck size={13} /> {reservation.date}
+                        </p>
+                        <p className="flex items-center gap-1.5 text-xs text-white/70">
+                          <MapPin size={13} /> {reservation.place}
+                        </p>
+                      </div>
+
+                      <div className="grid shrink-0 grid-cols-7 gap-[2px] rounded-lg bg-white p-1.5">
+                        {QR.flatMap((row, y) =>
+                          row
+                            .split("")
+                            .map((c, x) => (
+                              <span
+                                key={`${y}-${x}`}
+                                className={`h-[6px] w-[6px] rounded-[1px] ${
+                                  c === "1" ? "bg-[#06121a]" : "bg-transparent"
+                                }`}
+                              />
+                            )),
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div
-                  className="otium-anim absolute -bottom-4 right-0 flex items-center gap-2 rounded-full border border-white/25 bg-white/15 px-3 py-1.5 text-xs backdrop-blur-md"
-                  style={
-                    {
-                      "--r": "4deg",
-                      animation: "otium-bob 7s ease-in-out infinite .8s",
-                    } as CSSProperties
-                  }
-                >
-                  <QrCode size={14} className="text-emerald-300" />
-                  {reservation.chip}
+                  <div
+                    className="otium-anim absolute -bottom-4 right-0 flex items-center gap-2 rounded-full border border-white/25 bg-white/15 px-3 py-1.5 text-xs backdrop-blur-md"
+                    style={
+                      {
+                        "--r": "4deg",
+                        animation: "otium-bob 7s ease-in-out infinite .8s",
+                      } as CSSProperties
+                    }
+                  >
+                    <QrCode size={14} className="text-emerald-300" />
+                    {reservation.chip}
+                  </div>
                 </div>
-              </div>
               </>
             )}
           </div>

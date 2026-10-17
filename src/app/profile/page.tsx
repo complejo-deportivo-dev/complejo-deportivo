@@ -73,7 +73,7 @@ export default function ProfilePage() {
 
       <Header role={role} />
 
-      <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-6 pb-20 pt-16 lg:px-16">
+      <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-6 pb-20 pt-28 lg:px-16">
         {loading ? (
           <div className="mx-auto w-full max-w-3xl space-y-8 rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-2xl backdrop-blur-xl md:p-10">
             <div className="flex flex-col items-center gap-4 border-b border-white/10 pb-8">

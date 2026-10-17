@@ -213,7 +213,7 @@ export default function CategoryServicesPage() {
 
       <Header role="client" />
 
-      <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-6 pb-20 pt-8 lg:px-16">
+      <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-6 pb-20 pt-28 lg:px-16">
         <Link
           href="/client/categories"
           className="mb-8 inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-[#0c1322]/50 px-4 py-1.5 text-xs font-medium text-slate-300 shadow-sm backdrop-blur-md transition-all hover:border-white/20 hover:bg-[#0c1322]/80 hover:text-white"
@@ -222,7 +222,6 @@ export default function CategoryServicesPage() {
           <span>Volver a categorías</span>
         </Link>
 
-        {/* HERO BANNER DE LA CATEGORÍA */}
         <section className="relative mb-10 overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-2xl backdrop-blur-xl sm:p-8">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div className="space-y-2 max-w-2xl">

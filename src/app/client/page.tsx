@@ -287,7 +287,8 @@ export default function ClientDashboardPage() {
 
       <Header role="client" userName={displayName || undefined} />
 
-      <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-10 px-6 pb-20 pt-12 lg:px-16">
+      <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-10 px-6 pb-20 pt-28 lg:px-16">
+        {" "}
         <section className="space-y-2 pt-4">
           {loading && !displayName ? (
             <Skeleton width={240} height={40} />
@@ -300,7 +301,6 @@ export default function ClientDashboardPage() {
             Todo listo para tu próxima visita al complejo.
           </p>
         </section>
-
         {error && (
           <Banner variant="error" onClose={() => setError(null)}>
             <p className="font-medium">No pudimos cargar tus reservas.</p>
@@ -310,7 +310,6 @@ export default function ClientDashboardPage() {
             </Button>
           </Banner>
         )}
-
         <div className="grid items-stretch gap-6 lg:grid-cols-2">
           <section className="flex flex-col gap-3">
             <h2 className="font-heading text-lg font-bold text-white">
@@ -373,11 +372,8 @@ export default function ClientDashboardPage() {
             </div>
           </section>
         </div>
-
         <QRList items={qrItems} loading={loadingQrs} onOpenQR={setSelectedQR} />
-
         <RecentHistory items={history} loading={loading} />
-
         {selectedQR && (
           <ModalQR
             isOpen
