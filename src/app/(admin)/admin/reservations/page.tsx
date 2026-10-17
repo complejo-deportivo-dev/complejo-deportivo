@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { ChevronDown, Loader2 } from "lucide-react";
 
 import Header from "@/components/shared/Header";
 import Banner from "@/components/ui/Banner";
@@ -12,7 +13,7 @@ import ReservationsTable, {
 import type { ReservationStatus } from "@/features/admin/types";
 
 const STATUS_FILTERS: { value: ReservationStatus | "all"; label: string }[] = [
-  { value: "all", label: "Todos" },
+  { value: "all", label: "Todos los estados" },
   { value: "pending", label: "Pendiente" },
   { value: "confirmed", label: "Confirmada" },
   { value: "completed", label: "Completada" },
@@ -24,7 +25,7 @@ async function fetchReservations(): Promise<AdminReservationRow[]> {
   const response = await fetch("/api/admin/reservations");
   if (!response.ok) {
     throw new Error(
-      `No se pudieron cargar las reservas (error ${response.status}).`
+      `No se pudieron cargar las reservas (error ${response.status}).`,
     );
   }
 
@@ -39,7 +40,7 @@ async function fetchReservations(): Promise<AdminReservationRow[]> {
 export default function AdminReservationsPage() {
   const [reservations, setReservations] = useState<AdminReservationRow[]>([]);
   const [statusFilter, setStatusFilter] = useState<ReservationStatus | "all">(
-    "all"
+    "all",
   );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -54,7 +55,7 @@ export default function AdminReservationsPage() {
       setError(
         caughtError instanceof Error
           ? caughtError.message
-          : "No se pudo cargar la lista de reservas."
+          : "No se pudo cargar la lista de reservas.",
       );
     } finally {
       setLoading(false);
@@ -74,24 +75,41 @@ export default function AdminReservationsPage() {
       statusFilter === "all"
         ? reservations
         : reservations.filter(
-            (reservation) => reservation.status === statusFilter
+            (reservation) => reservation.status === statusFilter,
           ),
-    [reservations, statusFilter]
+    [reservations, statusFilter],
   );
 
   return (
-    <>
+    <div className="relative min-h-screen flex flex-col">
+      {/* Fondo de cuadritos */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none fixed inset-0 -z-10 overflow-hidden bg-[#060b17]"
+      >
+        <div
+          className="absolute inset-0 opacity-[0.08]"
+          style={{
+            backgroundImage:
+              "linear-gradient(to right, rgba(255,255,255,.5) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,.5) 1px, transparent 1px)",
+            backgroundSize: "44px 44px",
+            backgroundPosition: "right top",
+          }}
+        />
+        <div className="absolute -top-40 left-1/2 h-[500px] w-[800px] -translate-x-1/2 rounded-full bg-sky-500/10 blur-[120px]" />
+      </div>
+
       <Header role="admin" userName="Admin" userInitials="AD" />
 
-      <main className="mx-auto w-full max-w-7xl space-y-6 px-4 py-6 md:px-6">
+      <main className="mx-auto w-full max-w-6xl space-y-8 px-4 pb-20 pt-16 md:px-6">
         <div>
-          <p className="mt-4 mb-2 text-xs font-semibold uppercase tracking-wider text-text-secondary">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
             PANEL DE ADMINISTRACIÓN
           </p>
-          <h1 className="font-heading text-3xl font-bold text-text-primary">
+          <h1 className="font-heading text-3xl font-bold text-white sm:text-4xl">
             Reservas
           </h1>
-          <p className="text-text-secondary">
+          <p className="text-slate-300">
             Consulta y filtra las reservas del complejo.
           </p>
         </div>
@@ -111,40 +129,53 @@ export default function AdminReservationsPage() {
           </Banner>
         )}
 
-        <section className={CARD_CLASS}>
+        {/* Contenedor del Filtro */}
+        <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-lg backdrop-blur-xl">
           <label
-            className="flex flex-col gap-2 text-sm font-medium text-text-primary sm:max-w-xs"
+            className="flex flex-col gap-2.5 text-sm font-medium text-slate-300 sm:max-w-xs"
             htmlFor="reservation-status"
           >
-            Estado
-            <select
-              className="rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text-primary outline-none focus:border-primary"
-              id="reservation-status"
-              onChange={(event) =>
-                setStatusFilter(event.target.value as ReservationStatus | "all")
-              }
-              value={statusFilter}
-            >
-              {STATUS_FILTERS.map((status) => (
-                <option key={status.value} value={status.value}>
-                  {status.label}
-                </option>
-              ))}
-            </select>
+            Filtrar por estado
+            <div className="relative">
+              <select
+                className="w-full appearance-none rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white outline-none transition-all focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
+                id="reservation-status"
+                onChange={(event) =>
+                  setStatusFilter(
+                    event.target.value as ReservationStatus | "all",
+                  )
+                }
+                value={statusFilter}
+              >
+                {STATUS_FILTERS.map((status) => (
+                  <option
+                    key={status.value}
+                    value={status.value}
+                    className="bg-[#0c1322] text-white"
+                  >
+                    {status.label}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown
+                size={18}
+                className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-400"
+              />
+            </div>
           </label>
         </section>
 
         {loading ? (
-          <section
-            aria-busy="true"
-            className={`${CARD_CLASS} py-10 text-center text-sm text-text-secondary`}
-          >
-            Cargando reservas...
+          <section className="flex flex-col items-center justify-center rounded-3xl border border-white/10 bg-white/[0.03] py-24 shadow-lg backdrop-blur-xl">
+            <Loader2 className="mb-4 size-8 animate-spin text-sky-500" />
+            <p className="text-sm font-medium text-slate-400">
+              Cargando reservas del sistema...
+            </p>
           </section>
         ) : (
           !error && <ReservationsTable reservations={filteredReservations} />
         )}
       </main>
-    </>
+    </div>
   );
 }

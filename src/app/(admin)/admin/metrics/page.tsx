@@ -15,7 +15,9 @@ import type { AdminMetrics, ApiResponse } from "@/features/admin/types";
 async function fetchMetrics(): Promise<AdminMetrics> {
   const response = await fetch("/api/admin/metrics");
   if (!response.ok) {
-    throw new Error(`No se pudieron cargar las métricas (error ${response.status}).`);
+    throw new Error(
+      `No se pudieron cargar las métricas (error ${response.status}).`,
+    );
   }
 
   const payload: ApiResponse<AdminMetrics> = await response.json();
@@ -37,7 +39,7 @@ export default function AdminMetricsPage() {
       setError(
         caughtError instanceof Error
           ? caughtError.message
-          : "No se pudieron cargar las métricas."
+          : "No se pudieron cargar las métricas.",
       );
     } finally {
       setLoading(false);
@@ -53,18 +55,34 @@ export default function AdminMetricsPage() {
   }, [loadMetrics]);
 
   return (
-    <>
+    <div className="relative min-h-screen flex flex-col">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none fixed inset-0 -z-10 overflow-hidden bg-[#060b17]"
+      >
+        <div
+          className="absolute inset-0 opacity-[0.08]"
+          style={{
+            backgroundImage:
+              "linear-gradient(to right, rgba(255,255,255,.5) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,.5) 1px, transparent 1px)",
+            backgroundSize: "44px 44px",
+            backgroundPosition: "right top",
+          }}
+        />
+        <div className="absolute -top-40 left-1/2 h-[500px] w-[800px] -translate-x-1/2 rounded-full bg-sky-500/10 blur-[120px]" />
+      </div>
+
       <Header role="admin" userName="Admin" userInitials="AD" />
 
-      <main className="mx-auto w-full max-w-7xl space-y-6 px-4 py-6 md:px-6">
+      <main className="mx-auto w-full max-w-6xl space-y-8 px-4 pb-20 pt-16 md:px-6">
         <div>
-          <p className="mt-4 mb-2 text-xs font-semibold uppercase tracking-wider text-text-secondary">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
             PANEL DE ADMINISTRACIÓN
           </p>
-          <h1 className="font-heading text-3xl font-bold text-text-primary">
+          <h1 className="font-heading text-3xl font-bold text-white sm:text-4xl">
             Métricas
           </h1>
-          <p className="text-text-secondary">
+          <p className="mt-2 text-sm text-slate-300">
             Consulta el rendimiento y la ocupación del complejo.
           </p>
         </div>
@@ -75,7 +93,11 @@ export default function AdminMetricsPage() {
           <Banner variant="error">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <span>{error}</span>
-              <Button size="sm" variant="secondary" onClick={() => void loadMetrics()}>
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => void loadMetrics()}
+              >
                 Reintentar
               </Button>
             </div>
@@ -86,7 +108,7 @@ export default function AdminMetricsPage() {
           <>
             <MetricsGrid metrics={metrics} />
 
-            <div className="grid gap-4 lg:grid-cols-2">
+            <div className="grid gap-6 lg:grid-cols-2">
               <ReservationsByDayChart data={metrics.daily_reservations} />
               <ReservationsByStatusChart data={metrics.by_status} />
             </div>
@@ -95,6 +117,6 @@ export default function AdminMetricsPage() {
           </>
         )}
       </main>
-    </>
+    </div>
   );
 }

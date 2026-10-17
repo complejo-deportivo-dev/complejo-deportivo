@@ -269,7 +269,6 @@ export default function ClientDashboardPage() {
 
   return (
     <div className="relative flex min-h-screen flex-col">
-      {/* Fondo de cuadritos */}
       <div
         aria-hidden="true"
         className="pointer-events-none fixed inset-0 -z-10 overflow-hidden bg-[#060b17]"
@@ -283,14 +282,12 @@ export default function ClientDashboardPage() {
             backgroundPosition: "right top",
           }}
         />
-        {/* Un halo sutil de luz en la parte superior para dar profundidad */}
         <div className="absolute -top-40 left-1/2 h-[500px] w-[800px] -translate-x-1/2 rounded-full bg-sky-500/10 blur-[120px]" />
       </div>
 
       <Header role="client" userName={displayName || undefined} />
 
       <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-10 px-6 pb-20 pt-12 lg:px-16">
-        {/* SALUDO AL CLIENTE */}
         <section className="space-y-2 pt-4">
           {loading && !displayName ? (
             <Skeleton width={240} height={40} />
@@ -348,7 +345,6 @@ export default function ClientDashboardPage() {
             </div>
           </section>
 
-          {/* Columna 2: Próxima reserva */}
           <section className="flex flex-col gap-3">
             <div className="flex items-center justify-between">
               <h2 className="font-heading text-lg font-bold text-white">
@@ -378,13 +374,10 @@ export default function ClientDashboardPage() {
           </section>
         </div>
 
-        {/* MIS QRS ACTIVOS */}
         <QRList items={qrItems} loading={loadingQrs} onOpenQR={setSelectedQR} />
 
-        {/* HISTORIAL RECIENTE */}
         <RecentHistory items={history} loading={loading} />
 
-        {/* MODAL QR PARA VER Y DESCARGAR */}
         {selectedQR && (
           <ModalQR
             isOpen

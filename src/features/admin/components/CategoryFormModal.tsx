@@ -56,7 +56,7 @@ export default function CategoryFormModal({
     >
       <form className="space-y-5" onSubmit={handleSubmit}>
         <Input
-          label="Nombre"
+          label="Nombre de la categoría"
           name="name"
           placeholder="Ej: Piscina, Gimnasio..."
           value={name}
@@ -66,11 +66,13 @@ export default function CategoryFormModal({
         />
 
         {isEditing && (
-          <div className="flex items-center justify-between gap-4 rounded-xl border border-white/10 bg-[#0F172A] px-3 py-3">
+          <div className="flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3.5">
             <div>
-              <p className="text-sm font-medium text-white">Activo</p>
-              <p className="text-xs text-slate-400">
-                Define si la categoría está disponible.
+              <p className="text-sm font-semibold text-white">
+                Estado de la categoría
+              </p>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Define si la categoría está visible en el catálogo.
               </p>
             </div>
             <Toggle
@@ -82,16 +84,23 @@ export default function CategoryFormModal({
           </div>
         )}
 
-        <div className="flex justify-end gap-3 pt-2">
-          <Button type="button" variant="secondary" onClick={onClose} disabled={isSubmitting}>
+        <div className="flex justify-end gap-3 pt-4">
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={onClose}
+            disabled={isSubmitting}
+            className="h-10 px-5 rounded-xl"
+          >
             Cancelar
           </Button>
           <Button
             type="submit"
             loading={isSubmitting}
             disabled={isSubmitting || !name.trim()}
+            className="h-10 px-6 rounded-xl bg-sky-500 hover:bg-sky-400 text-white font-bold"
           >
-            {isEditing ? "Guardar" : "Crear"}
+            {isEditing ? "Guardar cambios" : "Crear categoría"}
           </Button>
         </div>
       </form>

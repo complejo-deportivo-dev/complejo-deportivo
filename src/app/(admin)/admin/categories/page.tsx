@@ -38,7 +38,10 @@ const normalizeCategory = (category: {
   name: category.name,
   is_active: category.is_active ?? category.activo ?? true,
   services_count:
-    category.services_count ?? category.servicios_count ?? category.services?.length ?? 0,
+    category.services_count ??
+    category.servicios_count ??
+    category.services?.length ??
+    0,
   services: category.services ?? [],
 });
 
@@ -74,12 +77,10 @@ export default function CategoriesPage() {
   const [error, setError] = useState<string | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-  const [editingCategory, setEditingCategory] = useState<AdminCategoryRow | null>(
-    null,
-  );
-  const [categoryToDelete, setCategoryToDelete] = useState<CategoryDeleteTarget | null>(
-    null,
-  );
+  const [editingCategory, setEditingCategory] =
+    useState<AdminCategoryRow | null>(null);
+  const [categoryToDelete, setCategoryToDelete] =
+    useState<CategoryDeleteTarget | null>(null);
 
   const loadCategories = async () => {
     setIsLoading(true);
@@ -209,27 +210,35 @@ export default function CategoriesPage() {
     }
 
     const hasRelatedServices =
-      (categoryToDelete.serviceCount ?? categoryToDelete.services?.length ?? 0) > 0;
+      (categoryToDelete.serviceCount ??
+        categoryToDelete.services?.length ??
+        0) > 0;
 
     setIsSubmitting(true);
 
     try {
       if (hasRelatedServices) {
-        const response = await fetch(`/api/admin/categories/${categoryToDelete.id}`, {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
+        const response = await fetch(
+          `/api/admin/categories/${categoryToDelete.id}`,
+          {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ is_active: false }),
           },
-          body: JSON.stringify({ is_active: false }),
-        });
+        );
 
         if (!response.ok) {
           throw new Error("No se pudo desactivar la categoría.");
         }
       } else {
-        const response = await fetch(`/api/admin/categories/${categoryToDelete.id}`, {
-          method: "DELETE",
-        });
+        const response = await fetch(
+          `/api/admin/categories/${categoryToDelete.id}`,
+          {
+            method: "DELETE",
+          },
+        );
 
         if (!response.ok) {
           throw new Error("No se pudo eliminar la categoría.");
@@ -253,11 +262,14 @@ export default function CategoriesPage() {
   const renderEmptyState = () => {
     if (isLoading) {
       return (
-        <Card className="mt-6 border border-white/10 bg-[#101827]" padding="md">
+        <Card
+          className="mt-6 !rounded-3xl !border-white/10 !bg-white/[0.03] !shadow-lg backdrop-blur-xl"
+          padding="md"
+        >
           <div className="grid gap-3">
-            <div className="h-12 animate-pulse rounded-xl bg-slate-800/80" />
-            <div className="h-12 animate-pulse rounded-xl bg-slate-800/80" />
-            <div className="h-12 animate-pulse rounded-xl bg-slate-800/80" />
+            <div className="h-12 animate-pulse rounded-xl bg-white/5" />
+            <div className="h-12 animate-pulse rounded-xl bg-white/5" />
+            <div className="h-12 animate-pulse rounded-xl bg-white/5" />
           </div>
         </Card>
       );
@@ -265,15 +277,21 @@ export default function CategoriesPage() {
 
     if (categories.length === 0) {
       return (
-        <Card className="mt-6 border border-white/10 bg-[#101827]" padding="md">
-          <p className="text-center text-slate-300">No hay categorías aún</p>
+        <Card
+          className="mt-6 !rounded-3xl !border-white/10 !bg-white/[0.03] !shadow-lg backdrop-blur-xl"
+          padding="md"
+        >
+          <p className="text-center text-slate-400">No hay categorías aún</p>
         </Card>
       );
     }
 
     return (
-      <Card className="mt-6 border border-white/10 bg-[#101827]" padding="md">
-        <p className="text-center text-slate-300">
+      <Card
+        className="mt-6 !rounded-3xl !border-white/10 !bg-white/[0.03] !shadow-lg backdrop-blur-xl"
+        padding="md"
+      >
+        <p className="text-center text-slate-400">
           No existen categorías que coincidan con la búsqueda
         </p>
       </Card>
@@ -281,116 +299,142 @@ export default function CategoriesPage() {
   };
 
   return (
-    <>
+    <div className="relative min-h-screen flex flex-col">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none fixed inset-0 -z-10 overflow-hidden bg-[#060b17]"
+      >
+        <div
+          className="absolute inset-0 opacity-[0.08]"
+          style={{
+            backgroundImage:
+              "linear-gradient(to right, rgba(255,255,255,.5) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,.5) 1px, transparent 1px)",
+            backgroundSize: "44px 44px",
+            backgroundPosition: "right top",
+          }}
+        />
+        <div className="absolute -top-40 left-1/2 h-[500px] w-[800px] -translate-x-1/2 rounded-full bg-sky-500/10 blur-[120px]" />
+      </div>
+
       <Header role="admin" userName="Admin" userInitials="AD" />
 
-      <main className="min-h-screen bg-transparent px-4 py-6 md:px-6">
-        <div className="mx-auto max-w-6xl">
+      <main className="mx-auto w-full max-w-6xl space-y-8 px-4 pb-20 pt-16 md:px-6">
+        <div>
           <Link
-            className="inline-flex mt-4 items-center gap-2 text-sm font-medium text-blue-300 transition-colors hover:text-blue-200"
+            className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-[#0c1322]/50 px-4 py-1.5 text-xs font-medium text-slate-300 shadow-sm backdrop-blur-md transition-all hover:border-white/20 hover:bg-[#0c1322]/80 hover:text-white"
             href="/admin"
           >
             <ArrowLeft className="h-4 w-4" />
             Volver al dashboard
           </Link>
 
-          <div className="mt-6">
-            <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.25em] text-slate-400">
-              GESTIÓN
-            </p>
-            <h1 className="font-heading text-3xl font-bold text-white">Categorías</h1>
-            <p className="mt-2 text-sm text-slate-400">
-              Administra las categorías del complejo.
-            </p>
-          </div>
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
+            GESTIÓN
+          </p>
+          <h1 className="font-heading text-3xl font-bold text-white sm:text-4xl">
+            Categorías
+          </h1>
+          <p className="mt-2 text-sm text-slate-300">
+            Administra las categorías del complejo.
+          </p>
+        </div>
 
-          {error && (
-            <Banner variant="error" className="mt-6">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <span>{error}</span>
-                <Button size="sm" variant="secondary" onClick={() => void loadCategories()}>
-                  Reintentar
-                </Button>
-              </div>
-            </Banner>
-          )}
-
-          <Card className="mt-6 border border-white/10 bg-[#101827]" padding="md">
-            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-              <div className="w-full md:max-w-md">
-                <Input
-                  aria-label="Buscar categoría"
-                  className="bg-transparent"
-                  icon={<Search className="h-4 w-4" />}
-                  onChange={(event) => setSearch(event.target.value)}
-                  placeholder="Buscar categoría..."
-                  value={search}
-                />
-              </div>
-
-              <Button onClick={handleOpenCreateModal}>
-                <Plus className="h-4 w-4" />
-                Nueva categoría
+        {error && (
+          <Banner variant="error">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <span>{error}</span>
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => void loadCategories()}
+              >
+                Reintentar
               </Button>
             </div>
-          </Card>
+          </Banner>
+        )}
 
-          {isLoading && !error && renderEmptyState()}
-
-          {!isLoading && !error && filteredCategories.length === 0 && renderEmptyState()}
-
-          {!isLoading && !error && filteredCategories.length > 0 && (
-            <div className="mt-6">
-              <CategoriesTable
-                categories={filteredCategories}
-                onDelete={(category) => {
-                  setCategoryToDelete({
-                    id: category.id,
-                    name: category.name,
-                    serviceCount: category.services_count,
-                    services: category.services,
-                  });
-                  setIsDeleteOpen(true);
-                }}
-                onEdit={handleOpenEditModal}
-                onToggle={handleToggleCategory}
+        <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-lg backdrop-blur-xl">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div className="w-full md:max-w-md">
+              <Input
+                aria-label="Buscar categoría"
+                className="!bg-white/[0.02] !border-white/10 hover:!bg-white/[0.05] focus:!bg-white/[0.05] transition-colors !rounded-xl"
+                icon={<Search className="h-4 w-4 text-slate-400" />}
+                onChange={(event) => setSearch(event.target.value)}
+                placeholder="Buscar categoría..."
+                value={search}
               />
             </div>
-          )}
 
-          <CategoryFormModal
-            key={
-              isFormOpen
-                ? `category-form-${editingCategory?.id ?? "new"}`
-                : "category-form-closed"
-            }
-            initialValues={
-              editingCategory
-                ? {
-                    name: editingCategory.name,
-                    is_active: editingCategory.is_active,
-                  }
-                : emptyFormValues()
-            }
-            isEditing={Boolean(editingCategory)}
-            isOpen={isFormOpen}
-            isSubmitting={isSubmitting}
-            onClose={closeFormModal}
-            onSubmit={handleSubmitCategory}
-          />
+            <Button
+              className="h-11 bg-sky-500 hover:bg-sky-400 text-sm font-semibold rounded-xl px-6"
+              onClick={handleOpenCreateModal}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Nueva categoría
+            </Button>
+          </div>
+        </section>
 
-          <ConfirmDeleteModal
-            category={categoryToDelete}
-            isOpen={isDeleteOpen}
-            isSubmitting={isSubmitting}
-            onClose={() => {
-              setIsDeleteOpen(false);
-              setCategoryToDelete(null);
-            }}
-            onConfirm={() => void handleDeleteCategory()}
-          />
-        </div>
+        {isLoading && !error && renderEmptyState()}
+
+        {!isLoading &&
+          !error &&
+          filteredCategories.length === 0 &&
+          renderEmptyState()}
+
+        {!isLoading && !error && filteredCategories.length > 0 && (
+          <div className="mt-2">
+            <CategoriesTable
+              categories={filteredCategories}
+              onDelete={(category) => {
+                setCategoryToDelete({
+                  id: category.id,
+                  name: category.name,
+                  serviceCount: category.services_count,
+                  services: category.services,
+                });
+                setIsDeleteOpen(true);
+              }}
+              onEdit={handleOpenEditModal}
+              onToggle={handleToggleCategory}
+            />
+          </div>
+        )}
+
+        <CategoryFormModal
+          key={
+            isFormOpen
+              ? `category-form-${editingCategory?.id ?? "new"}`
+              : "category-form-closed"
+          }
+          initialValues={
+            editingCategory
+              ? {
+                  name: editingCategory.name,
+                  is_active: editingCategory.is_active,
+                }
+              : emptyFormValues()
+          }
+          isEditing={Boolean(editingCategory)}
+          isOpen={isFormOpen}
+          isSubmitting={isSubmitting}
+          onClose={closeFormModal}
+          onSubmit={handleSubmitCategory}
+        />
+
+        <ConfirmDeleteModal
+          category={categoryToDelete}
+          isOpen={isDeleteOpen}
+          isSubmitting={isSubmitting}
+          onClose={() => {
+            setIsDeleteOpen(false);
+            setCategoryToDelete(null);
+          }}
+          onConfirm={() => void handleDeleteCategory()}
+        />
       </main>
-    </>
+    </div>
   );
 }
