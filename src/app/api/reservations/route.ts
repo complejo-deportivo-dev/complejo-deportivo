@@ -68,7 +68,7 @@ function isUniqueConstraintError(error: unknown): boolean {
 }
 
 function formatDateOnly(value: Date): string {
-  return formatInTimeZone(value, TIME_ZONE, "yyyy-MM-dd");
+  return value.toISOString().split("T")[0];
 }
 
 function formatTimeOnly(value: Date): string {

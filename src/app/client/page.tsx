@@ -314,9 +314,7 @@ export default function ClientDashboardPage() {
           </Banner>
         )}
 
-        {/* DOS COLUMNAS: HACER UNA RESERVA Y PRÓXIMA RESERVA */}
         <div className="grid items-stretch gap-6 lg:grid-cols-2">
-          {/* Columna 1: Hacer una reserva */}
           <section className="flex flex-col gap-3">
             <h2 className="font-heading text-lg font-bold text-white">
               Nueva Reserva
@@ -359,9 +357,10 @@ export default function ClientDashboardPage() {
               {upcoming && (
                 <Link
                   href="/client/reservations"
-                  className="text-xs font-semibold text-[#38bdf8] hover:text-white transition-colors"
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-[#38bdf8] transition-colors hover:text-white"
                 >
-                  Ver todas →
+                  <span>Ver todas</span>
+                  <ArrowRight aria-hidden="true" size={14} />
                 </Link>
               )}
             </div>

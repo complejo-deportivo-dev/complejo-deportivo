@@ -38,7 +38,7 @@ export default function QRCard({
     <Card
       padding="none"
       onClick={onClick}
-      className={`group relative flex min-h-[380px] w-[200px] min-w-[160px] flex-col items-center overflow-hidden !rounded-2xl !border-white/10 !bg-white/[0.03] p-5 !shadow-none !backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:!bg-white/[0.06] hover:!shadow-2xl ${serviceTheme?.border ?? "hover:!border-white/20"} ${serviceTheme?.glow ?? "hover:!shadow-sky-500/10"}`}
+      className={`group relative flex min-h-[360px] w-[240px] min-w-[160px] flex-col items-center overflow-hidden !rounded-2xl !border-white/10 !bg-white/[0.03] p-5 !shadow-none !backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:!bg-white/[0.06] hover:!shadow-2xl ${serviceTheme?.border ?? "hover:!border-white/20"} ${serviceTheme?.glow ?? "hover:!shadow-sky-500/10"}`}
     >
       <span className="flex min-h-0 w-full flex-1 flex-col items-center text-left">
         <span
