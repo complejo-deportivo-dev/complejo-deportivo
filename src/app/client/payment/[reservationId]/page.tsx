@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { ArrowLeft, CalendarDays, Clock3, Lock, ShieldCheck, Sparkles, Users } from "lucide-react";
+import { ArrowLeft, CalendarDays, Clock3, Lock, ShieldCheck, Users } from "lucide-react";
 
 import Header from "@/components/shared/Header";
 import ImmersiveBackground from "@/components/shared/ImmersiveBackground";
@@ -78,6 +78,22 @@ export default function PaymentPage() {
         const reservation = await fetchData<ReservationWithDetails>(
           `/api/reservations/${reservationId}`,
         );
+
+        if (
+          reservation.status === "expired" ||
+          (reservation.expires_at && new Date(reservation.expires_at) <= new Date())
+        ) {
+          if (!active) return;
+          setExpired(true);
+          setPayment({
+            reservation: { ...reservation, status: "expired" },
+            clientSecret: "",
+            amount: reservation.amount,
+            expiresAt: reservation.expires_at,
+          });
+          return;
+        }
+
         const intent = await fetchData<CreatePaymentIntentResponse>(
           "/api/payments/create-intent",
           {
@@ -112,6 +128,26 @@ export default function PaymentPage() {
       active = false;
     };
   }, [reservationId]);
+
+  const handleExpire = async () => {
+    setExpired(true);
+    try {
+      await fetch(`/api/reservations/${reservationId}`, { cache: "no-store" });
+      setPayment((prev) =>
+        prev
+          ? {
+              ...prev,
+              reservation: {
+                ...prev.reservation,
+                status: "expired",
+              },
+            }
+          : null
+      );
+    } catch {
+      // Ignorar error de red si falla la notificación pasiva
+    }
+  };
 
   const reservation = payment?.reservation;
 
@@ -171,7 +207,7 @@ export default function PaymentPage() {
             <TimeCounter
               className="mb-8"
               expiresAt={payment.expiresAt}
-              onExpire={() => setExpired(true)}
+              onExpire={handleExpire}
             />
 
             {expired && (

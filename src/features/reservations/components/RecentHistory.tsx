@@ -1,8 +1,10 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, CalendarX2 } from "lucide-react";
+import { ArrowRight, CalendarX2, CreditCard } from "lucide-react";
 import Badge, { type BadgeVariant } from "@/components/ui/Badge";
+import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import Skeleton from "@/components/ui/Skeleton";
 import { formatDateShort } from "@/utils/dates";
@@ -15,6 +17,7 @@ export interface HistoryItemData {
   timeRange: string;
   status: ReservationStatus;
   peopleCount: number;
+  expiresAt?: string | null;
 }
 
 interface RecentHistoryProps {
@@ -29,11 +32,26 @@ const STATUS_BADGE: Record<
   pending: { variant: "warning", label: "Pendiente" },
   confirmed: { variant: "success", label: "Confirmada" },
   failed: { variant: "error", label: "Fallida" },
-  expired: { variant: "neutral", label: "Expirada" },
+  expired: { variant: "error", label: "Expirada" },
   completed: { variant: "primary", label: "Completada" },
 };
 
 export default function RecentHistory({ items, loading = false }: RecentHistoryProps) {
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const hasPending = items.some(
+      (item) => item.status === "pending" && Boolean(item.expiresAt),
+    );
+    if (!hasPending) return;
+
+    const interval = setInterval(() => {
+      setNow(Date.now());
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [items]);
+
   return (
     <section className="space-y-4">
       <div className="flex items-center justify-between">
@@ -68,7 +86,15 @@ export default function RecentHistory({ items, loading = false }: RecentHistoryP
       ) : (
         <Card as="ul" padding="none" className="divide-y divide-border">
           {items.map((item) => {
-            const badge = STATUS_BADGE[item.status];
+            const expiresAtMs = item.expiresAt ? new Date(item.expiresAt).getTime() : null;
+            const isExpired =
+              item.status === "expired" ||
+              (item.status === "pending" && expiresAtMs !== null && expiresAtMs <= now);
+
+            const effectiveStatus = isExpired ? "expired" : item.status;
+            const badge = STATUS_BADGE[effectiveStatus];
+            const canPay = item.status === "pending" && !isExpired;
+
             return (
               <li
                 key={item.reservationId}
@@ -84,10 +110,18 @@ export default function RecentHistory({ items, loading = false }: RecentHistoryP
                     {item.peopleCount === 1 ? "persona" : "personas"}
                   </p>
                 </div>
-                <div className="flex items-center justify-between gap-4 sm:justify-end">
+                <div className="flex flex-wrap items-center justify-between gap-3 sm:justify-end">
                   <Badge size="sm" variant={badge.variant}>
                     {badge.label}
                   </Badge>
+                  {canPay && (
+                    <Link href={`/client/payment/${item.reservationId}`}>
+                      <Button size="sm" className="gap-1.5 shadow-md shadow-sky-500/25">
+                        <CreditCard size={14} />
+                        <span>Pagar ahora</span>
+                      </Button>
+                    </Link>
+                  )}
                   <Link
                     href="/client/reservations"
                     className="shrink-0 text-sm font-medium text-primary transition-colors hover:text-primary-hover"

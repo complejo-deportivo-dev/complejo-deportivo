@@ -25,7 +25,7 @@ export default function ImmersiveBackground({
   fallbackSrc = "/images/piscina.webp",
   images,
   ambient = false,
-  intervalMs = 10000,
+  intervalMs = 3000,
 }: ImmersiveBackgroundProps) {
   const [imgError, setImgError] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);

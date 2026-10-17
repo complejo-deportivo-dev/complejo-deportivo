@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, CalendarDays, Clock3, History, ListFilter, Plus, Sparkles } from "lucide-react";
+import { ArrowLeft, CalendarCheck, CalendarDays, Clock3, History, ListFilter, Plus } from "lucide-react";
 
 import ModalQR from "@/components/shared/ModalQR";
 import ImmersiveBackground from "@/components/shared/ImmersiveBackground";
@@ -190,7 +190,7 @@ export default function ReservationList() {
           <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
             <div className="space-y-2 max-w-2xl">
               <span className="inline-flex items-center gap-1.5 rounded-full border border-sky-400/25 bg-sky-500/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-[#38bdf8]">
-                <Sparkles size={13} />
+                <CalendarCheck size={13} />
                 Gestión de Visitas y Accesos
               </span>
 

@@ -2,7 +2,7 @@
 
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { Ticket, Calendar, Clock, UserCheck, ShieldCheck, Sparkles } from "lucide-react";
+import { Ticket, Calendar, Clock, UserCheck, ShieldCheck, CreditCard } from "lucide-react";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import type { ServiceSlot } from "@/types/api";
@@ -185,7 +185,7 @@ export default function ReservationSummary({
             loading={isSubmitting}
           >
             <span className="flex items-center justify-center gap-2">
-              <Sparkles size={18} />
+              <CreditCard size={18} />
               Continuar al pago
             </span>
           </Button>

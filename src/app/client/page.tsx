@@ -95,6 +95,7 @@ function toHistoryItem(reservation: ReservationWithDetails): HistoryItemData {
     timeRange: timeRangeToLabel(reservation.slots),
     status: reservation.status,
     peopleCount: reservation.quantity,
+    expiresAt: reservation.expires_at,
   };
 }
 
@@ -169,12 +170,8 @@ async function loadDashboardPayload(): Promise<DashboardPayload> {
   });
 
   const history = allList
-    .filter(
-      (reservation) =>
-        isPastDate(reservation.reservation_date) ||
-        reservation.status === "completed",
-    )
-    .sort((a, b) => (a.reservation_date < b.reservation_date ? 1 : -1))
+    .slice()
+    .sort((a, b) => b.reservation_id - a.reservation_id)
     .slice(0, 5)
     .map(toHistoryItem);
 

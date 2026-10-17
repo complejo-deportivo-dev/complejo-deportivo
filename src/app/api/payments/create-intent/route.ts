@@ -119,6 +119,17 @@ export async function POST(request: Request) {
   }
 
   if (reservation.expires_at && reservation.expires_at < new Date()) {
+    await prisma.$transaction(async (tx) => {
+      await tx.reservations.update({
+        where: { id: reservation.id },
+        data: { status: "expired" },
+      });
+      await tx.reservation_slots.updateMany({
+        where: { id_reservation: reservation.id, is_active: true },
+        data: { is_active: false },
+      });
+    });
+
     return NextResponse.json<ApiError>(
       { error: "La reserva ha expirado" },
       { status: 400 }
