@@ -6,7 +6,6 @@ import { ArrowRight, CalendarDays } from "lucide-react";
 
 import Header from "@/components/shared/Header";
 import ModalQR from "@/components/shared/ModalQR";
-import ImmersiveBackground from "@/components/shared/ImmersiveBackground";
 import Banner from "@/components/ui/Banner";
 import Button from "@/components/ui/Button";
 import Skeleton from "@/components/ui/Skeleton";
@@ -24,7 +23,6 @@ import { formatDateLong, isPastDate, timeRangeToLabel } from "@/utils/dates";
 interface DashboardPayload {
   name: string;
   upcoming: UpcomingReservation | null;
-  qrItems: QRItemData[];
   history: HistoryItemData[];
 }
 
@@ -98,7 +96,10 @@ function toHistoryItem(reservation: ReservationWithDetails): HistoryItemData {
   };
 }
 
-function inferQrType(quantity: number, qrCount: number): "group" | "individual" {
+function inferQrType(
+  quantity: number,
+  qrCount: number,
+): "group" | "individual" {
   return qrCount > 1 || quantity > 1 ? "individual" : "group";
 }
 
@@ -108,18 +109,6 @@ async function loadDashboardPayload(): Promise<DashboardPayload> {
     fetchData<ReservationWithDetails[]>("/api/reservations?status=confirmed"),
     fetchData<ReservationWithDetails[]>("/api/reservations"),
   ]);
-
-  let servicesByQrType = new Map<number, "group" | "individual">();
-  try {
-    const services = await fetchData<
-      { id: number; qr_type: "group" | "individual" }[]
-    >("/api/services");
-    servicesByQrType = new Map(
-      services.map((service) => [service.id, service.qr_type]),
-    );
-  } catch {
-    servicesByQrType = new Map();
-  }
 
   const confirmedList = Array.isArray(confirmedResult) ? confirmedResult : [];
   const allList = Array.isArray(allResult) ? allResult : [];
@@ -131,6 +120,35 @@ async function loadDashboardPayload(): Promise<DashboardPayload> {
   const upcoming = activeConfirmed[0]
     ? toUpcomingReservation(activeConfirmed[0])
     : null;
+
+  const history = allList
+    .filter(
+      (reservation) =>
+        isPastDate(reservation.reservation_date) ||
+        reservation.status === "completed",
+    )
+    .sort((a, b) => (a.reservation_date < b.reservation_date ? 1 : -1))
+    .slice(0, 5)
+    .map(toHistoryItem);
+
+  return { name: clientName, upcoming, history };
+}
+
+async function loadQrItems(): Promise<QRItemData[]> {
+  const [confirmedResult, servicesResult] = await Promise.all([
+    fetchData<ReservationWithDetails[]>("/api/reservations?status=confirmed"),
+    fetchData<{ id: number; qr_type: "group" | "individual" }[]>(
+      "/api/services",
+    ).catch(() => []),
+  ]);
+
+  const servicesByQrType = new Map<number, "group" | "individual">(
+    servicesResult.map((service) => [service.id, service.qr_type] as const),
+  );
+  const confirmedList = Array.isArray(confirmedResult) ? confirmedResult : [];
+  const activeConfirmed = confirmedList
+    .filter((reservation) => !isPastDate(reservation.reservation_date))
+    .sort(compareByDateAndTime);
 
   const confirmedWithQr = await Promise.all(
     activeConfirmed.map(async (reservation) => {
@@ -168,17 +186,7 @@ async function loadDashboardPayload(): Promise<DashboardPayload> {
     });
   });
 
-  const history = allList
-    .filter(
-      (reservation) =>
-        isPastDate(reservation.reservation_date) ||
-        reservation.status === "completed",
-    )
-    .sort((a, b) => (a.reservation_date < b.reservation_date ? 1 : -1))
-    .slice(0, 5)
-    .map(toHistoryItem);
-
-  return { name: clientName, upcoming, qrItems, history };
+  return qrItems;
 }
 
 function getErrorMessage(caught: unknown): string {
@@ -191,6 +199,8 @@ export default function ClientDashboardPage() {
   const [payload, setPayload] = useState<DashboardPayload | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [qrItems, setQrItems] = useState<QRItemData[]>([]);
+  const [loadingQrs, setLoadingQrs] = useState(true);
   const [selectedQR, setSelectedQR] = useState<QRItemData | null>(null);
 
   useEffect(() => {
@@ -204,6 +214,7 @@ export default function ClientDashboardPage() {
       .catch((caught) => {
         if (!active) return;
         setError(getErrorMessage(caught));
+        setLoadingQrs(false);
       })
       .finally(() => {
         if (active) setLoading(false);
@@ -214,36 +225,73 @@ export default function ClientDashboardPage() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!payload) return;
+
+    let active = true;
+
+    loadQrItems()
+      .then((items) => {
+        if (active) setQrItems(items);
+      })
+      .catch((caught) => {
+        if (active) setError(getErrorMessage(caught));
+      })
+      .finally(() => {
+        if (active) setLoadingQrs(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [payload]);
+
   const retry = () => {
     setLoading(true);
     setError(null);
+    setLoadingQrs(true);
     loadDashboardPayload()
       .then((result) => setPayload(result))
-      .catch((caught) => setError(getErrorMessage(caught)))
+      .catch((caught) => {
+        setError(getErrorMessage(caught));
+        setLoadingQrs(false);
+      })
       .finally(() => setLoading(false));
   };
 
   const displayName = payload?.name ?? "";
   const upcoming = payload?.upcoming ?? null;
-  const qrItems = payload?.qrItems ?? [];
   const history = payload?.history ?? [];
 
   const upcomingQrItem = upcoming
-    ? qrItems.find((q) => q.reservationId === upcoming.reservationId) ?? null
+    ? (qrItems.find((q) => q.reservationId === upcoming.reservationId) ?? null)
     : null;
 
   return (
     <div className="relative flex min-h-screen flex-col">
-      <ImmersiveBackground
-        ambient
-        alt="Complejo deportivo"
-      />
+      {/* Fondo de cuadritos */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none fixed inset-0 -z-10 overflow-hidden bg-[#060b17]"
+      >
+        <div
+          className="absolute inset-0 opacity-[0.08]"
+          style={{
+            backgroundImage:
+              "linear-gradient(to right, rgba(255,255,255,.5) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,.5) 1px, transparent 1px)",
+            backgroundSize: "44px 44px",
+            backgroundPosition: "right top",
+          }}
+        />
+        {/* Un halo sutil de luz en la parte superior para dar profundidad */}
+        <div className="absolute -top-40 left-1/2 h-[500px] w-[800px] -translate-x-1/2 rounded-full bg-sky-500/10 blur-[120px]" />
+      </div>
 
       <Header role="client" userName={displayName || undefined} />
 
-      <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-10 px-6 pb-20 pt-8 lg:px-16">
+      <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-10 px-6 pb-20 pt-12 lg:px-16">
         {/* SALUDO AL CLIENTE */}
-        <section className="space-y-2">
+        <section className="space-y-2 pt-4">
           {loading && !displayName ? (
             <Skeleton width={240} height={40} />
           ) : (
@@ -266,15 +314,12 @@ export default function ClientDashboardPage() {
           </Banner>
         )}
 
-        {/* DOS COLUMNAS: HACER UNA RESERVA Y PRÓXIMA RESERVA */}
         <div className="grid items-stretch gap-6 lg:grid-cols-2">
-          {/* Columna 1: Hacer una reserva */}
           <section className="flex flex-col gap-3">
             <h2 className="font-heading text-lg font-bold text-white">
               Nueva Reserva
             </h2>
-            <div className="relative flex flex-1 flex-col justify-between overflow-hidden rounded-2xl border border-white/10 bg-[#0c1322]/75 p-6 shadow-2xl backdrop-blur-2xl">
-              <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-sky-400 via-teal-400 to-transparent shadow-xs shadow-sky-400/40" />
+            <div className="group relative flex flex-1 flex-col justify-between overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03] p-6 backdrop-blur-xl transition-all duration-300 hover:border-white/20 hover:bg-white/[0.05] hover:shadow-2xl hover:shadow-black/50">
               <div className="flex items-start gap-4">
                 <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl border border-sky-400/20 bg-sky-500/15 text-[#38bdf8]">
                   <CalendarDays aria-hidden="true" className="size-6" />
@@ -284,7 +329,9 @@ export default function ClientDashboardPage() {
                     Hacer una reserva
                   </h3>
                   <p className="text-xs text-slate-300 leading-relaxed sm:text-sm">
-                    Elige entre canchas sintéticas, piscina semiolímpica, gimnasio y zonas húmedas. Selecciona tu horario y asegura tu franja al instante.
+                    Elige entre canchas sintéticas, piscina semiolímpica,
+                    gimnasio y zonas húmedas. Selecciona tu horario y asegura tu
+                    franja al instante.
                   </p>
                 </div>
               </div>
@@ -292,7 +339,7 @@ export default function ClientDashboardPage() {
               <div className="mt-6 border-t border-white/10 pt-4">
                 <Link
                   href="/client/categories"
-                  className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-sky-400/30 bg-[#0284c7] px-6 text-xs font-bold text-white shadow-lg shadow-sky-500/30 transition-all hover:bg-[#0369a1]"
+                  className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-sky-500 px-6 text-sm font-semibold text-white transition-colors duration-300 hover:bg-sky-400"
                 >
                   <span>Hacer una reserva</span>
                   <ArrowRight aria-hidden="true" size={16} />
@@ -310,9 +357,10 @@ export default function ClientDashboardPage() {
               {upcoming && (
                 <Link
                   href="/client/reservations"
-                  className="text-xs font-semibold text-[#38bdf8] hover:text-white transition-colors"
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-[#38bdf8] transition-colors hover:text-white"
                 >
-                  Ver todas →
+                  <span>Ver todas</span>
+                  <ArrowRight aria-hidden="true" size={14} />
                 </Link>
               )}
             </div>
@@ -331,7 +379,7 @@ export default function ClientDashboardPage() {
         </div>
 
         {/* MIS QRS ACTIVOS */}
-        <QRList items={qrItems} loading={loading} onOpenQR={setSelectedQR} />
+        <QRList items={qrItems} loading={loadingQrs} onOpenQR={setSelectedQR} />
 
         {/* HISTORIAL RECIENTE */}
         <RecentHistory items={history} loading={loading} />

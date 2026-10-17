@@ -39,19 +39,14 @@ export default function ImmersiveBackground({
   useEffect(() => {
     if (!playlist || playlist.length <= 1 || Boolean(src)) return;
 
-    // Seleccionar una imagen inicial aleatoria al montar en cliente
-    const initialIndex = Math.floor(Math.random() * playlist.length);
-    setCurrentIndex(initialIndex);
-
-    const timer = setInterval(() => {
+    const timer = window.setInterval(() => {
       setCurrentIndex((prev) => {
-        // Elegir aleatoriamente el siguiente escenario asegurando que no se repita el mismo
         const offset = 1 + Math.floor(Math.random() * (playlist.length - 1));
         return (prev + offset) % playlist.length;
       });
     }, intervalMs);
 
-    return () => clearInterval(timer);
+    return () => window.clearInterval(timer);
   }, [playlist, intervalMs, src]);
 
   // Si se provee una imagen específica fijada (por ejemplo, el escenario puntual que se está pagando)

@@ -67,39 +67,24 @@ export default function AuthLayout({
         @keyframes otium-bob { 0%,100%{transform:translateY(0) rotate(var(--r,0deg))} 50%{transform:translateY(-10px) rotate(var(--r,0deg))} }
         @keyframes otium-rise { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
         @keyframes otium-shine { from{transform:translateX(-120%) skewX(-20deg)} to{transform:translateX(260%) skewX(-20deg)} }
-        @keyframes otium-sweep { 0%{transform:translateX(-160%) skewX(-20deg)} 45%,100%{transform:translateX(380%) skewX(-20deg)} }
+        @keyframes otium-sweep { 0%{transform:translateX(-160%) skewX(-20deg)} 100%{transform:translateX(380%) skewX(-20deg)} }
         @keyframes otium-ping { 0%{transform:scale(1);opacity:.7} 100%{transform:scale(2.4);opacity:0} }
-        .otium-rise { opacity:0; animation: otium-rise .8s cubic-bezier(.2,.7,.2,1) forwards; }
+        .otium-rise { opacity:1; animation: otium-rise .8s cubic-bezier(.2,.7,.2,1) backwards; }
         @media (prefers-reduced-motion: reduce) {
           .otium-anim, .otium-rise { animation:none !important; opacity:1 !important; }
         }
       `}</style>
 
-      <div className="relative isolate hidden h-full overflow-hidden bg-background p-6 text-white md:flex md:w-1/2 md:p-8 lg:p-10">
+      <div className="relative isolate hidden h-full overflow-hidden border-r border-white/10 bg-background p-6 text-white md:flex md:w-1/2 md:p-8 lg:p-10">
         <div
           aria-hidden="true"
-          className="otium-anim absolute -left-1/4 -top-1/4 z-0 h-3/4 w-3/4 rounded-full bg-success/30 blur-[100px]"
-          style={{ animation: "otium-float-a 14s ease-in-out infinite" }}
-        />
-        <div
-          aria-hidden="true"
-          className="otium-anim absolute -bottom-1/4 right-0 z-0 h-3/4 w-3/4 rounded-full bg-primary/30 blur-[110px]"
-          style={{ animation: "otium-float-b 18s ease-in-out infinite" }}
-        />
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 z-0 opacity-10"
+          className="pointer-events-none absolute inset-0 z-0 opacity-[0.14]"
           style={{
             backgroundImage:
               "linear-gradient(to right, rgba(255,255,255,.5) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,.5) 1px, transparent 1px)",
             backgroundSize: "44px 44px",
-            maskImage:
-              "linear-gradient(to right, #000 0%, #000 calc(100% - 44px), transparent 100%)",
+            backgroundPosition: "right top",
           }}
-        />
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-y-0 right-0 z-[1] hidden w-[40%] bg-gradient-to-r from-transparent via-background/70 to-background md:block"
         />
 
         <div className="relative z-10 flex h-full w-full flex-col gap-4">
@@ -126,11 +111,16 @@ export default function AuthLayout({
             </p>
           </div>
 
-          <div className="flex min-h-0 flex-1 items-center justify-center">
+          <div className="relative flex min-h-0 flex-1 items-center justify-center">
             {reservation && (
-              <div className="relative hidden w-full max-w-[300px] [@media(min-height:780px)]:block">
+              <>
                 <div
-                  className="otium-anim relative overflow-hidden rounded-2xl border border-white/25 bg-white/10 p-4 shadow-[0_20px_60px_-15px_rgba(0,0,0,.6)] backdrop-blur-xl"
+                  aria-hidden="true"
+                  className="pointer-events-none absolute left-1/2 top-1/2 h-[400px] w-[400px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-sky-500/15 blur-[100px]"
+                />
+                <div className="relative w-full max-w-[340px]">
+                <div
+                  className="otium-anim relative overflow-hidden rounded-2xl border border-white/25 bg-white/[0.12] p-5 shadow-[0_20px_60px_-15px_rgba(0,0,0,.6)] backdrop-blur-xl"
                   style={
                     {
                       "--r": "-3deg",
@@ -198,11 +188,12 @@ export default function AuthLayout({
                   {reservation.chip}
                 </div>
               </div>
+              </>
             )}
           </div>
 
           <div className="shrink-0 ">
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-3 gap-4">
               {features.map((f, i) => (
                 <FeatureCard
                   key={`${f.text}-${i}`}
@@ -218,8 +209,8 @@ export default function AuthLayout({
         </div>
       </div>
 
-      <div className="flex h-full w-full min-w-0 flex-1 items-center justify-center overflow-y-auto bg-background p-6 md:w-1/2">
-        <div className="m-auto w-full min-w-0 max-w-md">
+      <div className="relative flex h-full w-full min-w-0 flex-1 items-center justify-center overflow-y-auto bg-background p-4 md:w-1/2">
+        <div className="relative z-10 m-auto w-full min-w-0 max-w-sm">
           {children}
         </div>
       </div>
@@ -240,24 +231,23 @@ function FeatureCard({
 }) {
   return (
     <div
-      className="otium-rise group relative flex aspect-square flex-col justify-between overflow-hidden rounded-xl border border-white/20 bg-white/10 p-3 backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:border-white/40 hover:bg-white/20 lg:p-4"
+      className="otium-rise group relative flex w-full max-w-[200px] flex-col justify-start gap-3 overflow-hidden rounded-xl border border-white/20 bg-white/10 p-5 backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:border-white/40 hover:bg-white/20"
       style={{ animationDelay: delay }}
     >
       <div
         aria-hidden="true"
         className="otium-anim pointer-events-none absolute inset-y-[-20%] left-0 z-10 w-1/2"
         style={{
-          animation: `otium-sweep 4.5s ease-in-out ${shineDelay} infinite`,
+          animation: `otium-sweep 4.5s ease-in-out ${shineDelay} infinite backwards`,
         }}
       >
-        <div className="h-full w-full bg-gradient-to-r from-transparent via-white/45 to-transparent blur-[2px]" />
-        <div className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-white/80" />
+        <div className="h-full w-full bg-gradient-to-r from-transparent via-white/20 to-transparent blur-[3px]" />
       </div>
 
-      <div className="relative w-fit rounded-lg bg-white/15 p-2 text-white transition-colors group-hover:bg-emerald-400/30">
+      <div className="relative w-fit rounded-lg border border-sky-400/20 bg-sky-500/10 p-2.5 text-white transition-colors group-hover:bg-sky-500/20">
         {icon}
       </div>
-      <span className="relative text-xs leading-snug text-white lg:text-sm">
+      <span className="relative text-sm font-semibold leading-snug text-text-primary">
         {text}
       </span>
     </div>

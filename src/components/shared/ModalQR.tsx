@@ -2,10 +2,17 @@
 
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { Download, X } from "lucide-react";
+import {
+  Download,
+  X,
+  CalendarDays,
+  Clock,
+  Users,
+  CheckCircle2,
+  Ticket,
+} from "lucide-react";
 import QRCode from "qrcode";
 
-import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
 import QRCodeImage from "@/components/shared/QRCodeImage";
 
@@ -46,12 +53,13 @@ export default function ModalQR({
       const dataUrl = await QRCode.toDataURL(qrToken, {
         errorCorrectionLevel: "H",
         margin: 2,
-        width: 600,
+        width: 800,
       });
 
       const link = document.createElement("a");
       link.href = dataUrl;
       link.download = `QR-reserva-${reservationId}.png`;
+      link.style.display = "none";
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -120,42 +128,47 @@ export default function ModalQR({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/95 p-4 backdrop-blur-[20px]"
+      className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-[#060b17]/80 p-4 backdrop-blur-md transition-opacity"
       onClick={onClose}
     >
       <div
         aria-labelledby={titleId}
         aria-modal="true"
-        className="flex w-fit max-w-full flex-col items-center gap-4"
+        className="relative flex w-full max-w-[360px] flex-col items-center overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-2xl backdrop-blur-2xl sm:p-8"
         onClick={(event) => event.stopPropagation()}
         ref={dialogRef}
         role="dialog"
       >
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -top-24 -right-24 h-48 w-48 rounded-full bg-sky-500/10 blur-[60px]"
+        />
+
         <button
           aria-label="Cerrar"
-          className="fixed right-6 top-6 text-white transition-opacity hover:opacity-70 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+          className="absolute right-4 top-4 rounded-full p-2 text-slate-400 transition-colors hover:bg-white/10 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400"
           onClick={onClose}
           ref={closeRef}
           type="button"
         >
-          <X aria-hidden="true" size={28} />
+          <X aria-hidden="true" size={20} />
         </button>
 
         <div className="flex flex-col items-center gap-1 text-center">
           <h2
-            className="font-heading text-2xl font-bold text-white"
+            className="font-heading text-xl font-bold text-white"
             id={titleId}
           >
             {title}
           </h2>
-          <p className="text-sm text-white/60">
+          <p className="text-xs font-medium text-slate-400">
             #RSV-{reservationId} · {serviceName}
           </p>
         </div>
 
-        <div className="rounded-3xl bg-white p-8 shadow-lg">
+        <div className="relative mt-6 w-full max-w-[220px]">
           <div
-            className={`flex aspect-square w-full max-w-80 items-center justify-center rounded-md bg-white p-4 sm:size-80 ${used ? "opacity-40" : ""}`}
+            className={`aspect-square w-full rounded-2xl bg-white p-4 shadow-lg transition-opacity ${used ? "opacity-30 grayscale" : ""}`}
           >
             <QRCodeImage
               alt={`Código QR de acceso para la reserva ${reservationId}`}
@@ -163,42 +176,72 @@ export default function ModalQR({
               value={qrToken}
             />
           </div>
+          {used && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="rounded-full bg-black/60 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-white backdrop-blur-md">
+                Ya escaneado
+              </span>
+            </div>
+          )}
         </div>
 
-        <div className="flex flex-col items-center gap-2 text-center">
-          <Badge
-            className="uppercase"
-            size="sm"
-            variant={used ? "neutral" : "success"}
-          >
-            {used ? "Ya escaneado" : "Vigente"}
-          </Badge>
-          <p className="text-base font-medium text-white">
-            {date} · {timeRange}
-          </p>
-          <p className="text-sm text-white/60">
-            {peopleCount} {peopleCount === 1 ? "persona" : "personas"}
-          </p>
+        <div className="mt-6 flex w-full flex-col gap-2.5 rounded-2xl border border-white/5 bg-black/40 p-4">
+          <div className="flex items-center justify-between text-sm">
+            <span className="flex items-center gap-2 text-slate-400">
+              <CalendarDays size={16} className="text-sky-400" />
+              Fecha
+            </span>
+            <span className="font-medium text-white">{date}</span>
+          </div>
+          <div className="flex items-center justify-between text-sm">
+            <span className="flex items-center gap-2 text-slate-400">
+              <Clock size={16} className="text-sky-400" />
+              Horario
+            </span>
+            <span className="font-medium text-white">{timeRange}</span>
+          </div>
+          <div className="flex items-center justify-between text-sm">
+            <span className="flex items-center gap-2 text-slate-400">
+              <Users size={16} className="text-sky-400" />
+              Personas
+            </span>
+            <span className="font-medium text-white">
+              {peopleCount} {peopleCount === 1 ? "persona" : "personas"}
+            </span>
+          </div>
         </div>
 
-        {used ? (
-          <p className="text-sm text-white/60">Este código ya fue utilizado.</p>
-        ) : (
-          <Button
-            className="w-full max-w-80 sm:w-80"
-            disabled={isDownloading}
-            loading={isDownloading}
-            onClick={handleDownload}
-            size="lg"
-          >
-            <Download size={18} />
-            Descargar QR
-          </Button>
-        )}
+        <div className="mt-6 flex w-full flex-col items-center gap-3">
+          {used ? (
+            <div className="flex w-full items-center justify-center gap-2 rounded-xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-sm font-medium text-amber-400">
+              <CheckCircle2 size={18} />
+              Este código ya fue utilizado
+            </div>
+          ) : (
+            <button
+              className="flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-sky-500 text-sm font-bold text-white transition-colors hover:bg-sky-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0c1322] disabled:cursor-not-allowed disabled:opacity-70"
+              disabled={isDownloading}
+              onClick={handleDownload}
+              type="button"
+            >
+              {isDownloading ? (
+                <span className="flex items-center gap-2">
+                  <span className="size-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                  Descargando...
+                </span>
+              ) : (
+                <>
+                  <Download size={18} />
+                  Descargar QR
+                </>
+              )}
+            </button>
+          )}
 
-        <p className="text-center text-xs text-white/50">
-          Presenta este código al ingresar.
-        </p>
+          <p className="text-center text-[11px] text-slate-500">
+            Presenta este código al ingresar al complejo.
+          </p>
+        </div>
       </div>
     </div>,
     document.body,
