@@ -7,7 +7,6 @@ import { ArrowLeft, Search, Sparkles, X } from "lucide-react";
 
 import Header from "@/components/shared/Header";
 import ServiceCard from "@/components/shared/ServiceCard";
-import ImmersiveBackground from "@/components/shared/ImmersiveBackground";
 import Skeleton from "@/components/ui/Skeleton";
 import Banner from "@/components/ui/Banner";
 import Button from "@/components/ui/Button";
@@ -41,7 +40,6 @@ export default function CategoryServicesPage() {
 
   const [services, setServices] = useState<ServiceData[]>([]);
   const [categoryName, setCategoryName] = useState<string>("Categoría");
-  const [categoryImage, setCategoryImage] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -77,9 +75,6 @@ export default function CategoryServicesPage() {
 
       if (currentCategory) {
         setCategoryName(currentCategory.name);
-        if (currentCategory.image) {
-          setCategoryImage(currentCategory.image);
-        }
       } else if (servicesList.length > 0) {
         setCategoryName(
           servicesList[0].category_name ||
@@ -129,36 +124,21 @@ export default function CategoryServicesPage() {
     };
   }, [categoryId, loadData, applyLoadedData]);
 
-  const getCategoryFallback = (name: string) => {
-    const lower = name.toLowerCase();
-    if (lower.includes("piscina")) return "/images/piscina.webp";
-    if (lower.includes("cancha")) return "/images/cancha.webp";
-    if (lower.includes("gym") || lower.includes("gimnasio")) return "/images/gym.webp";
-    if (
-      lower.includes("humed") ||
-      lower.includes("húmed") ||
-      lower.includes("sauna") ||
-      lower.includes("turco")
-    ) {
-      return "/images/zonas-humedas.webp";
-    }
-    return "/images/piscina.webp";
-  };
-
   const getDisciplineBadge = (name: string) => {
     const lower = name.toLowerCase();
-    if (lower.includes("piscina")) return "🏊 Disciplina Acuática";
-    if (lower.includes("cancha")) return "⚽ Canchas Sintéticas y Fútbol";
-    if (lower.includes("gym") || lower.includes("gimnasio")) return "🏋️ Fitness y Musculación";
+    if (lower.includes("piscina")) return " Disciplina Acuática";
+    if (lower.includes("cancha")) return "Canchas Sintéticas y Fútbol";
+    if (lower.includes("gym") || lower.includes("gimnasio"))
+      return "Fitness y Musculación";
     if (
       lower.includes("humed") ||
       lower.includes("húmed") ||
       lower.includes("sauna") ||
       lower.includes("turco")
     ) {
-      return "🧖 Spa y Recuperación";
+      return "Spa y Recuperación";
     }
-    return "🏆 Disciplina Deportiva";
+    return "Disciplina Deportiva";
   };
 
   const filteredServices = useMemo(() => {
@@ -171,13 +151,65 @@ export default function CategoryServicesPage() {
     );
   }, [services, searchQuery]);
 
+  const getCategoryTheme = (name: string) => {
+    const lower = name.toLowerCase();
+    if (lower.includes("piscina")) {
+      return {
+        gridColor: "rgba(56, 189, 248, 0.35)",
+        glowColor: "bg-sky-500/20",
+      };
+    }
+    if (lower.includes("cancha")) {
+      return {
+        gridColor: "rgba(52, 211, 153, 0.35)",
+        glowColor: "bg-emerald-500/20",
+      };
+    }
+    if (lower.includes("gym") || lower.includes("gimnasio")) {
+      return {
+        gridColor: "rgba(251, 146, 60, 0.35)",
+        glowColor: "bg-orange-500/20",
+      };
+    }
+    if (
+      lower.includes("humed") ||
+      lower.includes("húmed") ||
+      lower.includes("sauna") ||
+      lower.includes("turco")
+    ) {
+      return {
+        gridColor: "rgba(192, 132, 252, 0.35)",
+        glowColor: "bg-purple-500/20",
+      };
+    }
+    return {
+      gridColor: "rgba(255, 255, 255, 0.2)",
+      glowColor: "bg-sky-500/10",
+    };
+  };
+  const theme = getCategoryTheme(categoryName);
+
   return (
     <div className="relative flex min-h-screen flex-col">
-      <ImmersiveBackground
-        src={categoryImage}
-        alt={categoryName}
-        fallbackSrc={getCategoryFallback(categoryName)}
-      />
+      <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden bg-[#060b17]">
+        {/* Grid dinámico */}
+        <div
+          className="absolute inset-0 transition-all duration-1000"
+          style={{
+            backgroundImage: `linear-gradient(to right, ${theme.gridColor} 1px, transparent 1px), linear-gradient(to bottom, ${theme.gridColor} 1px, transparent 1px)`,
+            backgroundSize: "44px 44px",
+            backgroundPosition: "right top",
+          }}
+        />
+
+        {/* Halo de luz difuminado */}
+        <div
+          className={`absolute -top-40 left-1/2 h-[500px] w-[800px] -translate-x-1/2 rounded-full blur-[120px] transition-all duration-1000 ${theme.glowColor}`}
+        />
+
+        {/* Sombra oscura interna para que el texto siga siendo legible */}
+        <div className="absolute inset-0 bg-[#060b17]/40" />
+      </div>
 
       <Header role="client" />
 
@@ -191,13 +223,10 @@ export default function CategoryServicesPage() {
         </Link>
 
         {/* HERO BANNER DE LA CATEGORÍA */}
-        <section className="relative mb-10 overflow-hidden rounded-3xl border border-white/10 bg-[#0c1322]/75 p-6 shadow-2xl backdrop-blur-2xl sm:p-8">
-          <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-sky-400 via-teal-400 to-transparent shadow-xs shadow-sky-400/40" />
-
+        <section className="relative mb-10 overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-2xl backdrop-blur-xl sm:p-8">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div className="space-y-2 max-w-2xl">
               <span className="inline-flex items-center gap-1.5 rounded-full border border-sky-400/25 bg-sky-500/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-[#38bdf8]">
-                <Sparkles size={13} />
                 {getDisciplineBadge(categoryName)}
               </span>
 
@@ -210,14 +239,18 @@ export default function CategoryServicesPage() {
               )}
 
               <p className="text-sm text-slate-300 sm:text-base leading-relaxed">
-                Selecciona tu escenario preferido, revisa tarifas y elige tu horario para asegurar tu cupo al instante.
+                Selecciona tu escenario preferido, revisa tarifas y elige tu
+                horario para asegurar tu cupo al instante.
               </p>
             </div>
 
             {/* Contador de escenarios y buscador si hay múltiples */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 shrink-0">
               <span className="rounded-xl border border-white/10 bg-black/40 px-3.5 py-2 text-xs font-bold text-slate-300 backdrop-blur-md">
-                {services.length} {services.length === 1 ? "escenario disponible" : "escenarios disponibles"}
+                {services.length}{" "}
+                {services.length === 1
+                  ? "escenario disponible"
+                  : "escenarios disponibles"}
               </span>
 
               {services.length > 2 && (
@@ -231,7 +264,7 @@ export default function CategoryServicesPage() {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Filtrar..."
-                    className="h-9 w-full rounded-xl border border-white/10 bg-black/40 pl-8 pr-7 text-xs font-medium text-white placeholder:text-slate-500 backdrop-blur-md focus:border-sky-400 focus:outline-none transition-all"
+                    className="h-9 w-full rounded-xl border border-white/10 bg-white/5 pl-8 pr-7 text-xs font-medium text-white placeholder:text-slate-500 backdrop-blur-md focus:border-sky-400 focus:outline-none transition-all"
                   />
                   {searchQuery && (
                     <button
@@ -249,7 +282,11 @@ export default function CategoryServicesPage() {
         </section>
 
         {error && (
-          <Banner variant="error" onClose={() => setError(null)} className="mb-8">
+          <Banner
+            variant="error"
+            onClose={() => setError(null)}
+            className="mb-8"
+          >
             <p className="font-medium">No pudimos cargar los servicios.</p>
             <p className="mt-1 text-sm">{error}</p>
             <Button
@@ -294,10 +331,7 @@ export default function CategoryServicesPage() {
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {loading
             ? Array.from({ length: 6 }).map((_, i) => (
-                <Skeleton
-                  key={i}
-                  className="h-[340px] w-full rounded-2xl"
-                />
+                <Skeleton key={i} className="h-[340px] w-full rounded-2xl" />
               ))
             : filteredServices.map((service) => (
                 <ServiceCard

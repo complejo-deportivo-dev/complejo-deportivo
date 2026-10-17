@@ -40,11 +40,10 @@ export default function ServiceCard({
   return (
     <article
       onClick={onClick}
-      className="group relative flex w-full flex-col justify-between overflow-hidden rounded-2xl border border-white/10 bg-[#0c1322]/75 shadow-2xl backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:border-sky-400/40 hover:shadow-sky-500/10 cursor-pointer"
+      className="group relative flex w-full flex-col justify-between overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03] shadow-lg backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:border-white/20 hover:bg-white/[0.05] hover:shadow-2xl hover:shadow-black/50 cursor-pointer"
     >
       <div>
-        {/* Cabecera con imagen o ilustración */}
-        <div className="relative h-[160px] w-full overflow-hidden bg-black/40">
+        <div className="relative h-[180px] w-full overflow-hidden bg-black/40">
           {image ? (
             <Image
               src={image}
@@ -63,18 +62,16 @@ export default function ServiceCard({
             </div>
           )}
 
-          {/* Gradiente inferior en la imagen para contraste */}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0c1322] via-transparent to-black/30" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#060b17] via-[#060b17]/20 to-transparent" />
 
-          {/* Badge de tipo de acceso en la esquina */}
-          <div className="absolute left-3.5 top-3.5 z-10">
+          <div className="absolute left-4 top-4 z-10">
             {qrType === "group" ? (
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-sky-400/30 bg-[#0c1322]/85 px-3 py-0.5 text-xs font-semibold text-[#38bdf8] backdrop-blur-md">
-                <span className="size-1.5 rounded-full bg-[#38bdf8]" />
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-sky-400/20 bg-white/10 px-3 py-1 text-xs font-semibold text-sky-400 backdrop-blur-md">
+                <span className="size-1.5 rounded-full bg-sky-400" />
                 Grupal
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-400/30 bg-[#0c1322]/85 px-3 py-0.5 text-xs font-semibold text-amber-300 backdrop-blur-md">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-400/20 bg-white/10 px-3 py-1 text-xs font-semibold text-amber-300 backdrop-blur-md">
                 <span className="size-1.5 rounded-full bg-amber-400" />
                 Individual
               </span>
@@ -82,15 +79,14 @@ export default function ServiceCard({
           </div>
         </div>
 
-        {/* Detalles del escenario */}
-        <div className="space-y-3.5 p-5">
+        <div className="space-y-4 p-6">
           <div>
             <h3 className="font-heading text-xl font-bold tracking-tight text-white group-hover:text-[#38bdf8] transition-colors">
               {name}
             </h3>
 
             {description ? (
-              <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-slate-400">
+              <p className="mt-1.5 line-clamp-2 text-xs leading-relaxed text-slate-400">
                 {description}
               </p>
             ) : null}
@@ -100,7 +96,9 @@ export default function ServiceCard({
             <div className="flex items-center gap-1.5">
               <Users size={14} className="text-[#38bdf8]" />
               <span>
-                Hasta <strong className="font-semibold text-white">{capacity}</strong> personas
+                Hasta{" "}
+                <strong className="font-semibold text-white">{capacity}</strong>{" "}
+                personas
               </span>
             </div>
 
@@ -108,7 +106,11 @@ export default function ServiceCard({
               <div className="flex items-center gap-1.5">
                 <UserPlus size={14} className="text-[#38bdf8]" />
                 <span>
-                  Máx <strong className="font-semibold text-white">{maxCompanions}</strong> acomp.
+                  Máx{" "}
+                  <strong className="font-semibold text-white">
+                    {maxCompanions}
+                  </strong>{" "}
+                  acomp.
                 </span>
               </div>
             )}
@@ -116,19 +118,18 @@ export default function ServiceCard({
         </div>
       </div>
 
-      {/* Pie con precio y botón de reserva */}
-      <div className="border-t border-white/10 p-5 pt-4 bg-black/20">
+      <div className="mt-auto border-t border-white/10 p-6 pt-4">
         <div className="flex items-end justify-between gap-3">
           <div>
             <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
               Tarifa por hora
             </p>
-            <p className="font-heading text-xl font-black text-[#38bdf8]">
+            <p className="font-heading text-2xl font-black text-white">
               {currencyFormatter.format(hourPrice)}
             </p>
           </div>
 
-          <span className="inline-flex items-center gap-1.5 rounded-xl border border-sky-400/30 bg-[#0284c7] px-4 py-2 text-xs font-bold text-white shadow-md shadow-sky-500/30 transition-all group-hover:bg-[#0369a1] active:scale-95">
+          <span className="inline-flex items-center gap-1.5 rounded-xl bg-sky-500 px-4 py-2.5 text-xs font-bold text-white transition-colors duration-300 group-hover:bg-sky-400 active:scale-95">
             Reservar <ArrowRight size={14} />
           </span>
         </div>

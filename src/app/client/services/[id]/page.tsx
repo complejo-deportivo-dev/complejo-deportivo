@@ -311,6 +311,7 @@ export default function ServiceBookingPage() {
                       <TimeSlotPicker
                         slots={slots}
                         selectedSlots={selectedSlots}
+                        selectedDate={selectedDate}
                         onToggleSlot={handleToggleSlot}
                         canSelectSlot={(slot) =>
                           canExtendSelection(slot, selectedSlots)
