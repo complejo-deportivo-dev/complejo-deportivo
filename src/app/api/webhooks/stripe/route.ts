@@ -88,17 +88,106 @@ async function sendReservationEmail({
   await resend.emails.send({
     from: resendFromEmail,
     to: userEmail,
-    subject: "Tu reserva está confirmada - Otium",
+    subject: `Tu reserva en Otium está confirmada - #${reservationId}`,
     html: `
-      <div style="font-family: Arial, sans-serif; color: #111827; padding: 24px;">
-        <h2 style="margin: 0 0 16px;">Tu reserva está confirmada</h2>
-        <p style="margin: 0 0 8px;"><strong>Servicio:</strong> ${serviceName}</p>
-        <p style="margin: 0 0 8px;"><strong>Fecha:</strong> ${reservationDate}</p>
-        <p style="margin: 0 0 8px;"><strong>Horario:</strong> ${timeStart} - ${timeEnd}</p>
-        <p style="margin: 0 0 8px;"><strong>Personas:</strong> ${quantity}</p>
-        <p style="margin: 0 0 20px;"><strong>Reserva:</strong> #${reservationId}</p>
-        ${qrHtml}
-      </div>
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body style="margin: 0; padding: 0; background-color: #060b17; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #060b17; padding: 40px 20px;">
+          <tr>
+            <td align="center">
+              <table width="100%" max-width="600" cellpadding="0" cellspacing="0" border="0" style="max-width: 600px; background-color: #0c1322; border-radius: 16px; border: 1px solid #1e293b; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
+
+                <tr>
+                  <td style="height: 4px; background: linear-gradient(to right, #0ea5e9, transparent);"></td>
+                </tr>
+
+                <tr>
+                  <td style="padding: 40px;">
+                    <table cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 32px;">
+                      <tr>
+                        <td style="font-size: 24px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px;">Otium</td>
+                        <td style="font-size: 24px; color: #0ea5e9;">.</td>
+                      </tr>
+                    </table>
+
+                    <h2 style="margin: 0 0 8px 0; color: #ffffff; font-size: 24px; font-weight: 700; line-height: 1.2;">
+                      ¡Tu reserva está confirmada!
+                    </h2>
+                    <p style="margin: 0 0 24px 0; color: #94a3b8; font-size: 16px; line-height: 1.6;">
+                      Hemos procesado tu pago exitosamente. Aquí tienes los detalles de tu visita.
+                    </p>
+
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: rgba(255,255,255,0.03); border-radius: 12px; border: 1px solid #1e293b; margin-bottom: 32px;">
+                      <tr>
+                        <td style="padding: 20px;">
+                          <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                            <tr>
+                              <td style="padding-bottom: 12px; color: #64748b; font-size: 14px;">Servicio</td>
+                              <td style="padding-bottom: 12px; color: #ffffff; font-size: 14px; font-weight: 600; text-align: right;">${serviceName}</td>
+                            </tr>
+                            <tr>
+                              <td style="padding-bottom: 12px; color: #64748b; font-size: 14px;">Fecha</td>
+                              <td style="padding-bottom: 12px; color: #ffffff; font-size: 14px; font-weight: 600; text-align: right;">${reservationDate}</td>
+                            </tr>
+                            <tr>
+                              <td style="padding-bottom: 12px; color: #64748b; font-size: 14px;">Horario</td>
+                              <td style="padding-bottom: 12px; color: #0ea5e9; font-size: 14px; font-weight: 600; text-align: right;">${timeStart} - ${timeEnd}</td>
+                            </tr>
+                            <tr>
+                              <td style="padding-bottom: 12px; color: #64748b; font-size: 14px;">Personas</td>
+                              <td style="padding-bottom: 12px; color: #ffffff; font-size: 14px; font-weight: 600; text-align: right;">${quantity}</td>
+                            </tr>
+                            <tr>
+                              <td style="color: #64748b; font-size: 14px;">Reserva</td>
+                              <td style="color: #ffffff; font-size: 14px; font-weight: 600; text-align: right;">#${reservationId}</td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                    </table>
+
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="text-align: center; margin-bottom: 24px;">
+                      <tr>
+                        <td>
+                          <h3 style="margin: 0 0 8px 0; color: #ffffff; font-size: 18px; font-weight: 600;">Tus códigos de acceso</h3>
+                          <p style="margin: 0; color: #94a3b8; font-size: 14px;">Presenta estos códigos en la entrada del complejo.</p>
+                        </td>
+                      </tr>
+                    </table>
+
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #ffffff; border-radius: 16px; padding: 24px; text-align: center;">
+                      <tr>
+                        <td align="center">
+                          ${qrHtml}
+                        </td>
+                      </tr>
+                    </table>
+
+                  </td>
+                </tr>
+
+                <tr>
+                  <td style="padding: 24px 40px; background-color: rgba(255,255,255,0.02); border-top: 1px solid #1e293b;">
+                    <p style="margin: 0; color: #64748b; font-size: 12px; line-height: 1.5; text-align: center;">
+                      Este correo contiene tus pases de acceso. Por favor, no lo compartas con personas ajenas a tu reserva.<br><br>
+                      &copy; 2026 Otium - Complejo Deportivo.
+                    </p>
+                  </td>
+                </tr>
+
+              </table>
+            </td>
+          </tr>
+        </table>
+
+      </body>
+      </html>
     `,
     attachments: qrEntries.map(({ filename, content, contentId }) => ({
       filename,
