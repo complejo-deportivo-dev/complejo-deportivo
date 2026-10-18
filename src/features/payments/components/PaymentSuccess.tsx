@@ -99,7 +99,7 @@ export default function PaymentSuccess() {
       />
       <Header role="client" />
 
-      <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-6 pb-20 pt-8 lg:px-16">
+      <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-6 pb-20 pt-28 lg:px-16">
         <Link
           className="mb-8 inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-[#0c1322]/50 px-4 py-1.5 text-xs font-medium text-slate-300 shadow-sm backdrop-blur-md transition-all hover:border-white/20 hover:bg-[#0c1322]/80 hover:text-white"
           href="/client"

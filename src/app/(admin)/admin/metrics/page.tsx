@@ -74,7 +74,7 @@ export default function AdminMetricsPage() {
 
       <Header role="admin" userName="Admin" userInitials="AD" />
 
-      <main className="mx-auto w-full max-w-6xl space-y-8 px-4 pb-20 pt-16 md:px-6">
+      <main className="mx-auto w-full max-w-6xl space-y-8 px-4 pb-20 pt-28 md:px-6">
         <div>
           <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
             PANEL DE ADMINISTRACIÓN
