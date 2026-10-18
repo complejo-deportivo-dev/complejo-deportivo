@@ -6,7 +6,6 @@ import { ChevronDown, Loader2 } from "lucide-react";
 import Header from "@/components/shared/Header";
 import Banner from "@/components/ui/Banner";
 import Button from "@/components/ui/Button";
-import { CARD_CLASS } from "@/features/admin/constants";
 import ReservationsTable, {
   type AdminReservationRow,
 } from "@/features/admin/components/ReservationsTable";

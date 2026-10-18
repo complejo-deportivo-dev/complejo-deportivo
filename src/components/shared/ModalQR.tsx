@@ -9,11 +9,9 @@ import {
   Clock,
   Users,
   CheckCircle2,
-  Ticket,
 } from "lucide-react";
 import QRCode from "qrcode";
 
-import Button from "@/components/ui/Button";
 import QRCodeImage from "@/components/shared/QRCodeImage";
 
 export interface ModalQRProps {

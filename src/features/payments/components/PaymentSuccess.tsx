@@ -8,7 +8,6 @@ import {
   Check,
   CalendarDays,
   Clock3,
-  Sparkles,
   Users,
 } from "lucide-react";
 

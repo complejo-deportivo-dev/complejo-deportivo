@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Search, Sparkles, X } from "lucide-react";
+import { ArrowLeft, Search, X } from "lucide-react";
 
 import Header from "@/components/shared/Header";
 import ServiceCard from "@/components/shared/ServiceCard";
