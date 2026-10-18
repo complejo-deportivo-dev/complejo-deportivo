@@ -33,7 +33,7 @@ export default function ClubCinemaHero() {
       id="instalaciones"
       className="relative h-[400svh]"
     >
-      <div className="sticky top-0 flex h-svh items-center justify-center overflow-hidden px-6 py-24 text-center">
+      <div className="sticky top-0 flex h-svh items-center justify-center overflow-hidden px-6 pb-24 pt-32 text-center">
         <ScrollImageSequence target={scrollTarget} />
 
         <div

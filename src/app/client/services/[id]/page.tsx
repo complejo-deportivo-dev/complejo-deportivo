@@ -72,7 +72,9 @@ export default function ServiceBookingPage() {
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [selectedDate, setSelectedDate] = useState<Date | null>(() => new Date());
+  const [selectedDate, setSelectedDate] = useState<Date | null>(
+    () => new Date(),
+  );
   const [selectedSlots, setSelectedSlots] = useState<ServiceSlot[]>([]);
   const [quantity, setQuantity] = useState(1);
   const [documentValue, setDocumentValue] = useState("");
@@ -216,7 +218,8 @@ export default function ServiceBookingPage() {
     const lower = name?.toLowerCase() || "";
     if (lower.includes("piscina")) return "/images/piscina.webp";
     if (lower.includes("cancha")) return "/images/cancha.webp";
-    if (lower.includes("gym") || lower.includes("gimnasio")) return "/images/gym.webp";
+    if (lower.includes("gym") || lower.includes("gimnasio"))
+      return "/images/gym.webp";
     if (
       lower.includes("humed") ||
       lower.includes("húmed") ||
@@ -248,7 +251,7 @@ export default function ServiceBookingPage() {
 
       <Header role="client" />
 
-      <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-6 pb-28 pt-8 lg:px-16 lg:pb-16">
+      <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-6 pb-28 pt-28 lg:px-16 lg:pb-16">
         <Link
           href={`/client/categories/${service?.category_id || ""}`}
           className="mb-8 inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-[#0c1322]/50 px-4 py-1.5 text-xs font-medium text-slate-300 shadow-sm backdrop-blur-md transition-all hover:border-white/20 hover:bg-[#0c1322]/80 hover:text-white"
@@ -311,6 +314,7 @@ export default function ServiceBookingPage() {
                       <TimeSlotPicker
                         slots={slots}
                         selectedSlots={selectedSlots}
+                        selectedDate={selectedDate}
                         onToggleSlot={handleToggleSlot}
                         canSelectSlot={(slot) =>
                           canExtendSelection(slot, selectedSlots)
@@ -345,7 +349,9 @@ export default function ServiceBookingPage() {
                         onClose={() => setSubmitError(null)}
                         className="mb-4"
                       >
-                        <p className="text-xs font-semibold sm:text-sm">{submitError}</p>
+                        <p className="text-xs font-semibold sm:text-sm">
+                          {submitError}
+                        </p>
                       </Banner>
                     )}
                     <ReservationSummary
@@ -379,8 +385,11 @@ export default function ServiceBookingPage() {
               <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
                 {selectedSlots.length > 0 ? (
                   <span className="text-[#38bdf8]">
-                    {selectedSlots.length} hr{selectedSlots.length > 1 ? "s" : ""}{" "}
-                    {hasQuantitySelector && quantity > 1 ? `· ${quantity} pers.` : ""}
+                    {selectedSlots.length} hr
+                    {selectedSlots.length > 1 ? "s" : ""}{" "}
+                    {hasQuantitySelector && quantity > 1
+                      ? `· ${quantity} pers.`
+                      : ""}
                   </span>
                 ) : (
                   "Elige tu horario"
@@ -394,7 +403,9 @@ export default function ServiceBookingPage() {
             <button
               type="button"
               onClick={() => {
-                const card = document.getElementById("reservation-summary-card");
+                const card = document.getElementById(
+                  "reservation-summary-card",
+                );
                 if (card) {
                   card.scrollIntoView({ behavior: "smooth", block: "start" });
                 }

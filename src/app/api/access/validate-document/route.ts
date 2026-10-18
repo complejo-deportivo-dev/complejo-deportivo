@@ -103,14 +103,32 @@ export async function POST(request: Request) {
     );
   }
 
-  await prisma.access_logs.create({
-    data: {
-      id_reservation: reservation.id,
-      id_employee: dbUser.id,
-      id_qr_code: null,
-      entry_type: "manual",
-      result: "granted",
-    },
+  await prisma.$transaction(async (tx) => {
+    await tx.reservations.update({
+      where: { id: reservation.id },
+      data: { status: "completed" },
+    });
+
+    await tx.qr_codes.updateMany({
+      where: {
+        id_reservation: reservation.id,
+        used_at: null,
+      },
+      data: {
+        used_at: new Date(),
+        used_by: dbUser.id,
+      },
+    });
+
+    await tx.access_logs.create({
+      data: {
+        id_reservation: reservation.id,
+        id_employee: dbUser.id,
+        id_qr_code: null,
+        entry_type: "manual",
+        result: "granted",
+      },
+    });
   });
 
   return Response.json(

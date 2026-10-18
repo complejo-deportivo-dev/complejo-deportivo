@@ -1,9 +1,11 @@
 import { Info } from "lucide-react";
+import { format } from "date-fns";
 import type { ServiceSlot } from "@/types/api";
 
 interface TimeSlotPickerProps {
   slots: ServiceSlot[];
   selectedSlots: ServiceSlot[];
+  selectedDate?: Date | null;
   onToggleSlot: (slot: ServiceSlot) => void;
   canSelectSlot: (slot: ServiceSlot) => boolean;
 }
@@ -11,9 +13,16 @@ interface TimeSlotPickerProps {
 export default function TimeSlotPicker({
   slots,
   selectedSlots,
+  selectedDate,
   onToggleSlot,
   canSelectSlot,
 }: TimeSlotPickerProps) {
+  const now = new Date();
+  const todayStr = format(now, "yyyy-MM-dd");
+  const selectedDateStr = selectedDate ? format(selectedDate, "yyyy-MM-dd") : "";
+  const isToday = selectedDateStr === todayStr;
+  const currentTimeStr = format(now, "HH:mm");
+
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -55,6 +64,8 @@ export default function TimeSlotPicker({
           const endLabel = slot.time_end.slice(0, 5);
           const timeLabel = `${startLabel} - ${endLabel}`;
           const isUserReservation = slot.is_user_reservation;
+          const isPastTime =
+            isToday && slot.time_start.slice(0, 5) <= currentTimeStr;
 
           return (
             <button
@@ -66,7 +77,9 @@ export default function TimeSlotPicker({
               className={`flex flex-col items-center justify-center rounded-xl border py-2 px-2 text-center transition-all ${
                 isDisabled
                   ? !slot.available
-                    ? "cursor-not-allowed border-rose-500/30 bg-rose-900/20 text-rose-300"
+                    ? isPastTime
+                      ? "cursor-not-allowed border-white/5 bg-white/5 text-white/30"
+                      : "cursor-not-allowed border-rose-500/30 bg-rose-900/20 text-rose-300"
                     : "cursor-not-allowed border-transparent bg-slate-900/30 text-slate-600 opacity-25"
                   : isSelected
                     ? "border-sky-400 bg-[#0284c7] text-white shadow-md shadow-[#0284c7]/40 font-semibold"
@@ -90,8 +103,16 @@ export default function TimeSlotPicker({
                 </span>
               )}
               {!slot.available && (
-                <span className="mt-0.5 text-[10px] leading-tight font-medium text-rose-400/80">
-                  {isUserReservation ? "Apartada" : "Ocupada"}
+                <span
+                  className={`mt-0.5 text-[10px] leading-tight font-medium ${
+                    isPastTime ? "text-white/40" : "text-rose-400/80"
+                  }`}
+                >
+                  {isPastTime
+                    ? "Venció"
+                    : isUserReservation
+                      ? "Apartada"
+                      : "Ocupada"}
                 </span>
               )}
             </button>

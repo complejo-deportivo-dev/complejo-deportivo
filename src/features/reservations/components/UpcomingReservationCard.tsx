@@ -32,7 +32,7 @@ export default function UpcomingReservationCard({
 }: UpcomingReservationCardProps) {
   if (loading) {
     return (
-      <div className="flex h-full flex-col gap-3 rounded-2xl border border-white/10 bg-[#0c1322]/70 p-6 backdrop-blur-xl">
+      <div className="flex h-full flex-col gap-3 rounded-3xl border border-white/10 bg-white/[0.03] p-6 backdrop-blur-xl">
         <Skeleton width="55%" height={24} />
         <Skeleton width="40%" height={16} />
         <Skeleton width="60%" height={16} />
@@ -57,7 +57,7 @@ export default function UpcomingReservationCard({
         </div>
         <Link
           href="/client/categories"
-          className="mt-2 inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-sky-400/30 bg-[#0284c7] px-5 text-xs font-bold text-white shadow-lg shadow-sky-500/30 transition-all hover:bg-[#0369a1]"
+          className="mt-2 inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-5 text-sm font-semibold text-white transition-all duration-300 hover:border-white/20 hover:bg-white/10"
         >
           Explorar y reservar
         </Link>
@@ -66,16 +66,13 @@ export default function UpcomingReservationCard({
   }
 
   return (
-    <div className="relative flex h-full flex-col justify-between overflow-hidden rounded-2xl border border-white/10 bg-[#0c1322]/75 p-6 shadow-2xl backdrop-blur-2xl">
-      {/* Neón decorativo superior */}
-      <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-emerald-400 via-teal-400 to-transparent shadow-xs shadow-teal-400/40" />
-
+    <div className="group relative flex h-full flex-col overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03] p-6 backdrop-blur-xl transition-all duration-300 hover:border-white/20 hover:bg-white/[0.05] hover:shadow-2xl hover:shadow-black/50">
       <div>
         <div className="flex items-start justify-between gap-3">
           <h3 className="font-heading text-xl font-bold tracking-tight text-white">
             {reservation.serviceName}
           </h3>
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/30 bg-emerald-400/15 px-2.5 py-0.5 text-xs font-semibold text-emerald-300">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-400">
             <span className="size-1.5 rounded-full bg-emerald-400" />
             Confirmada
           </span>
@@ -98,12 +95,12 @@ export default function UpcomingReservationCard({
         </div>
       </div>
 
-      <div className="mt-5 border-t border-white/10 pt-4">
+      <div className="mt-6 border-t border-white/10 pt-4">
         {onOpenQR ? (
           <button
             type="button"
             onClick={onOpenQR}
-            className="flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-sky-400/30 bg-gradient-to-r from-[#0284c7] to-[#0ea5e9] text-xs font-bold text-white shadow-lg shadow-sky-500/30 transition-all hover:opacity-95 active:scale-95 cursor-pointer"
+            className="flex h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-6 text-sm font-semibold text-white transition-all duration-300 hover:border-white/20 hover:bg-white/10"
           >
             <QrCode size={16} />
             Mostrar QR de entrada
@@ -111,7 +108,7 @@ export default function UpcomingReservationCard({
         ) : (
           <Link
             href="/client/reservations"
-            className="flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-sky-400/30 bg-[#0284c7] text-xs font-bold text-white shadow-lg shadow-sky-500/30 transition-all hover:bg-[#0369a1]"
+            className="flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-6 text-sm font-semibold text-white transition-all duration-300 hover:border-white/20 hover:bg-white/10"
           >
             <QrCode size={16} />
             Ver pase de entrada

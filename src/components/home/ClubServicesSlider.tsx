@@ -1,7 +1,6 @@
 "use client";
 
 import { useRef } from "react";
-import { useRouter } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import CategoryCard from "@/components/shared/CategoryCard";
 
@@ -14,8 +13,7 @@ const FACILITIES = [
   },
   {
     title: "Zonas Húmedas",
-    subtitle:
-      "Sauna, baño turco e hidroterapia para descansar y recuperarte.",
+    subtitle: "Sauna, baño turco e hidroterapia para descansar y recuperarte.",
     image: "/images/zonas-humedas.webp",
   },
   {
@@ -32,7 +30,6 @@ const FACILITIES = [
 ];
 
 export default function ClubServicesSlider() {
-  const router = useRouter();
   const trackRef = useRef<HTMLDivElement>(null);
 
   const scroll = (direction: -1 | 1) => {
@@ -49,10 +46,10 @@ export default function ClubServicesSlider() {
     <div className="w-full">
       <div className="mb-6 flex items-end justify-between gap-4">
         <div>
-          <span className="text-xs font-semibold tracking-widest text-secondary uppercase">
+          <span className="text-xs font-semibold tracking-widest text-sky-400 uppercase">
             Instalaciones & servicios
           </span>
-          <h2 className="mt-1 font-heading text-2xl font-bold text-text-primary lg:text-3xl">
+          <h2 className="mt-1 font-heading text-2xl font-bold text-white lg:text-3xl">
             Los espacios de Otium Club
           </h2>
         </div>
@@ -62,7 +59,7 @@ export default function ClubServicesSlider() {
             type="button"
             onClick={() => scroll(-1)}
             aria-label="Instalación anterior"
-            className="flex size-10 items-center justify-center rounded-full border border-border bg-surface text-text-primary transition-colors hover:bg-surface-elevated focus:outline-none focus:ring-2 focus:ring-primary/50"
+            className="flex size-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white transition-colors hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-sky-500/50"
           >
             <ChevronLeft aria-hidden="true" className="size-5" />
           </button>
@@ -70,7 +67,7 @@ export default function ClubServicesSlider() {
             type="button"
             onClick={() => scroll(1)}
             aria-label="Siguiente instalación"
-            className="flex size-10 items-center justify-center rounded-full border border-border bg-surface text-text-primary transition-colors hover:bg-surface-elevated focus:outline-none focus:ring-2 focus:ring-primary/50"
+            className="flex size-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white transition-colors hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-sky-500/50"
           >
             <ChevronRight aria-hidden="true" className="size-5" />
           </button>
@@ -92,7 +89,6 @@ export default function ClubServicesSlider() {
               name={facility.title}
               subtitle={facility.subtitle}
               image={facility.image}
-              onClick={() => router.push("/reservations")}
             />
           </div>
         ))}

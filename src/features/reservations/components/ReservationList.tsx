@@ -2,21 +2,20 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, CalendarDays, Clock3, History, ListFilter, Plus, Sparkles } from "lucide-react";
+import { ArrowLeft, CalendarDays, Clock3, History, Plus } from "lucide-react";
 
 import ModalQR from "@/components/shared/ModalQR";
 import ImmersiveBackground from "@/components/shared/ImmersiveBackground";
 import Banner from "@/components/ui/Banner";
 import Button from "@/components/ui/Button";
 
-import Card from "@/components/ui/Card";
 import Skeleton from "@/components/ui/Skeleton";
 import ReservationCard from "@/features/reservations/components/ReservationCard";
 import type { ReservationStatus } from "@/types/database";
 import type { ReservationWithDetails } from "@/types/api";
 import { formatDateLong, timeRangeToLabel } from "@/utils/dates";
 
-type ReservationFilter = "upcoming" | "history" | "all";
+type ReservationFilter = "upcoming" | "history";
 
 const FILTERS: {
   id: ReservationFilter;
@@ -25,13 +24,11 @@ const FILTERS: {
 }[] = [
   { id: "upcoming", label: "Próximas", icon: CalendarDays },
   { id: "history", label: "Historial", icon: History },
-  { id: "all", label: "Todas", icon: ListFilter },
 ];
 
-const FILTER_STATUSES: Record<ReservationFilter, ReservationStatus[] | null> = {
+const FILTER_STATUSES: Record<ReservationFilter, ReservationStatus[]> = {
   upcoming: ["pending", "confirmed"],
   history: ["completed", "failed", "expired"],
-  all: null,
 };
 
 interface SelectedQr {
@@ -39,7 +36,9 @@ interface SelectedQr {
   qrIndex: number;
 }
 
-async function fetchReservations(url: string): Promise<ReservationWithDetails[]> {
+async function fetchReservations(
+  url: string,
+): Promise<ReservationWithDetails[]> {
   const response = await fetch(url, { cache: "no-store" });
   const body = await response.json().catch(() => ({}));
   if (!response.ok || body?.error) {
@@ -59,7 +58,9 @@ async function fetchReservationDetails(
   });
   const body = await response.json().catch(() => ({}));
   if (!response.ok || body?.error) {
-    throw new Error(body?.error ?? "No se pudo cargar el detalle de la reserva.");
+    throw new Error(
+      body?.error ?? "No se pudo cargar el detalle de la reserva.",
+    );
   }
   return body.data as ReservationWithDetails;
 }
@@ -84,13 +85,11 @@ async function loadReservations(
   filter: ReservationFilter,
 ): Promise<ReservationWithDetails[]> {
   const statuses = FILTER_STATUSES[filter];
-  const lists = statuses
-    ? await Promise.all(
-        statuses.map((status) =>
-          fetchReservations(`/api/reservations?status=${status}`),
-        ),
-      )
-    : [await fetchReservations("/api/reservations")];
+  const lists = await Promise.all(
+    statuses.map((status) =>
+      fetchReservations(`/api/reservations?status=${status}`),
+    ),
+  );
 
   const uniqueReservations = new Map<number, ReservationWithDetails>();
   lists.flat().forEach((reservation) => {
@@ -111,18 +110,19 @@ async function loadReservations(
     }),
   );
 
-  return sortReservations(withQrCodes, filter);
+  return withQrCodes;
 }
 
 function getEmptyMessage(filter: ReservationFilter): string {
   if (filter === "upcoming") return "No tienes reservas próximas";
-  if (filter === "history") return "Aún no tienes historial";
-  return "Aún no tienes reservas";
+  return "Aún no tienes historial";
 }
 
 export default function ReservationList() {
   const [filter, setFilter] = useState<ReservationFilter>("upcoming");
-  const [reservations, setReservations] = useState<ReservationWithDetails[]>([]);
+  const [reservations, setReservations] = useState<ReservationWithDetails[]>(
+    [],
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [retryKey, setRetryKey] = useState(0);
@@ -167,13 +167,11 @@ export default function ReservationList() {
   }
 
   const selectedCode = selectedQr?.reservation.qr_codes?.[selectedQr.qrIndex];
+  const sortedReservations = sortReservations(reservations, filter);
 
   return (
     <>
-      <ImmersiveBackground
-        ambient
-        alt="Escenarios deportivos"
-      />
+      <ImmersiveBackground ambient alt="Escenarios deportivos" />
       <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-6 pb-20 pt-8 lg:px-16">
         <Link
           href="/client"
@@ -184,13 +182,10 @@ export default function ReservationList() {
         </Link>
 
         {/* HERO BANNER DE RESERVAS */}
-        <section className="relative mb-8 overflow-hidden rounded-3xl border border-white/10 bg-[#0c1322]/75 p-6 shadow-2xl backdrop-blur-2xl sm:p-8">
-          <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-sky-400 via-teal-400 to-transparent shadow-xs shadow-sky-400/40" />
-
+        <section className="group relative mb-8 flex flex-col justify-between overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03] p-6 backdrop-blur-xl transition-all duration-300 md:p-8">
           <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
             <div className="space-y-2 max-w-2xl">
               <span className="inline-flex items-center gap-1.5 rounded-full border border-sky-400/25 bg-sky-500/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-[#38bdf8]">
-                <Sparkles size={13} />
                 Gestión de Visitas y Accesos
               </span>
 
@@ -199,13 +194,14 @@ export default function ReservationList() {
               </h1>
 
               <p className="text-sm text-slate-300 sm:text-base leading-relaxed">
-                Consulta tus franjas horarias programadas, accede a tus códigos QR para ingreso en portería y revisa tu historial deportivo.
+                Consulta tus franjas horarias programadas, accede a tus códigos
+                QR para ingreso en portería y revisa tu historial deportivo.
               </p>
             </div>
 
             <Link
               href="/client/categories"
-              className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-sky-400/30 bg-[#0284c7] px-5 text-xs font-bold text-white shadow-lg shadow-sky-500/30 transition-all hover:bg-[#0369a1]"
+              className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-xl bg-sky-500 px-6 text-sm font-semibold text-white transition-colors duration-300 hover:bg-sky-400"
             >
               <Plus aria-hidden="true" size={16} />
               <span>Nueva reserva</span>
@@ -248,9 +244,16 @@ export default function ReservationList() {
         )}
 
         {loading ? (
-          <div aria-label="Cargando reservas" className="space-y-4" role="status">
+          <div
+            aria-label="Cargando reservas"
+            className="space-y-4"
+            role="status"
+          >
             {[0, 1, 2].map((item) => (
-              <div key={item} className="space-y-5 rounded-2xl border border-white/10 bg-[#0c1322]/75 p-6 shadow-xl backdrop-blur-xl">
+              <div
+                key={item}
+                className="space-y-5 rounded-2xl border border-white/10 bg-[#0c1322]/75 p-6 shadow-xl backdrop-blur-xl"
+              >
                 <div className="flex items-center justify-between gap-4">
                   <Skeleton height={24} width="42%" />
                   <Skeleton height={22} width={96} />
@@ -287,8 +290,11 @@ export default function ReservationList() {
             </Link>
           </div>
         ) : !error ? (
-          <div aria-label={`${reservations.length} reservas`} className="space-y-4">
-            {reservations.map((reservation) => (
+          <div
+            aria-label={`${reservations.length} reservas`}
+            className="space-y-4"
+          >
+            {sortedReservations.map((reservation) => (
               <ReservationCard
                 key={reservation.reservation_id}
                 onViewQr={(item, qrIndex) =>

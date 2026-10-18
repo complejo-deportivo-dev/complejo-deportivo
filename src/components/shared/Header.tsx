@@ -3,14 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import {
-  LogIn,
-  Menu,
-  UserPlus,
-  X,
-  LogOut,
-  User,
-} from "lucide-react";
+import { LogIn, Menu, UserPlus, X, LogOut, User } from "lucide-react";
 import Avatar from "@/components/ui/Avatar";
 import Image from "next/image";
 
@@ -58,8 +51,6 @@ const PUBLIC_NAVIGATION: NavItem[] = [
   { label: "Instalaciones", href: "#instalaciones" },
   { label: "Servicios", href: "#servicios" },
   { label: "¿Quiénes somos?", href: "#nosotros" },
-  { label: "Experiencia", href: "#experiencia" },
-  { label: "Preguntas frecuentes", href: "#preguntas-frecuentes" },
 ];
 
 export default function Header({
@@ -140,8 +131,10 @@ export default function Header({
   const avatarName = userName || userInitials || (isEmployee ? "E" : "U");
 
   return (
-    <header className={`sticky top-6 z-40 mx-6 lg:mx-16 ${className}`}>
-      <div className="relative flex h-16 items-center justify-between rounded-2xl border border-white/10 bg-[#0a0f1e]/40 px-4 sm:px-6 shadow-xl backdrop-blur-xl">
+    <header
+      className={`fixed top-4 left-0 right-0 z-40 mx-6 lg:mx-16 ${className}`}
+    >
+      <div className="relative flex h-16 items-center justify-between rounded-2xl border border-white/10 bg-[#0a0f1e]/60 px-4 sm:px-6 shadow-xl backdrop-blur-xl">
         <Link
           href={homeHref}
           onClick={() => {
@@ -165,7 +158,7 @@ export default function Header({
         {hasNavigation && (
           <nav
             aria-label="Navegación principal"
-            className="hidden items-center gap-8 md:flex xl:absolute xl:left-1/2 xl:-translate-x-1/2"
+            className="hidden items-center gap-12 md:flex xl:absolute xl:left-1/2 xl:-translate-x-1/2"
           >
             {navItems.map((item) => {
               const active = isLinkActive(item.href);
@@ -174,9 +167,7 @@ export default function Header({
                   key={item.href}
                   href={item.href}
                   className={`relative py-1 text-sm font-medium transition-colors ${
-                    active
-                      ? "text-primary"
-                      : "text-text-secondary hover:text-text-primary"
+                    active ? "text-primary" : "text-slate-300 hover:text-white"
                   }`}
                 >
                   {item.label}
@@ -198,14 +189,14 @@ export default function Header({
               <div className="hidden items-center gap-3 md:flex">
                 <Link
                   href="/login"
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-text-secondary transition-colors hover:text-text-primary"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-slate-300 transition-colors hover:text-white"
                 >
                   <LogIn className="size-4" />
                   <span>Iniciar sesión</span>
                 </Link>
                 <Link
                   href="/register"
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface-elevated/40 px-3.5 py-1.5 text-sm font-medium text-text-primary transition-colors hover:bg-surface-elevated"
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3.5 py-1.5 text-sm font-medium text-white transition-colors hover:bg-white/10"
                 >
                   <UserPlus className="size-4" />
                   <span>Registrarse</span>
@@ -215,11 +206,9 @@ export default function Header({
                 <button
                   type="button"
                   onClick={() => setIsMobileMenuOpen((prev) => !prev)}
-                  aria-label={
-                    isMobileMenuOpen ? "Cerrar menú" : "Abrir menú"
-                  }
+                  aria-label={isMobileMenuOpen ? "Cerrar menú" : "Abrir menú"}
                   aria-expanded={isMobileMenuOpen}
-                  className="flex items-center justify-center rounded-lg border border-border bg-surface-elevated/50 p-2 text-text-secondary transition-colors hover:text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  className="flex items-center justify-center rounded-lg border border-white/10 bg-white/5 p-2 text-slate-300 transition-colors hover:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
                 >
                   {isMobileMenuOpen ? (
                     <X className="size-5" />
@@ -240,7 +229,7 @@ export default function Header({
                   className="flex items-center gap-3 rounded-full p-0.5 text-left transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-primary/50"
                 >
                   {!isEmployee && userName && (
-                    <span className="hidden text-sm font-medium text-text-primary select-none xl:inline">
+                    <span className="hidden text-sm font-medium text-white select-none xl:inline">
                       {userName}
                     </span>
                   )}
@@ -254,29 +243,27 @@ export default function Header({
                 {isDropdownOpen && (
                   <div
                     role="menu"
-                    className="animate-in fade-in zoom-in-95 absolute top-full right-0 z-50 mt-2 w-48 rounded-xl border border-border bg-background/95 p-1.5 shadow-lg backdrop-blur-md duration-100"
+                    className="animate-in fade-in zoom-in-95 absolute top-full right-0 z-50 mt-2 w-48 rounded-xl border border-white/10 bg-[#0c1322]/95 p-1.5 shadow-lg backdrop-blur-md duration-100"
                   >
                     {!isEmployee && userName && (
-                      <div className="mb-1 border-b border-border px-3 py-2 xl:hidden">
-                        <p className="text-xs text-text-secondary">
-                          Conectado como
-                        </p>
-                        <p className="truncate text-sm font-medium text-text-primary">
+                      <div className="mb-1 border-b border-white/10 px-3 py-2 xl:hidden">
+                        <p className="text-xs text-slate-400">Conectado como</p>
+                        <p className="truncate text-sm font-medium text-white">
                           {userName}
                         </p>
                       </div>
                     )}
                     <Link
-                      href={role === "admin" ? "/admin/profile" : "/profile"}
+                      href="/profile"
                       role="menuitem"
                       onClick={() => setIsDropdownOpen(false)}
-                      className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-text-primary transition-colors hover:bg-surface-elevated hover:text-primary"
+                      className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-white transition-colors hover:bg-white/5 hover:text-primary"
                     >
-                      <User className="size-4 text-text-secondary" />
+                      <User className="size-4 text-slate-400" />
                       <span>Mi perfil</span>
                     </Link>
 
-                    <div className="my-1 border-t border-border" />
+                    <div className="my-1 border-t border-white/10" />
 
                     <button
                       type="button"
@@ -286,7 +273,9 @@ export default function Header({
                       className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm text-error transition-colors hover:bg-error-soft/30 disabled:opacity-50"
                     >
                       <LogOut className="size-4 text-error" />
-                      <span>{isLoggingOut ? "Cerrando sesión..." : "Cerrar sesión"}</span>
+                      <span>
+                        {isLoggingOut ? "Cerrando sesión..." : "Cerrar sesión"}
+                      </span>
                     </button>
                   </div>
                 )}
@@ -296,11 +285,9 @@ export default function Header({
                 <button
                   type="button"
                   onClick={() => setIsMobileMenuOpen((prev) => !prev)}
-                  aria-label={
-                    isMobileMenuOpen ? "Cerrar menú" : "Abrir menú"
-                  }
+                  aria-label={isMobileMenuOpen ? "Cerrar menú" : "Abrir menú"}
                   aria-expanded={isMobileMenuOpen}
-                  className="flex items-center justify-center rounded-lg p-2 text-text-secondary transition-colors hover:bg-surface-elevated hover:text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/50 md:hidden"
+                  className="flex items-center justify-center rounded-lg p-2 text-slate-300 transition-colors hover:bg-white/5 hover:text-white focus:outline-none focus:ring-2 focus:ring-primary/50 md:hidden"
                 >
                   {isMobileMenuOpen ? (
                     <X className="size-5" />
@@ -316,7 +303,7 @@ export default function Header({
         {hasNavigation && isMobileMenuOpen && (
           <div
             ref={mobileMenuRef}
-            className="absolute left-0 right-0 top-[calc(100%+0.5rem)] rounded-xl border border-border bg-background/95 p-4 shadow-lg backdrop-blur-md md:hidden z-50 flex flex-col gap-1"
+            className="absolute left-0 right-0 top-[calc(100%+0.5rem)] rounded-xl border border-white/10 bg-[#0c1322]/95 p-4 shadow-lg backdrop-blur-md md:hidden z-50 flex flex-col gap-1"
           >
             {navItems.map((item) => {
               const active = isLinkActive(item.href);
@@ -328,7 +315,7 @@ export default function Header({
                   className={`flex items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
                     active
                       ? "bg-primary-soft text-primary font-semibold"
-                      : "text-text-secondary hover:bg-surface-elevated hover:text-text-primary"
+                      : "text-slate-300 hover:bg-white/5 hover:text-white"
                   }`}
                 >
                   <span>{item.label}</span>
@@ -343,7 +330,7 @@ export default function Header({
                 <Link
                   href="/login"
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium text-text-secondary transition-colors hover:bg-surface-elevated hover:text-text-primary"
+                  className="flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-300 transition-colors hover:bg-white/5 hover:text-white"
                 >
                   <LogIn className="size-4" />
                   <span>Iniciar sesión</span>
@@ -351,7 +338,7 @@ export default function Header({
                 <Link
                   href="/register"
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium text-text-secondary transition-colors hover:bg-surface-elevated hover:text-text-primary"
+                  className="flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-300 transition-colors hover:bg-white/5 hover:text-white"
                 >
                   <UserPlus className="size-4" />
                   <span>Registrarse</span>
@@ -359,7 +346,7 @@ export default function Header({
               </>
             ) : (
               <>
-                <div className="my-1 border-t border-border" />
+                <div className="my-1 border-t border-white/10" />
                 <button
                   type="button"
                   onClick={handleLogout}
@@ -367,7 +354,9 @@ export default function Header({
                   className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-left text-sm font-medium text-error transition-colors hover:bg-error-soft/30 disabled:opacity-50"
                 >
                   <LogOut className="size-4 text-error" />
-                  <span>{isLoggingOut ? "Cerrando sesión..." : "Cerrar sesión"}</span>
+                  <span>
+                    {isLoggingOut ? "Cerrando sesión..." : "Cerrar sesión"}
+                  </span>
                 </button>
               </>
             )}

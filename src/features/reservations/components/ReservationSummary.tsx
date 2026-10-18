@@ -2,7 +2,13 @@
 
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { Ticket, Calendar, Clock, UserCheck, ShieldCheck, Sparkles } from "lucide-react";
+import {
+  Ticket,
+  Calendar,
+  Clock,
+  UserCheck,
+  ShieldCheck,
+} from "lucide-react";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import type { ServiceSlot } from "@/types/api";
@@ -78,16 +84,15 @@ export default function ReservationSummary({
           {serviceName || "Resumen de reserva"}
         </h3>
         <p className="mt-0.5 text-xs text-slate-400">
-          {formattedHourPrice} / hora {quantity > 1 ? `· ${quantity} personas` : ""}
+          {formattedHourPrice} / hora{" "}
+          {quantity > 1 ? `· ${quantity} personas` : ""}
         </p>
       </div>
 
-      {/* Línea divisoria de corte sutil */}
       <div className="px-6">
         <div className="w-full border-t border-dashed border-white/10" />
       </div>
 
-      {/* Cuerpo del ticket con desglose */}
       <div className="space-y-4 p-6 pt-5">
         <div className="space-y-2.5 text-sm">
           {/* Fecha */}
@@ -103,7 +108,6 @@ export default function ReservationSummary({
             </span>
           </div>
 
-          {/* Horario y Duración */}
           <div className="flex items-center justify-between text-slate-400">
             <span className="flex items-center gap-2">
               <Clock size={15} className="text-[#38bdf8]" />
@@ -114,7 +118,6 @@ export default function ReservationSummary({
             </span>
           </div>
 
-          {/* Cantidad de personas si aplica */}
           {quantity > 1 && (
             <div className="flex items-center justify-between text-slate-400">
               <span className="flex items-center gap-2">
@@ -127,18 +130,22 @@ export default function ReservationSummary({
             </div>
           )}
 
-          {/* Desglose de cálculo */}
           {durationHours > 0 && (
             <div className="mt-2 rounded-lg border border-white/5 bg-black/30 p-2.5 text-xs font-mono text-slate-400">
               <div className="flex justify-between">
-                <span>{formattedHourPrice} × {durationHours} hr{durationHours > 1 ? "s" : ""} {quantity > 1 ? `× ${quantity}p` : ""}</span>
-                <span className="font-semibold text-white">{formattedTotal}</span>
+                <span>
+                  {formattedHourPrice} × {durationHours} hr
+                  {durationHours > 1 ? "s" : ""}{" "}
+                  {quantity > 1 ? `× ${quantity}p` : ""}
+                </span>
+                <span className="font-semibold text-white">
+                  {formattedTotal}
+                </span>
               </div>
             </div>
           )}
         </div>
 
-        {/* Input de documento si se requiere */}
         {needsDocument && (
           <div className="space-y-2 pt-2">
             <label className="flex items-center gap-1.5 text-xs font-medium text-white">
@@ -155,12 +162,10 @@ export default function ReservationSummary({
         )}
       </div>
 
-      {/* Línea divisoria antes del total */}
       <div className="px-6">
         <div className="w-full border-t border-white/10" />
       </div>
 
-      {/* Pie del ticket: Total y Acción */}
       <div className="space-y-5 p-6 pt-5 bg-black/20">
         <div className="flex items-baseline justify-between">
           <div>
@@ -185,7 +190,6 @@ export default function ReservationSummary({
             loading={isSubmitting}
           >
             <span className="flex items-center justify-center gap-2">
-              <Sparkles size={18} />
               Continuar al pago
             </span>
           </Button>
@@ -201,21 +205,23 @@ export default function ReservationSummary({
             className="h-6 w-48 tracking-widest text-center select-none font-mono text-[10px] leading-tight text-slate-400 overflow-hidden flex items-center justify-center gap-[3px]"
             aria-hidden="true"
           >
-            {[4, 2, 6, 1, 5, 2, 4, 3, 1, 5, 3, 2, 6, 4, 2, 5, 1, 3, 6, 2, 4, 1, 5, 3].map(
-              (h, i) => (
-                <span
-                  key={i}
-                  className="bg-slate-400 rounded-xs"
-                  style={{
-                    width: h % 2 === 0 ? "2px" : "1.5px",
-                    height: `${12 + (h * 2)}px`,
-                  }}
-                />
-              )
-            )}
+            {[
+              4, 2, 6, 1, 5, 2, 4, 3, 1, 5, 3, 2, 6, 4, 2, 5, 1, 3, 6, 2, 4, 1,
+              5, 3,
+            ].map((h, i) => (
+              <span
+                key={i}
+                className="bg-slate-400 rounded-xs"
+                style={{
+                  width: h % 2 === 0 ? "2px" : "1.5px",
+                  height: `${12 + h * 2}px`,
+                }}
+              />
+            ))}
           </div>
           <span className="font-mono text-[10px] text-slate-400 tracking-widest">
-            OTM-{selectedSlots[0]?.time_slot_id ?? "00"}-{Math.floor(total || 25000)}
+            OTM-{selectedSlots[0]?.time_slot_id ?? "00"}-
+            {Math.floor(total || 25000)}
           </span>
         </div>
       </div>

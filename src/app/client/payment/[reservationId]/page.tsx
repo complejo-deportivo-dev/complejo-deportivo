@@ -3,13 +3,18 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { ArrowLeft, CalendarDays, Clock3, Lock, ShieldCheck, Sparkles, Users } from "lucide-react";
+import {
+  ArrowLeft,
+  CalendarDays,
+  Clock3,
+  ShieldCheck,
+  Users,
+} from "lucide-react";
 
 import Header from "@/components/shared/Header";
 import ImmersiveBackground from "@/components/shared/ImmersiveBackground";
 import TimeCounter from "@/components/shared/TimeCounter";
 import Banner from "@/components/ui/Banner";
-import Card from "@/components/ui/Card";
 import Skeleton from "@/components/ui/Skeleton";
 import StripeForm from "@/features/payments/components/StripeForm";
 import type {
@@ -46,7 +51,8 @@ function getServiceFallback(name?: string): string {
   const lower = name?.toLowerCase() || "";
   if (lower.includes("piscina")) return "/images/piscina.webp";
   if (lower.includes("cancha")) return "/images/cancha.webp";
-  if (lower.includes("gym") || lower.includes("gimnasio")) return "/images/gym.webp";
+  if (lower.includes("gym") || lower.includes("gimnasio"))
+    return "/images/gym.webp";
   if (
     lower.includes("humed") ||
     lower.includes("húmed") ||
@@ -124,7 +130,7 @@ export default function PaymentPage() {
       />
       <Header role="client" />
 
-      <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-6 pb-20 pt-8 lg:px-16">
+      <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-6 pb-20 pt-28 lg:px-16">
         <Link
           className="mb-8 inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-[#0c1322]/50 px-4 py-1.5 text-xs font-medium text-slate-300 shadow-sm backdrop-blur-md transition-all hover:border-white/20 hover:bg-[#0c1322]/80 hover:text-white"
           href="/client"
@@ -133,10 +139,7 @@ export default function PaymentPage() {
           <span>Volver al inicio</span>
         </Link>
 
-        {/* HERO BANNER DE CHECKOUT */}
-        <section className="relative mb-8 overflow-hidden rounded-3xl border border-white/10 bg-[#0c1322]/75 p-6 shadow-2xl backdrop-blur-2xl sm:p-8">
-          <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-sky-400 via-teal-400 to-transparent shadow-xs shadow-sky-400/40" />
-
+        <section className="relative mb-8 overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-2xl backdrop-blur-xl sm:p-8">
           <div className="space-y-2 max-w-2xl">
             <span className="inline-flex items-center gap-1.5 rounded-full border border-sky-400/25 bg-sky-500/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-[#38bdf8]">
               <ShieldCheck size={13} />
@@ -148,7 +151,9 @@ export default function PaymentPage() {
             </h1>
 
             <p className="text-sm text-slate-300 sm:text-base leading-relaxed">
-              Completa el pago para asegurar tu franja horaria. Tus códigos QR de acceso se emitirán al instante y llegarán a tu correo electrónico.
+              Completa el pago para asegurar tu franja horaria. Tus códigos QR
+              de acceso se emitirán al instante y llegarán a tu correo
+              electrónico.
             </p>
           </div>
         </section>
@@ -181,11 +186,12 @@ export default function PaymentPage() {
                     El tiempo para pagar esta reserva ha expirado
                   </p>
                   <p className="mt-1 text-xs sm:text-sm text-slate-300">
-                    La franja horaria fue liberada para otros deportistas. Vuelve a seleccionar tu horario.
+                    La franja horaria fue liberada para otros deportistas.
+                    Vuelve a seleccionar tu horario.
                   </p>
                 </div>
                 <Link
-                  className="inline-flex h-10 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-sky-400/30 bg-[#0284c7] px-5 text-xs font-bold text-white shadow-lg shadow-sky-500/25 hover:bg-[#0369a1] transition-all"
+                  className="inline-flex h-10 shrink-0 items-center justify-center gap-1.5 rounded-xl bg-sky-500 px-5 text-xs font-bold text-white transition-colors hover:bg-sky-400"
                   href="/client/categories"
                 >
                   <span>Buscar nuevos horarios</span>
@@ -194,8 +200,7 @@ export default function PaymentPage() {
             )}
 
             <div className="grid items-start gap-8 lg:grid-cols-2">
-              {/* COLUMNA RESUMEN DEL TICKET */}
-              <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-[#0c1322]/80 p-6 sm:p-8 shadow-2xl backdrop-blur-2xl space-y-6">
+              <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03] p-6 sm:p-8 shadow-2xl backdrop-blur-xl space-y-6">
                 <div className="border-b border-white/10 pb-5">
                   <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
                     Resumen de tu actividad
@@ -207,9 +212,15 @@ export default function PaymentPage() {
 
                 <dl className="space-y-4 text-sm">
                   <div className="flex items-start gap-3 rounded-xl border border-white/5 bg-white/5 p-3">
-                    <CalendarDays aria-hidden="true" className="mt-0.5 text-sky-400 shrink-0" size={18} />
+                    <CalendarDays
+                      aria-hidden="true"
+                      className="mt-0.5 text-sky-400 shrink-0"
+                      size={18}
+                    />
                     <div>
-                      <dt className="text-xs text-slate-400 font-medium">Fecha de asistencia</dt>
+                      <dt className="text-xs text-slate-400 font-medium">
+                        Fecha de asistencia
+                      </dt>
                       <dd className="mt-0.5 font-semibold text-white capitalize">
                         {formatDateLong(reservation.reservation_date)}
                       </dd>
@@ -217,21 +228,36 @@ export default function PaymentPage() {
                   </div>
 
                   <div className="flex items-start gap-3 rounded-xl border border-white/5 bg-white/5 p-3">
-                    <Clock3 aria-hidden="true" className="mt-0.5 text-sky-400 shrink-0" size={18} />
+                    <Clock3
+                      aria-hidden="true"
+                      className="mt-0.5 text-sky-400 shrink-0"
+                      size={18}
+                    />
                     <div>
-                      <dt className="text-xs text-slate-400 font-medium">Franja horaria reservada</dt>
+                      <dt className="text-xs text-slate-400 font-medium">
+                        Franja horaria reservada
+                      </dt>
                       <dd className="mt-0.5 font-semibold text-white">
-                        {timeRangeToLabel(reservation.slots)} ({reservation.slots.length} hora{reservation.slots.length > 1 ? "s" : ""})
+                        {timeRangeToLabel(reservation.slots)} (
+                        {reservation.slots.length} hora
+                        {reservation.slots.length > 1 ? "s" : ""})
                       </dd>
                     </div>
                   </div>
 
                   <div className="flex items-start gap-3 rounded-xl border border-white/5 bg-white/5 p-3">
-                    <Users aria-hidden="true" className="mt-0.5 text-sky-400 shrink-0" size={18} />
+                    <Users
+                      aria-hidden="true"
+                      className="mt-0.5 text-sky-400 shrink-0"
+                      size={18}
+                    />
                     <div>
-                      <dt className="text-xs text-slate-400 font-medium">Capacidad / Asistentes</dt>
+                      <dt className="text-xs text-slate-400 font-medium">
+                        Capacidad / Asistentes
+                      </dt>
                       <dd className="mt-0.5 font-semibold text-white">
-                        {reservation.quantity} {reservation.quantity === 1 ? "persona" : "personas"}
+                        {reservation.quantity}{" "}
+                        {reservation.quantity === 1 ? "persona" : "personas"}
                       </dd>
                     </div>
                   </div>
@@ -243,7 +269,9 @@ export default function PaymentPage() {
                       <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
                         Total a pagar
                       </span>
-                      <p className="text-[11px] text-slate-400">Incluye impuestos y servicio</p>
+                      <p className="text-[11px] text-slate-400">
+                        Incluye impuestos y servicio
+                      </p>
                     </div>
                     <span className="font-heading text-3xl font-black text-white">
                       {formatCurrency(payment.amount)}
@@ -252,14 +280,14 @@ export default function PaymentPage() {
                 </div>
               </section>
 
-              {/* COLUMNA FORMULARIO DE STRIPE */}
-              <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-[#0c1322]/80 p-6 sm:p-8 shadow-2xl backdrop-blur-2xl space-y-6">
+              <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03] p-6 sm:p-8 shadow-2xl backdrop-blur-xl space-y-6">
                 <div>
                   <h2 className="font-heading text-xl font-bold text-white">
                     Método de pago seguro
                   </h2>
                   <p className="mt-1 text-xs sm:text-sm text-slate-300">
-                    Ingresa los datos de tu tarjeta para procesar el pago y emitir tus credenciales.
+                    Ingresa los datos de tu tarjeta para procesar el pago y
+                    emitir tus credenciales.
                   </p>
                 </div>
 
