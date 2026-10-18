@@ -61,7 +61,7 @@ export default function AuthLayout({
   subtitle = "Canchas, piscinas, zonas húmedas y gimnasio...",
   features = DEFAULT_FEATURES,
   reservation = DEFAULT_RESERVATION,
-  footer = "© 2025 Otium",
+  footer = "© 2026 Otium",
 }: AuthLayoutProps) {
   return (
     <div className="relative isolate flex h-dvh w-full min-w-0 overflow-hidden">
