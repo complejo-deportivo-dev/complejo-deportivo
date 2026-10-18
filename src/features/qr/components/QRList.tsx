@@ -1,9 +1,73 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, QrCode } from "lucide-react";
+import {
+  ArrowRight,
+  Droplets,
+  Dumbbell,
+  QrCode,
+  Trophy,
+  Waves,
+} from "lucide-react";
 import QRCard from "@/components/shared/QRCard";
 import Skeleton from "@/components/ui/Skeleton";
+
+function getServiceTheme(serviceName: string) {
+  const name = serviceName.toLowerCase();
+
+  if (name.includes("cancha")) {
+    return {
+      icon: Trophy,
+      text: "text-emerald-400",
+      bg: "bg-emerald-500/10",
+      border: "hover:!border-emerald-500/30",
+      glow: "hover:!shadow-emerald-500/10",
+    };
+  }
+
+  if (name.includes("piscina")) {
+    return {
+      icon: Waves,
+      text: "text-sky-400",
+      bg: "bg-sky-500/10",
+      border: "hover:!border-sky-500/30",
+      glow: "hover:!shadow-sky-500/10",
+    };
+  }
+
+  if (name.includes("gym") || name.includes("gimnasio")) {
+    return {
+      icon: Dumbbell,
+      text: "text-orange-400",
+      bg: "bg-orange-500/10",
+      border: "hover:!border-orange-500/30",
+      glow: "hover:!shadow-orange-500/10",
+    };
+  }
+
+  if (
+    name.includes("humed") ||
+    name.includes("húmed") ||
+    name.includes("sauna") ||
+    name.includes("turco")
+  ) {
+    return {
+      icon: Droplets,
+      text: "text-cyan-400",
+      bg: "bg-cyan-500/10",
+      border: "hover:!border-cyan-500/30",
+      glow: "hover:!shadow-cyan-500/10",
+    };
+  }
+
+  return {
+    icon: QrCode,
+    text: "text-slate-400",
+    bg: "bg-slate-500/10",
+    border: "hover:!border-white/20",
+    glow: "hover:!shadow-white/5",
+  };
+}
 
 export interface QRItemData {
   qrId: number;
@@ -67,17 +131,22 @@ export default function QRList({ items, loading = false, onOpenQR }: QRListProps
         </div>
       ) : (
         <div className={listClasses}>
-          {items.map((item) => (
-            <QRCard
-              key={item.qrId}
-              title={item.title}
-              reservationCode={`#RSV-${item.reservationId}`}
-              qrToken={item.token}
-              qrType={item.qrType}
-              used={item.used}
-              onClick={() => onOpenQR?.(item)}
-            />
-          ))}
+          {items.map((item) => {
+            const theme = getServiceTheme(item.title || item.serviceName || "");
+
+            return (
+              <QRCard
+                key={item.qrId}
+                title={item.title}
+                reservationCode={`#RSV-${item.reservationId}`}
+                qrToken={item.token}
+                qrType={item.qrType}
+                used={item.used}
+                onClick={() => onOpenQR?.(item)}
+                serviceTheme={theme}
+              />
+            );
+          })}
         </div>
       )}
     </section>

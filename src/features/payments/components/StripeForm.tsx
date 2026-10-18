@@ -9,7 +9,7 @@ import {
   useStripe,
 } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
-import { LockKeyhole } from "lucide-react";
+import { CreditCard, LockKeyhole, ShieldCheck } from "lucide-react";
 
 import Banner from "@/components/ui/Banner";
 import Button from "@/components/ui/Button";
@@ -72,30 +72,61 @@ function CheckoutForm({
   }
 
   return (
-    <form className="space-y-5" onSubmit={handleSubmit}>
-      <PaymentElement options={{ layout: "tabs" }} />
+    <form className="space-y-6" onSubmit={handleSubmit}>
+      <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-black/40 p-5 shadow-inner">
+        <div className="mb-4 flex items-center justify-between border-b border-white/10 pb-3">
+          <div className="flex items-center gap-2 text-slate-300">
+            <CreditCard size={18} className="text-sky-400" />
+            <span className="text-sm font-medium">Datos de pago</span>
+          </div>
+          <ShieldCheck size={18} className="text-emerald-400" />
+        </div>
+
+        <PaymentElement options={{ layout: "tabs" }} />
+      </div>
+
       {error && (
         <Banner variant="error">
           <p role="alert">{error}</p>
         </Banner>
       )}
-      <p className="flex items-center justify-center gap-2 text-sm text-text-secondary">
-        <LockKeyhole aria-hidden="true" size={16} />
-        Pago seguro · Modo prueba
-      </p>
+
       <Button
-        className="w-full"
-        disabled={!stripe || !elements || disabled}
+        className="h-12 w-full !rounded-xl bg-sky-500 font-bold text-white transition-colors hover:bg-sky-400"
+        disabled={!stripe || !elements || disabled || processing}
         loading={processing}
         size="lg"
         type="submit"
       >
-        Pagar {new Intl.NumberFormat("es-CO", {
-          style: "currency",
-          currency: "COP",
-          maximumFractionDigits: 0,
-        }).format(amount)}
+        {processing
+          ? "Procesando pago seguro..."
+          : `Pagar ${new Intl.NumberFormat("es-CO", {
+              style: "currency",
+              currency: "COP",
+              maximumFractionDigits: 0,
+            }).format(amount)}`}
       </Button>
+
+      {processing && (
+        <p className="text-center text-xs font-medium text-sky-400 animate-pulse">
+          Validando credenciales bancarias. Por favor no cierres esta ventana...
+        </p>
+      )}
+
+      <div className="flex items-center justify-center gap-6 pt-2 text-[11px] font-medium text-slate-500">
+        <span className="inline-flex items-center gap-1.5">
+          <LockKeyhole aria-hidden="true" size={14} />
+          Cifrado SSL 256 bits
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <ShieldCheck
+            aria-hidden="true"
+            size={14}
+            className="text-emerald-500"
+          />
+          Stripe Verified
+        </span>
+      </div>
     </form>
   );
 }
@@ -121,11 +152,26 @@ export default function StripeForm({
         appearance: {
           theme: "night",
           variables: {
-            colorPrimary: "#3a83bf",
-            colorBackground: "#111827",
-            colorText: "#f1f5f9",
-            colorDanger: "#ef4444",
-            borderRadius: "8px",
+            colorPrimary: "#0ea5e9",
+            colorBackground: "transparent",
+            colorText: "#f8fafc",
+            colorDanger: "#f43f5e",
+            fontFamily: "Inter, system-ui, sans-serif",
+            borderRadius: "12px",
+          },
+          rules: {
+            ".Input": {
+              backgroundColor: "rgba(255, 255, 255, 0.05)",
+              border: "1px solid rgba(255, 255, 255, 0.1)",
+              boxShadow: "none",
+            },
+            ".Input:focus": {
+              border: "1px solid #0ea5e9",
+              boxShadow: "0 0 0 1px #0ea5e9",
+            },
+            ".Label": {
+              color: "#94a3b8",
+            },
           },
         },
       }}

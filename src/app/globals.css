@@ -70,3 +70,16 @@ body {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* Fix autofill de Chrome/Edge en tema oscuro */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-text-fill-color: white;
+  -webkit-box-shadow: 0 0 0 1000px #343f4c inset;
+  box-shadow: 0 0 0 1000px #343f4c inset;
+  caret-color: white;
+  transition: background-color 5000s ease-in-out 0s;
+  border-radius: var(--radius-xl);
+}

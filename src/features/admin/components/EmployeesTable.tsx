@@ -10,8 +10,8 @@ export interface AdminEmployeeRow {
   email: string;
   number_document: string;
   is_active: boolean;
-  initials?: string; // TODO-BACKEND: el backend puede devolver esto o se calcula en frontend.
-  access_logs_count?: number; // TODO-BACKEND: conteo real del backend.
+  initials?: string;
+  access_logs_count?: number;
 }
 
 interface EmployeesTableProps {
@@ -32,31 +32,41 @@ export default function EmployeesTable({
   }
 
   return (
-    <Card className="overflow-hidden border border-white/10 bg-[#101827]" padding="none">
+    <Card
+      className="overflow-hidden !rounded-3xl !border-white/10 !bg-white/[0.03] backdrop-blur-xl !shadow-lg"
+      padding="none"
+    >
       <div className="overflow-x-auto">
-        <table className="min-w-full border-separate border-spacing-0">
+        <table className="min-w-full text-left">
           <thead>
-            <tr className="bg-[#0F172A] text-left text-[10px] uppercase tracking-[0.2em] text-slate-400">
-              <th className="w-[5%] px-4 py-3 font-medium">#</th>
-              <th className="w-[30%] px-4 py-3 font-medium">Nombre</th>
-              <th className="w-[25%] px-4 py-3 font-medium">Email</th>
-              <th className="w-[20%] px-4 py-3 font-medium">Cédula</th>
-              <th className="w-[10%] px-4 py-3 font-medium">Estado</th>
-              <th className="w-[10%] px-4 py-3 text-left font-medium">Acciones</th>
+            <tr className="bg-black/20 text-[10px] uppercase tracking-[0.2em] text-slate-400 border-b border-white/10">
+              <th className="w-[5%] px-6 py-4 font-semibold">#</th>
+              <th className="w-[30%] px-6 py-4 font-semibold">Nombre</th>
+              <th className="w-[25%] px-6 py-4 font-semibold">Email</th>
+              <th className="w-[20%] px-6 py-4 font-semibold">Cédula</th>
+              <th className="w-[10%] px-6 py-4 font-semibold">Estado</th>
+              <th className="w-[10%] px-6 py-4 font-semibold text-left">
+                Acciones
+              </th>
             </tr>
           </thead>
 
-          <tbody>
+          <tbody className="divide-y divide-white/5">
             {employees.map((employee, index) => (
-              <tr key={employee.id} className="border-t border-white/10 bg-transparent">
-                <td className="w-[5%] px-4 py-4 text-sm text-slate-400">{index + 1}</td>
+              <tr
+                key={employee.id}
+                className="group transition-colors hover:bg-white/[0.02]"
+              >
+                <td className="w-[5%] px-6 py-4 text-sm text-slate-500">
+                  {index + 1}
+                </td>
 
-                <td className="w-[30%] px-4 py-4">
+                <td className="w-[30%] px-6 py-4">
                   <div className="flex items-center gap-3">
                     <Avatar
                       name={employee.name}
                       size="sm"
-                      className="bg-slate-800 text-slate-200"
+                      className="bg-slate-800 text-slate-200 border border-white/10"
                     />
                     <span className="text-sm font-semibold text-white">
                       {employee.name}
@@ -64,15 +74,15 @@ export default function EmployeesTable({
                   </div>
                 </td>
 
-                <td className="w-[25%] px-4 py-4 text-sm text-slate-300">
+                <td className="w-[25%] px-6 py-4 text-sm text-slate-300">
                   {employee.email}
                 </td>
 
-                <td className="w-[20%] px-4 py-4 text-sm text-slate-300">
+                <td className="w-[20%] px-6 py-4 text-sm text-slate-300">
                   {employee.number_document}
                 </td>
 
-                <td className="w-[10%] px-4 py-4">
+                <td className="w-[10%] px-6 py-4">
                   <Badge
                     size="sm"
                     variant={employee.is_active ? "success" : "neutral"}
@@ -81,11 +91,11 @@ export default function EmployeesTable({
                   </Badge>
                 </td>
 
-                <td className="w-[10%] px-4 py-4">
+                <td className="w-[10%] px-6 py-4">
                   <div className="flex items-center gap-4">
                     <button
                       aria-label="Editar empleado"
-                      className="flex items-center justify-center text-slate-400 transition-colors hover:text-white"
+                      className="flex items-center justify-center text-slate-400 transition-colors hover:text-sky-400"
                       onClick={() => onEdit(employee)}
                       type="button"
                     >
@@ -93,7 +103,11 @@ export default function EmployeesTable({
                     </button>
 
                     <button
-                      aria-label={employee.is_active ? "Desactivar empleado" : "Activar empleado"}
+                      aria-label={
+                        employee.is_active
+                          ? "Desactivar empleado"
+                          : "Activar empleado"
+                      }
                       className={`flex items-center justify-center transition-colors ${
                         employee.is_active
                           ? "text-emerald-500 hover:text-emerald-400"
@@ -107,7 +121,7 @@ export default function EmployeesTable({
 
                     <button
                       aria-label="Eliminar empleado"
-                      className="flex items-center justify-center text-slate-400 transition-colors hover:text-red-400"
+                      className="flex items-center justify-center text-slate-400 transition-colors hover:text-rose-500"
                       onClick={() => onDelete(employee)}
                       type="button"
                     >

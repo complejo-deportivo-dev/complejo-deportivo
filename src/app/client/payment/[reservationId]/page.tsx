@@ -3,12 +3,18 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { ArrowLeft, CalendarDays, Clock3, Users } from "lucide-react";
+import {
+  ArrowLeft,
+  CalendarDays,
+  Clock3,
+  ShieldCheck,
+  Users,
+} from "lucide-react";
 
 import Header from "@/components/shared/Header";
+import ImmersiveBackground from "@/components/shared/ImmersiveBackground";
 import TimeCounter from "@/components/shared/TimeCounter";
 import Banner from "@/components/ui/Banner";
-import Card from "@/components/ui/Card";
 import Skeleton from "@/components/ui/Skeleton";
 import StripeForm from "@/features/payments/components/StripeForm";
 import type {
@@ -39,6 +45,23 @@ function formatCurrency(amount: number) {
     currency: "COP",
     maximumFractionDigits: 0,
   }).format(amount);
+}
+
+function getServiceFallback(name?: string): string {
+  const lower = name?.toLowerCase() || "";
+  if (lower.includes("piscina")) return "/images/piscina.webp";
+  if (lower.includes("cancha")) return "/images/cancha.webp";
+  if (lower.includes("gym") || lower.includes("gimnasio"))
+    return "/images/gym.webp";
+  if (
+    lower.includes("humed") ||
+    lower.includes("húmed") ||
+    lower.includes("sauna") ||
+    lower.includes("turco")
+  ) {
+    return "/images/zonas-humedas.webp";
+  }
+  return "/images/cancha.webp";
 }
 
 export default function PaymentPage() {
@@ -99,36 +122,52 @@ export default function PaymentPage() {
   const reservation = payment?.reservation;
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="relative flex min-h-screen flex-col">
+      <ImmersiveBackground
+        src={(reservation?.service as { image_url?: string | null })?.image_url}
+        fallbackSrc={getServiceFallback(reservation?.service?.name)}
+        alt={reservation?.service?.name ?? "Pago de reserva deportiva"}
+      />
       <Header role="client" />
-      <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-6 pb-16 pt-8 lg:px-16">
+
+      <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-6 pb-20 pt-28 lg:px-16">
         <Link
-          className="mb-6 inline-flex w-fit items-center gap-2 text-sm font-medium text-text-secondary transition-colors hover:text-primary"
+          className="mb-8 inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-[#0c1322]/50 px-4 py-1.5 text-xs font-medium text-slate-300 shadow-sm backdrop-blur-md transition-all hover:border-white/20 hover:bg-[#0c1322]/80 hover:text-white"
           href="/client"
         >
-          <ArrowLeft aria-hidden="true" size={16} />
-          Volver al inicio
+          <ArrowLeft aria-hidden="true" size={14} />
+          <span>Volver al inicio</span>
         </Link>
 
-        <div className="mb-8 space-y-2">
-          <p className="text-sm font-semibold uppercase text-secondary">
-            Finaliza tu reserva
-          </p>
-          <h1 className="font-heading text-h1 font-semibold text-text-primary">
-            Pago
-          </h1>
-        </div>
+        <section className="relative mb-8 overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-2xl backdrop-blur-xl sm:p-8">
+          <div className="space-y-2 max-w-2xl">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-sky-400/25 bg-sky-500/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-[#38bdf8]">
+              <ShieldCheck size={13} />
+              Checkout Protegido · Stripe Elements
+            </span>
+
+            <h1 className="font-heading text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
+              Finaliza tu reserva
+            </h1>
+
+            <p className="text-sm text-slate-300 sm:text-base leading-relaxed">
+              Completa el pago para asegurar tu franja horaria. Tus códigos QR
+              de acceso se emitirán al instante y llegarán a tu correo
+              electrónico.
+            </p>
+          </div>
+        </section>
 
         {loading ? (
           <div className="space-y-6">
-            <Skeleton className="h-24 w-full" />
+            <Skeleton className="h-24 w-full rounded-2xl" />
             <div className="grid gap-8 lg:grid-cols-2">
-              <Skeleton className="h-80 w-full" />
-              <Skeleton className="h-80 w-full" />
+              <Skeleton className="h-80 w-full rounded-3xl" />
+              <Skeleton className="h-80 w-full rounded-3xl" />
             </div>
           </div>
         ) : error ? (
-          <Banner variant="error">
+          <Banner variant="error" className="rounded-2xl">
             <p className="font-medium">No se pudo preparar el pago.</p>
             <p className="mt-1 text-sm">{error}</p>
           </Banner>
@@ -139,79 +178,126 @@ export default function PaymentPage() {
               expiresAt={payment.expiresAt}
               onExpire={() => setExpired(true)}
             />
+
             {expired && (
-              <Banner className="mb-8" variant="error">
-                <p className="font-medium">El tiempo para pagar ha expirado.</p>
-                <p className="mt-1 text-sm">
-                  Vuelve a elegir un horario para crear una nueva reserva.
-                </p>
+              <div className="mb-8 flex flex-col items-center justify-between gap-4 rounded-2xl border border-rose-500/30 bg-rose-950/30 p-6 text-center shadow-xl backdrop-blur-xl sm:flex-row sm:text-left">
+                <div>
+                  <p className="font-heading text-base font-bold text-rose-300">
+                    El tiempo para pagar esta reserva ha expirado
+                  </p>
+                  <p className="mt-1 text-xs sm:text-sm text-slate-300">
+                    La franja horaria fue liberada para otros deportistas.
+                    Vuelve a seleccionar tu horario.
+                  </p>
+                </div>
                 <Link
-                  className="mt-3 inline-block text-sm font-semibold underline"
+                  className="inline-flex h-10 shrink-0 items-center justify-center gap-1.5 rounded-xl bg-sky-500 px-5 text-xs font-bold text-white transition-colors hover:bg-sky-400"
                   href="/client/categories"
                 >
-                  Buscar horarios
+                  <span>Buscar nuevos horarios</span>
                 </Link>
-              </Banner>
+              </div>
             )}
+
             <div className="grid items-start gap-8 lg:grid-cols-2">
-              <Card as="section" className="space-y-6" padding="lg">
-                <div className="border-b border-border pb-5">
-                  <p className="text-sm text-text-secondary">Servicio</p>
-                  <h2 className="mt-1 font-heading text-h3 font-semibold text-text-primary">
+              <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03] p-6 sm:p-8 shadow-2xl backdrop-blur-xl space-y-6">
+                <div className="border-b border-white/10 pb-5">
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                    Resumen de tu actividad
+                  </span>
+                  <h2 className="mt-1.5 font-heading text-2xl font-bold text-white">
                     {reservation.service.name}
                   </h2>
                 </div>
-                <dl className="space-y-5">
-                  <div className="flex items-start gap-3">
-                    <CalendarDays aria-hidden="true" className="mt-0.5 text-primary" size={19} />
+
+                <dl className="space-y-4 text-sm">
+                  <div className="flex items-start gap-3 rounded-xl border border-white/5 bg-white/5 p-3">
+                    <CalendarDays
+                      aria-hidden="true"
+                      className="mt-0.5 text-sky-400 shrink-0"
+                      size={18}
+                    />
                     <div>
-                      <dt className="text-xs text-text-secondary">Fecha</dt>
-                      <dd className="mt-1 font-medium capitalize">
+                      <dt className="text-xs text-slate-400 font-medium">
+                        Fecha de asistencia
+                      </dt>
+                      <dd className="mt-0.5 font-semibold text-white capitalize">
                         {formatDateLong(reservation.reservation_date)}
                       </dd>
                     </div>
                   </div>
-                  <div className="flex items-start gap-3">
-                    <Clock3 aria-hidden="true" className="mt-0.5 text-primary" size={19} />
+
+                  <div className="flex items-start gap-3 rounded-xl border border-white/5 bg-white/5 p-3">
+                    <Clock3
+                      aria-hidden="true"
+                      className="mt-0.5 text-sky-400 shrink-0"
+                      size={18}
+                    />
                     <div>
-                      <dt className="text-xs text-text-secondary">Franja horaria</dt>
-                      <dd className="mt-1 font-medium">
-                        {timeRangeToLabel(reservation.slots)}
+                      <dt className="text-xs text-slate-400 font-medium">
+                        Franja horaria reservada
+                      </dt>
+                      <dd className="mt-0.5 font-semibold text-white">
+                        {timeRangeToLabel(reservation.slots)} (
+                        {reservation.slots.length} hora
+                        {reservation.slots.length > 1 ? "s" : ""})
                       </dd>
                     </div>
                   </div>
-                  <div className="flex items-start gap-3">
-                    <Users aria-hidden="true" className="mt-0.5 text-primary" size={19} />
+
+                  <div className="flex items-start gap-3 rounded-xl border border-white/5 bg-white/5 p-3">
+                    <Users
+                      aria-hidden="true"
+                      className="mt-0.5 text-sky-400 shrink-0"
+                      size={18}
+                    />
                     <div>
-                      <dt className="text-xs text-text-secondary">Personas</dt>
-                      <dd className="mt-1 font-medium">{reservation.quantity}</dd>
+                      <dt className="text-xs text-slate-400 font-medium">
+                        Capacidad / Asistentes
+                      </dt>
+                      <dd className="mt-0.5 font-semibold text-white">
+                        {reservation.quantity}{" "}
+                        {reservation.quantity === 1 ? "persona" : "personas"}
+                      </dd>
                     </div>
                   </div>
                 </dl>
-                <div className="flex items-center justify-between border-t border-border pt-5">
-                  <span className="font-medium">Total</span>
-                  <span className="font-heading text-h3 font-semibold text-primary">
-                    {formatCurrency(payment.amount)}
-                  </span>
-                </div>
-              </Card>
 
-              <Card as="section" className="space-y-6" padding="lg">
+                <div className="border-t border-white/10 pt-5">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                        Total a pagar
+                      </span>
+                      <p className="text-[11px] text-slate-400">
+                        Incluye impuestos y servicio
+                      </p>
+                    </div>
+                    <span className="font-heading text-3xl font-black text-white">
+                      {formatCurrency(payment.amount)}
+                    </span>
+                  </div>
+                </div>
+              </section>
+
+              <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03] p-6 sm:p-8 shadow-2xl backdrop-blur-xl space-y-6">
                 <div>
-                  <h2 className="font-heading text-h3 font-semibold">
-                    Método de pago
+                  <h2 className="font-heading text-xl font-bold text-white">
+                    Método de pago seguro
                   </h2>
-                  <p className="mt-1 text-sm text-text-secondary">
-                    Completa los datos de tu tarjeta para confirmar la reserva.
+                  <p className="mt-1 text-xs sm:text-sm text-slate-300">
+                    Ingresa los datos de tu tarjeta para procesar el pago y
+                    emitir tus credenciales.
                   </p>
                 </div>
+
                 <StripeForm
                   amount={payment.amount}
                   clientSecret={payment.clientSecret}
                   disabled={expired}
                   reservationId={reservationId}
                 />
-              </Card>
+              </section>
             </div>
           </>
         ) : null}

@@ -20,7 +20,6 @@ import type {
   DashboardData,
 } from "@/features/admin/types";
 
-// Hace la petición y extrae .data del formato ApiResponse<T>
 async function fetchJson<T>(url: string): Promise<T> {
   const response = await fetch(url);
   if (!response.ok) {
@@ -30,7 +29,6 @@ async function fetchJson<T>(url: string): Promise<T> {
   return json.data;
 }
 
-// Carga las 3 peticiones en paralelo
 async function fetchDashboardData(): Promise<DashboardData> {
   const [metrics, reservations, accessLogs] = await Promise.all([
     fetchJson<AdminMetrics>("/api/admin/metrics"),
@@ -38,8 +36,6 @@ async function fetchDashboardData(): Promise<DashboardData> {
     fetchJson<AdminAccessLog[]>("/api/admin/access-logs?limit=5"),
   ]);
 
-  // El diseño aún no define `limit` en estos endpoints, así que recortamos a 5 en el
-  // frontend como protección por si el backend devuelve más registros.
   return {
     metrics,
     reservations: reservations.slice(0, 5),
@@ -52,7 +48,6 @@ export default function AdminDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
-  // Función reutilizable para el botón "Reintentar"
   const handleRetry = async () => {
     setLoading(true);
     setError(false);
@@ -66,7 +61,6 @@ export default function AdminDashboardPage() {
     }
   };
 
-  // Carga inicial sin llamar a setState síncronamente dentro del efecto (evita react-hooks/set-state-in-effect)
   useEffect(() => {
     let isMounted = true;
 
@@ -95,18 +89,34 @@ export default function AdminDashboardPage() {
   }, []);
 
   return (
-    <>
+    <div className="relative min-h-screen flex flex-col">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none fixed inset-0 -z-10 overflow-hidden bg-[#060b17]"
+      >
+        <div
+          className="absolute inset-0 opacity-[0.08]"
+          style={{
+            backgroundImage:
+              "linear-gradient(to right, rgba(255,255,255,.5) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,.5) 1px, transparent 1px)",
+            backgroundSize: "44px 44px",
+            backgroundPosition: "right top",
+          }}
+        />
+        <div className="absolute -top-40 left-1/2 h-[500px] w-[800px] -translate-x-1/2 rounded-full bg-sky-500/10 blur-[120px]" />
+      </div>
+
       <Header role="admin" userName="Admin" userInitials="AD" />
 
-      <main className="mx-auto w-full max-w-7xl space-y-6 px-4 py-6 md:px-6">
+      <main className="mx-auto w-full max-w-6xl space-y-8 px-4 pb-20 pt-28 md:px-6">
         <div>
-          <p className="mt-4 mb-2 text-xs font-semibold uppercase tracking-wider text-text-secondary">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
             PANEL DE ADMINISTRACIÓN
           </p>
-          <h1 className="font-heading text-3xl font-bold text-text-primary">
+          <h1 className="font-heading text-3xl font-bold text-white sm:text-4xl">
             Hola, Admin.
           </h1>
-          <p className="text-text-secondary">
+          <p className="text-slate-300">
             Aquí está el resumen del complejo hoy.
           </p>
         </div>
@@ -114,12 +124,17 @@ export default function AdminDashboardPage() {
         {loading && <DashboardSkeleton />}
 
         {!loading && error && (
-          <div className="rounded-xl border border-border bg-surface p-8 text-center">
-            <p className="mb-4 text-text-primary">
+          <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-8 text-center backdrop-blur-xl">
+            <p className="mb-4 text-white">
               No pudimos cargar el dashboard. Revisa tu conexión e intenta de
               nuevo.
             </p>
-            <Button onClick={handleRetry}>Reintentar</Button>
+            <Button
+              onClick={handleRetry}
+              className="bg-sky-500 hover:bg-sky-400"
+            >
+              Reintentar
+            </Button>
           </div>
         )}
 
@@ -127,24 +142,18 @@ export default function AdminDashboardPage() {
           <>
             <MetricsGrid metrics={data.metrics} />
 
-            <div className="grid gap-4 lg:grid-cols-2">
-              <ReservationsByDayChart
-                data={data.metrics.daily_reservations}
-              />
-              <ReservationsByStatusChart
-                data={data.metrics.by_status}
-              />
+            <div className="grid gap-6 lg:grid-cols-2">
+              <ReservationsByDayChart data={data.metrics.daily_reservations} />
+              <ReservationsByStatusChart data={data.metrics.by_status} />
             </div>
 
-            <ServiceOccupancyList
-              services={data.metrics.service_occupancy}
-            />
+            <ServiceOccupancyList services={data.metrics.service_occupancy} />
             <QuickActionsGrid counts={data.metrics.counts} />
             <RecentReservationsTable reservations={data.reservations} />
             <RecentAccessLogsTable accessLogs={data.accessLogs} />
           </>
         )}
       </main>
-    </>
+    </div>
   );
 }

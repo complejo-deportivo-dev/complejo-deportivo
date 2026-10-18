@@ -3,11 +3,10 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Search, Sparkles, X } from "lucide-react";
+import { ArrowLeft, Search, X } from "lucide-react";
 
 import Header from "@/components/shared/Header";
 import CategoryCard from "@/components/shared/CategoryCard";
-import ImmersiveBackground from "@/components/shared/ImmersiveBackground";
 import Skeleton from "@/components/ui/Skeleton";
 import Banner from "@/components/ui/Banner";
 import Button from "@/components/ui/Button";
@@ -34,7 +33,8 @@ function getCategoryFallback(name: string): string {
   const lower = name.toLowerCase();
   if (lower.includes("piscina")) return "/images/piscina.webp";
   if (lower.includes("cancha")) return "/images/cancha.webp";
-  if (lower.includes("gym") || lower.includes("gimnasio")) return "/images/gym.webp";
+  if (lower.includes("gym") || lower.includes("gimnasio"))
+    return "/images/gym.webp";
   if (
     lower.includes("humed") ||
     lower.includes("húmed") ||
@@ -99,14 +99,25 @@ export default function CategoriesPage() {
 
   return (
     <div className="relative flex min-h-screen flex-col">
-      <ImmersiveBackground
-        fallbackSrc="/images/cancha.webp"
-        alt="Categorías de escenarios deportivos"
-      />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none fixed inset-0 -z-10 overflow-hidden bg-[#060b17]"
+      >
+        <div
+          className="absolute inset-0 opacity-[0.08]"
+          style={{
+            backgroundImage:
+              "linear-gradient(to right, rgba(255,255,255,.5) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,.5) 1px, transparent 1px)",
+            backgroundSize: "44px 44px",
+            backgroundPosition: "right top",
+          }}
+        />
+        <div className="absolute -top-40 left-1/2 h-[500px] w-[800px] -translate-x-1/2 rounded-full bg-sky-500/10 blur-[120px]" />
+      </div>
 
       <Header role="client" />
 
-      <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-6 pb-20 pt-8 lg:px-16">
+      <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-6 pb-20 pt-28 lg:px-16">
         <Link
           href="/client"
           className="mb-8 inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-[#0c1322]/50 px-4 py-1.5 text-xs font-medium text-slate-300 shadow-sm backdrop-blur-md transition-all hover:border-white/20 hover:bg-[#0c1322]/80 hover:text-white"
@@ -116,22 +127,21 @@ export default function CategoriesPage() {
         </Link>
 
         {/* HERO BANNER DE CATEGORÍAS */}
-        <section className="relative mb-10 overflow-hidden rounded-3xl border border-white/10 bg-[#0c1322]/75 p-6 shadow-2xl backdrop-blur-2xl sm:p-8">
-          <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-sky-400 via-teal-400 to-transparent shadow-xs shadow-sky-400/40" />
-
+        <section className="relative mb-10 overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-2xl backdrop-blur-xl sm:p-8">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div className="space-y-2 max-w-2xl">
               <span className="inline-flex items-center gap-1.5 rounded-full border border-sky-400/25 bg-sky-500/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-[#38bdf8]">
-                <Sparkles size={13} />
                 Catálogo Oficial de Disciplinas
               </span>
 
               <h1 className="font-heading text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
-                ¿Qué disciplina quieres reservar hoy?
+                ¿Qué quieres reservar hoy?
               </h1>
 
               <p className="text-sm text-slate-300 sm:text-base leading-relaxed">
-                Explora cada una de nuestras áreas deportivas, consulta escenarios disponibles y asegura tu franja horaria en tiempo real.
+                Explora cada una de nuestras áreas deportivas, consulta
+                escenarios disponibles y asegura tu franja horaria en tiempo
+                real.
               </p>
             </div>
 
@@ -146,7 +156,7 @@ export default function CategoriesPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Buscar disciplina..."
-                className="h-11 w-full rounded-xl border border-white/10 bg-black/40 pl-10 pr-9 text-xs font-medium text-white placeholder:text-slate-500 backdrop-blur-md focus:border-sky-400 focus:outline-none focus:ring-1 focus:ring-sky-400 transition-all"
+                className="h-11 w-full rounded-xl border border-white/10 bg-white/5 pl-10 pr-9 text-xs font-medium text-white placeholder:text-slate-400 backdrop-blur-md transition-all focus:border-sky-400 focus:outline-none focus:ring-1 focus:ring-sky-400"
               />
               {searchQuery && (
                 <button
@@ -163,7 +173,11 @@ export default function CategoriesPage() {
         </section>
 
         {error && (
-          <Banner variant="error" onClose={() => setError(null)} className="mb-8">
+          <Banner
+            variant="error"
+            onClose={() => setError(null)}
+            className="mb-8"
+          >
             <p className="font-medium">No pudimos cargar las categorías.</p>
             <p className="mt-1 text-sm">{error}</p>
             <Button size="sm" className="mt-3" onClick={loadCategories}>
@@ -189,7 +203,7 @@ export default function CategoriesPage() {
               <button
                 type="button"
                 onClick={() => setSearchQuery("")}
-                className="mt-4 inline-flex h-9 items-center justify-center rounded-xl border border-sky-400/30 bg-[#0284c7] px-4 text-xs font-bold text-white shadow-md shadow-sky-500/30 hover:bg-[#0369a1] transition-all cursor-pointer"
+                className="mt-4 inline-flex h-9 cursor-pointer items-center justify-center rounded-xl bg-sky-500 px-4 text-xs font-bold text-white transition-colors hover:bg-sky-400"
               >
                 Ver todas las disciplinas
               </button>
@@ -210,7 +224,10 @@ export default function CategoriesPage() {
                 <CategoryCard
                   key={cat.id}
                   name={cat.name}
-                  subtitle={cat.subtitle || `Reserva escenarios en ${cat.name.toLowerCase()}`}
+                  subtitle={
+                    cat.subtitle ||
+                    `Reserva escenarios en ${cat.name.toLowerCase()}`
+                  }
                   image={cat.image || getCategoryFallback(cat.name)}
                   servicesCount={cat.services_count || 0}
                   minPrice={cat.min_price || 0}

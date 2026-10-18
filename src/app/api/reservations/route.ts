@@ -28,8 +28,7 @@ const VALID_RESERVATION_STATUSES = [
   "completed",
 ] as const;
 
-type ReservationStatusFilter =
-  (typeof VALID_RESERVATION_STATUSES)[number];
+type ReservationStatusFilter = (typeof VALID_RESERVATION_STATUSES)[number];
 
 const createReservationSchema = z
   .object({
@@ -52,7 +51,7 @@ type ReservationTransactionResult = {
 class ReservationRequestError extends Error {
   constructor(
     message: string,
-    readonly status: 400 | 401 | 404
+    readonly status: 400 | 401 | 404,
   ) {
     super(message);
   }
@@ -68,11 +67,11 @@ function isUniqueConstraintError(error: unknown): boolean {
 }
 
 function formatDateOnly(value: Date): string {
-  return formatInTimeZone(value, TIME_ZONE, "yyyy-MM-dd");
+  return value.toISOString().split("T")[0];
 }
 
 function formatTimeOnly(value: Date): string {
-  return formatInTimeZone(value, TIME_ZONE, "HH:mm");
+  return value.toISOString().slice(11, 16);
 }
 
 function timeStringInMilliseconds(value: string): number {
@@ -81,14 +80,14 @@ function timeStringInMilliseconds(value: string): number {
 }
 
 function parseReservationStatus(
-  rawStatus: string | null
+  rawStatus: string | null,
 ): ReservationStatusFilter | null {
   if (rawStatus === null) {
     return null;
   }
 
   return VALID_RESERVATION_STATUSES.includes(
-    rawStatus as ReservationStatusFilter
+    rawStatus as ReservationStatusFilter,
   )
     ? (rawStatus as ReservationStatusFilter)
     : null;
@@ -105,19 +104,24 @@ function serializeReservation(reservation: {
     time_slots: {
       time_start: Date;
       time_end: Date;
-      services: { id: number; name: string; hour_price: Prisma.Decimal; qr_type?: string } | null;
+      services: {
+        id: number;
+        name: string;
+        hour_price: Prisma.Decimal;
+        qr_type?: string;
+      } | null;
     } | null;
   }>;
   payments: { amount: Prisma.Decimal } | null;
   qr_codes?: Array<{ id: number; token: string; used_at: Date | null }> | null;
 }) {
   const orderedSlots = [...reservation.reservation_slots].sort(
-    (left, right) => left.slot_date.getTime() - right.slot_date.getTime()
+    (left, right) => left.slot_date.getTime() - right.slot_date.getTime(),
   );
 
   const serviceEntry =
-    orderedSlots.find((slot) => slot.time_slots?.services)?.time_slots?.services ??
-    null;
+    orderedSlots.find((slot) => slot.time_slots?.services)?.time_slots
+      ?.services ?? null;
 
   const slots = orderedSlots
     .map((slot) => {
@@ -134,9 +138,12 @@ function serializeReservation(reservation: {
     })
     .filter(
       (
-        slot
-      ): slot is { time_slot_id: number; time_start: string; time_end: string } =>
-        slot !== null
+        slot,
+      ): slot is {
+        time_slot_id: number;
+        time_start: string;
+        time_end: string;
+      } => slot !== null,
     );
 
   const amount =
@@ -178,7 +185,7 @@ function serializeReservation(reservation: {
 }
 
 function validateConsecutiveSlots(
-  slots: { time_start: Date; time_end: Date }[]
+  slots: { time_start: Date; time_end: Date }[],
 ): boolean {
   for (let index = 1; index < slots.length; index += 1) {
     if (
@@ -212,7 +219,10 @@ export async function GET(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   if (authError || !user) {
-    return NextResponse.json<ApiError>({ error: "No autenticado" }, { status: 401 });
+    return NextResponse.json<ApiError>(
+      { error: "No autenticado" },
+      { status: 401 },
+    );
   }
 
   const profile = await prisma.public_users.findUnique({
@@ -221,7 +231,10 @@ export async function GET(request: NextRequest) {
   });
 
   if (!profile || profile.role !== "client") {
-    return NextResponse.json<ApiError>({ error: "No autorizado" }, { status: 403 });
+    return NextResponse.json<ApiError>(
+      { error: "No autorizado" },
+      { status: 403 },
+    );
   }
 
   const rawStatus = request.nextUrl.searchParams.get("status");
@@ -230,7 +243,7 @@ export async function GET(request: NextRequest) {
   if (rawStatus !== null && parsedStatus === null) {
     return NextResponse.json<ApiError>(
       { error: "Estado inválido" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -261,14 +274,18 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    return NextResponse.json<ApiResponse<ReturnType<typeof serializeReservation>[]>>({
-      data: reservations.map((reservation) => serializeReservation(reservation)),
+    return NextResponse.json<
+      ApiResponse<ReturnType<typeof serializeReservation>[]>
+    >({
+      data: reservations.map((reservation) =>
+        serializeReservation(reservation),
+      ),
     });
   } catch (error) {
     console.error("Error al listar reservas:", error);
     return NextResponse.json<ApiError>(
       { error: "Error al obtener las reservas" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -285,7 +302,7 @@ export async function POST(request: Request) {
     if (authError || !user) {
       return NextResponse.json<ApiError>(
         { error: "No autenticado" },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -294,7 +311,7 @@ export async function POST(request: Request) {
     console.error("Error al validar la sesión del cliente:", error);
     return NextResponse.json<ApiError>(
       { error: "Error al validar la sesión" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 
@@ -304,7 +321,7 @@ export async function POST(request: Request) {
   } catch {
     return NextResponse.json<ApiError>(
       { error: "Datos inválidos" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -312,7 +329,7 @@ export async function POST(request: Request) {
   if (!parsedBody.success) {
     return NextResponse.json<ApiError>(
       { error: "Datos inválidos" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -320,21 +337,18 @@ export async function POST(request: Request) {
   if (new Set(body.time_slot_ids).size !== body.time_slot_ids.length) {
     return NextResponse.json<ApiError>(
       { error: "Datos inválidos" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
   const now = new Date();
-  const reservationDate = validateAvailabilityDate(
-    body.reservation_date,
-    now
-  );
+  const reservationDate = validateAvailabilityDate(body.reservation_date, now);
   if (!reservationDate.success) {
     const message =
       "error" in reservationDate ? reservationDate.error : "Error desconocido";
     return NextResponse.json<ApiError>(
       { error: reservationDateErrorMessage(message) },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -344,7 +358,7 @@ export async function POST(request: Request) {
         const lockKeys = [
           `reservation:user:${userId}:${body.reservation_date}`,
           ...body.time_slot_ids.map(
-            (slotId) => `reservation:slot:${body.reservation_date}:${slotId}`
+            (slotId) => `reservation:slot:${body.reservation_date}:${slotId}`,
           ),
         ].sort();
 
@@ -357,7 +371,7 @@ export async function POST(request: Request) {
         const transactionNow = new Date();
         const transactionDate = validateAvailabilityDate(
           body.reservation_date,
-          transactionNow
+          transactionNow,
         );
         if (!transactionDate.success) {
           const message =
@@ -366,7 +380,7 @@ export async function POST(request: Request) {
               : "Error desconocido";
           throw new ReservationRequestError(
             reservationDateErrorMessage(message),
-            400
+            400,
           );
         }
 
@@ -387,7 +401,7 @@ export async function POST(request: Request) {
         if (!profile.number_document && !body.number_document) {
           throw new ReservationRequestError(
             "Debes indicar tu cédula para reservar",
-            400
+            400,
           );
         }
 
@@ -405,30 +419,26 @@ export async function POST(request: Request) {
         if (!service || !service.is_active) {
           throw new ReservationRequestError(
             "Servicio o franja no encontrados",
-            404
+            404,
           );
         }
 
-        if (
-          service.qr_type !== "group" &&
-          service.qr_type !== "individual"
-        ) {
+        if (service.qr_type !== "group" && service.qr_type !== "individual") {
           throw new Error("El tipo de servicio no es válido");
         }
 
         if (service.qr_type === "individual" && body.quantity === undefined) {
           throw new ReservationRequestError(
             "Cantidad de personas inválida",
-            400
+            400,
           );
         }
 
-        const quantity =
-          service.qr_type === "group" ? 1 : body.quantity!;
+        const quantity = service.qr_type === "group" ? 1 : body.quantity!;
         if (quantity > service.capacity) {
           throw new ReservationRequestError(
             "La cantidad supera el cupo disponible",
-            400
+            400,
           );
         }
 
@@ -445,41 +455,40 @@ export async function POST(request: Request) {
         if (timeSlots.length !== body.time_slot_ids.length) {
           throw new ReservationRequestError(
             "Servicio o franja no encontrados",
-            404
+            404,
           );
         }
 
         if (timeSlots.some((slot) => slot.id_service !== service.id)) {
           throw new ReservationRequestError(
             "Las franjas deben ser del mismo servicio y seguidas",
-            400
+            400,
           );
         }
 
         const orderedSlots = [...timeSlots].sort(
           (a, b) =>
-            timeInMilliseconds(a.time_start) -
-            timeInMilliseconds(b.time_start)
+            timeInMilliseconds(a.time_start) - timeInMilliseconds(b.time_start),
         );
         if (!validateConsecutiveSlots(orderedSlots)) {
           throw new ReservationRequestError(
             "Las franjas deben ser del mismo servicio y seguidas",
-            400
+            400,
           );
         }
 
         const currentDate = formatInTimeZone(
           transactionNow,
           TIME_ZONE,
-          "yyyy-MM-dd"
+          "yyyy-MM-dd",
         );
         const currentTime = timeStringInMilliseconds(
-          formatInTimeZone(transactionNow, TIME_ZONE, "HH:mm:ss")
+          formatInTimeZone(transactionNow, TIME_ZONE, "HH:mm:ss"),
         );
         if (
           body.reservation_date === currentDate &&
           orderedSlots.some(
-            (slot) => timeInMilliseconds(slot.time_start) <= currentTime
+            (slot) => timeInMilliseconds(slot.time_start) <= currentTime,
           )
         ) {
           throw new ReservationRequestError("Franja no disponible", 400);
@@ -521,13 +530,13 @@ export async function POST(request: Request) {
                 timeInMilliseconds(existingSlot.time_start) <
                   timeInMilliseconds(requestedSlot.time_end) &&
                 timeInMilliseconds(requestedSlot.time_start) <
-                  timeInMilliseconds(existingSlot.time_end)
-            )
+                  timeInMilliseconds(existingSlot.time_end),
+            ),
         );
         if (hasUserConflict) {
           throw new ReservationRequestError(
             "Conflicto de horario: ya tienes una reserva en esa franja",
-            400
+            400,
           );
         }
 
@@ -554,7 +563,7 @@ export async function POST(request: Request) {
 
           quantityBySlot.set(
             slotId,
-            (quantityBySlot.get(slotId) ?? 0) + reservedQuantity
+            (quantityBySlot.get(slotId) ?? 0) + reservedQuantity,
           );
         }
 
@@ -576,14 +585,14 @@ export async function POST(request: Request) {
         }
 
         const expiresAt = new Date(
-          transactionNow.getTime() + RESERVATION_DURATION_MS
+          transactionNow.getTime() + RESERVATION_DURATION_MS,
         );
         const totalDurationMs = orderedSlots.reduce(
           (total, slot) =>
             total +
             timeInMilliseconds(slot.time_end) -
             timeInMilliseconds(slot.time_start),
-          0
+          0,
         );
         const amount = new Prisma.Decimal(totalDurationMs)
           .div(3_600_000)
@@ -617,32 +626,32 @@ export async function POST(request: Request) {
           amount,
         };
       },
-      { maxWait: 5_000, timeout: 10_000 }
+      { maxWait: 5_000, timeout: 10_000 },
     );
 
     return NextResponse.json<ApiResponse<CreateReservationResponse>>(
       { data: result },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (error) {
     if (error instanceof ReservationRequestError) {
       return NextResponse.json<ApiError>(
         { error: error.message },
-        { status: error.status }
+        { status: error.status },
       );
     }
 
     if (isUniqueConstraintError(error)) {
       return NextResponse.json<ApiError>(
         { error: "Datos inválidos" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     console.error("Error al crear la reserva:", error);
     return NextResponse.json<ApiError>(
       { error: "Error al crear la reserva" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

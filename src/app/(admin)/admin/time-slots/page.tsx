@@ -29,7 +29,7 @@ interface TimeSlotDeleteTarget {
   id: number;
   start_time: string;
   end_time: string;
-  active_reservations_count?: number; // TODO-BACKEND
+  active_reservations_count?: number;
 }
 
 const normalizeService = (service: Partial<AdminService>): ServiceOption => ({
@@ -71,7 +71,9 @@ async function fetchTimeSlots(serviceId: number): Promise<TimeSlotTableRow[]> {
 
 export default function TimeSlotsPage() {
   const [services, setServices] = useState<ServiceOption[]>([]);
-  const [selectedServiceId, setSelectedServiceId] = useState<number | null>(null);
+  const [selectedServiceId, setSelectedServiceId] = useState<number | null>(
+    null,
+  );
   const [timeSlots, setTimeSlots] = useState<TimeSlotTableRow[]>([]);
   const [isLoadingServices, setIsLoadingServices] = useState(true);
   const [isLoadingSlots, setIsLoadingSlots] = useState(false);
@@ -79,7 +81,9 @@ export default function TimeSlotsPage() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [editingSlot, setEditingSlot] = useState<TimeSlotTableRow | null>(null);
-  const [slotToDelete, setSlotToDelete] = useState<TimeSlotDeleteTarget | null>(null);
+  const [slotToDelete, setSlotToDelete] = useState<TimeSlotDeleteTarget | null>(
+    null,
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const loadTimeSlots = useCallback(async (serviceId: number) => {
@@ -91,7 +95,9 @@ export default function TimeSlotsPage() {
       setTimeSlots(nextTimeSlots);
     } catch (caughtError) {
       const message =
-        caughtError instanceof Error ? caughtError.message : "No se pudo cargar la lista de franjas.";
+        caughtError instanceof Error
+          ? caughtError.message
+          : "No se pudo cargar la lista de franjas.";
       setError(message);
     } finally {
       setIsLoadingSlots(false);
@@ -104,7 +110,9 @@ export default function TimeSlotsPage() {
 
     try {
       const nextServices = await fetchServices();
-      const activeServices = nextServices.filter((service) => service.is_active !== false);
+      const activeServices = nextServices.filter(
+        (service) => service.is_active !== false,
+      );
       setServices(activeServices);
 
       const nextSelectedServiceId = activeServices[0]?.id ?? null;
@@ -115,17 +123,22 @@ export default function TimeSlotsPage() {
       }
     } catch (caughtError) {
       const message =
-        caughtError instanceof Error ? caughtError.message : "No se pudo cargar la lista de servicios.";
+        caughtError instanceof Error
+          ? caughtError.message
+          : "No se pudo cargar la lista de servicios.";
       setError(message);
     } finally {
       setIsLoadingServices(false);
     }
   }, [loadTimeSlots]);
 
-  const handleServiceChange = useCallback(async (serviceId: number) => {
-    setSelectedServiceId(serviceId);
-    await loadTimeSlots(serviceId);
-  }, [loadTimeSlots]);
+  const handleServiceChange = useCallback(
+    async (serviceId: number) => {
+      setSelectedServiceId(serviceId);
+      await loadTimeSlots(serviceId);
+    },
+    [loadTimeSlots],
+  );
 
   const handleOpenCreateModal = () => {
     if (!selectedServiceId) {
@@ -151,7 +164,9 @@ export default function TimeSlotsPage() {
 
     try {
       const response = await fetch(
-        editingSlot ? `/api/admin/time-slots/${editingSlot.id}` : "/api/admin/time-slots",
+        editingSlot
+          ? `/api/admin/time-slots/${editingSlot.id}`
+          : "/api/admin/time-slots",
         {
           method: editingSlot ? "PATCH" : "POST",
           headers: {
@@ -175,7 +190,9 @@ export default function TimeSlotsPage() {
       closeFormModal();
     } catch (caughtError) {
       const message =
-        caughtError instanceof Error ? caughtError.message : "No se pudo guardar la franja.";
+        caughtError instanceof Error
+          ? caughtError.message
+          : "No se pudo guardar la franja.";
       setError(message);
     } finally {
       setIsSubmitting(false);
@@ -203,7 +220,9 @@ export default function TimeSlotsPage() {
       setSlotToDelete(null);
     } catch (caughtError) {
       const message =
-        caughtError instanceof Error ? caughtError.message : "No se pudo eliminar la franja.";
+        caughtError instanceof Error
+          ? caughtError.message
+          : "No se pudo eliminar la franja.";
       setError(message);
     } finally {
       setIsSubmitting(false);
@@ -213,19 +232,27 @@ export default function TimeSlotsPage() {
   const renderContent = () => {
     if (!selectedServiceId) {
       return (
-        <Card className="mt-6 border border-white/10 bg-[#101827]" padding="md">
-          <p className="text-center text-slate-300">Selecciona un servicio para ver sus franjas.</p>
+        <Card
+          className="mt-6 !rounded-3xl !border-white/10 !bg-white/[0.03] !shadow-lg backdrop-blur-xl"
+          padding="md"
+        >
+          <p className="text-center text-slate-400">
+            Selecciona un servicio para ver sus franjas.
+          </p>
         </Card>
       );
     }
 
     if (isLoadingSlots) {
       return (
-        <Card className="mt-6 border border-white/10 bg-[#101827]" padding="md">
+        <Card
+          className="mt-6 !rounded-3xl !border-white/10 !bg-white/[0.03] !shadow-lg backdrop-blur-xl"
+          padding="md"
+        >
           <div className="space-y-3">
-            <Skeleton className="rounded-xl" height={44} />
-            <Skeleton className="rounded-xl" height={44} />
-            <Skeleton className="rounded-xl" height={44} />
+            <Skeleton className="rounded-xl bg-white/5" height={44} />
+            <Skeleton className="rounded-xl bg-white/5" height={44} />
+            <Skeleton className="rounded-xl bg-white/5" height={44} />
           </div>
         </Card>
       );
@@ -233,14 +260,19 @@ export default function TimeSlotsPage() {
 
     if (timeSlots.length === 0) {
       return (
-        <Card className="mt-6 border border-white/10 bg-[#101827]" padding="md">
-          <p className="text-center text-slate-300">No hay franjas configuradas</p>
+        <Card
+          className="mt-6 !rounded-3xl !border-white/10 !bg-white/[0.03] !shadow-lg backdrop-blur-xl"
+          padding="md"
+        >
+          <p className="text-center text-slate-400">
+            No hay franjas configuradas
+          </p>
         </Card>
       );
     }
 
     return (
-      <div className="mt-6">
+      <div className="mt-2">
         <TimeSlotsTable
           timeSlots={timeSlots}
           onDelete={(slot) => {
@@ -272,113 +304,139 @@ export default function TimeSlotsPage() {
   }, [loadServices]);
 
   return (
-    <>
+    <div className="relative min-h-screen flex flex-col">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none fixed inset-0 -z-10 overflow-hidden bg-[#060b17]"
+      >
+        <div
+          className="absolute inset-0 opacity-[0.08]"
+          style={{
+            backgroundImage:
+              "linear-gradient(to right, rgba(255,255,255,.5) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,.5) 1px, transparent 1px)",
+            backgroundSize: "44px 44px",
+            backgroundPosition: "right top",
+          }}
+        />
+        <div className="absolute -top-40 left-1/2 h-[500px] w-[800px] -translate-x-1/2 rounded-full bg-sky-500/10 blur-[120px]" />
+      </div>
+
       <Header role="admin" userName="Admin" userInitials="AD" />
 
-      <main className="min-h-screen bg-transparent px-4 py-6 md:px-6">
-        <div className="mx-auto max-w-7xl">
+      <main className="mx-auto w-full max-w-6xl space-y-8 px-4 pb-20 pt-28 md:px-6">
+        <div>
           <Link
-            className="inline-flex mt-4 items-center gap-2 text-sm font-medium text-blue-300 transition-colors hover:text-blue-200"
+            className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-[#0c1322]/50 px-4 py-1.5 text-xs font-medium text-slate-300 shadow-sm backdrop-blur-md transition-all hover:border-white/20 hover:bg-[#0c1322]/80 hover:text-white"
             href="/admin"
           >
             <ArrowLeft className="h-4 w-4" />
             Volver al dashboard
           </Link>
 
-          <div className="mt-6">
-            <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.25em] text-slate-400">
-              GESTIÓN
-            </p>
-            <h1 className="font-heading text-3xl font-bold text-white">Franjas horarias</h1>
-            <p className="mt-2 text-sm text-slate-400">
-              Configura los horarios disponibles para cada servicio del complejo.
-            </p>
-          </div>
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
+            GESTIÓN
+          </p>
+          <h1 className="font-heading text-3xl font-bold text-white sm:text-4xl">
+            Franjas horarias
+          </h1>
+          <p className="mt-2 text-sm text-slate-300">
+            Configura los horarios disponibles para cada servicio del complejo.
+          </p>
+        </div>
 
-          {error && (
-            <Banner variant="error" className="mt-6">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <span>{error}</span>
-                <Button size="sm" variant="secondary" onClick={() => void loadServices()}>
-                  Reintentar
-                </Button>
-              </div>
-            </Banner>
-          )}
-
-          <div className="mt-6">
-            <ServiceSelector
-              disabled={isLoadingServices}
-              onChange={(serviceId) => {
-                void handleServiceChange(serviceId);
-              }}
-              services={services}
-              value={selectedServiceId}
-            />
-          </div>
-
-          <div className="mt-6 flex items-center justify-between gap-3">
-            <div>
-              <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Servicio</p>
-              <h2 className="text-lg font-semibold text-white">
-                {selectedService?.name ?? "Sin servicio seleccionado"}
-              </h2>
+        {error && (
+          <Banner variant="error">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <span>{error}</span>
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => void loadServices()}
+              >
+                Reintentar
+              </Button>
             </div>
+          </Banner>
+        )}
 
-            <Button disabled={!selectedServiceId} onClick={handleOpenCreateModal}>
-              <Plus className="h-4 w-4" />
-              Nueva franja
-            </Button>
-          </div>
-
-          {renderContent()}
-
-          <TimeSlotFormModal
-            key={
-              isFormOpen
-                ? `time-slot-form-${editingSlot?.id ?? "new"}`
-                : "time-slot-form-closed"
-            }
-            existingSlots={timeSlots.map((slot) => ({
-              id: slot.id,
-              start_time: slot.start_time,
-              end_time: slot.end_time,
-            }))}
-            initialValues={
-              editingSlot
-                ? {
-                    id: editingSlot.id,
-                    service_id: editingSlot.service_id,
-                    time_start: editingSlot.start_time,
-                    time_end: editingSlot.end_time,
-                  }
-                : {
-                    id: undefined,
-                    service_id: selectedServiceId ?? 0,
-                    time_start: "08:00",
-                    time_end: "09:00",
-                  }
-            }
-            isEditing={Boolean(editingSlot)}
-            isOpen={isFormOpen}
-            isSubmitting={isSubmitting}
-            onClose={closeFormModal}
-            onSubmit={handleSubmitTimeSlot}
-            serviceName={selectedService?.name ?? "Sin servicio"}
-          />
-
-          <ConfirmDeleteTimeSlotModal
-            isOpen={isDeleteOpen}
-            isSubmitting={isSubmitting}
-            onClose={() => {
-              setIsDeleteOpen(false);
-              setSlotToDelete(null);
+        <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-lg backdrop-blur-xl">
+          <ServiceSelector
+            disabled={isLoadingServices}
+            onChange={(serviceId) => {
+              void handleServiceChange(serviceId);
             }}
-            onConfirm={() => void handleDeleteTimeSlot()}
-            slot={slotToDelete}
+            services={services}
+            value={selectedServiceId}
           />
         </div>
+
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
+              Servicio seleccionado
+            </p>
+            <h2 className="text-lg font-semibold text-white mt-1">
+              {selectedService?.name ?? "Sin servicio seleccionado"}
+            </h2>
+          </div>
+
+          <Button
+            className="h-11 bg-sky-500 hover:bg-sky-400 text-sm font-semibold rounded-xl px-6 whitespace-nowrap"
+            disabled={!selectedServiceId}
+            onClick={handleOpenCreateModal}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Nueva franja
+          </Button>
+        </div>
+
+        {renderContent()}
+
+        <TimeSlotFormModal
+          key={
+            isFormOpen
+              ? `time-slot-form-${editingSlot?.id ?? "new"}`
+              : "time-slot-form-closed"
+          }
+          existingSlots={timeSlots.map((slot) => ({
+            id: slot.id,
+            start_time: slot.start_time,
+            end_time: slot.end_time,
+          }))}
+          initialValues={
+            editingSlot
+              ? {
+                  id: editingSlot.id,
+                  service_id: editingSlot.service_id,
+                  time_start: editingSlot.start_time,
+                  time_end: editingSlot.end_time,
+                }
+              : {
+                  id: undefined,
+                  service_id: selectedServiceId ?? 0,
+                  time_start: "08:00",
+                  time_end: "09:00",
+                }
+          }
+          isEditing={Boolean(editingSlot)}
+          isOpen={isFormOpen}
+          isSubmitting={isSubmitting}
+          onClose={closeFormModal}
+          onSubmit={handleSubmitTimeSlot}
+          serviceName={selectedService?.name ?? "Sin servicio"}
+        />
+
+        <ConfirmDeleteTimeSlotModal
+          isOpen={isDeleteOpen}
+          isSubmitting={isSubmitting}
+          onClose={() => {
+            setIsDeleteOpen(false);
+            setSlotToDelete(null);
+          }}
+          onConfirm={() => void handleDeleteTimeSlot()}
+          slot={slotToDelete}
+        />
       </main>
-    </>
+    </div>
   );
 }

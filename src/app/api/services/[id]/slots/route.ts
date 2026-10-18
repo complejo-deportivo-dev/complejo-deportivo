@@ -112,6 +112,7 @@ export async function GET(
           is: {
             OR: [
               { status: "confirmed" },
+              { status: "completed" },
               { status: "pending", expires_at: { gt: now } },
             ],
           },
@@ -127,6 +128,27 @@ export async function GET(
         },
       },
     });
+
+    const activeReservationSlots = reservationSlots.filter(
+      (rs) =>
+        rs.reservations?.status === "confirmed" ||
+        rs.reservations?.status === "completed" ||
+        rs.reservations?.status === "pending"
+    );
+    const reservationsBySlot = new Map<number, number>();
+    for (const reservationSlot of activeReservationSlots) {
+      const slotId = reservationSlot.id_time_slot;
+      const quantity = reservationSlot.reservations?.quantity;
+      if (slotId === null || quantity === undefined) {
+        continue;
+      }
+
+      const reserved = service.qr_type === "group" ? 1 : quantity;
+      reservationsBySlot.set(
+        slotId,
+        (reservationsBySlot.get(slotId) ?? 0) + reserved
+      );
+    }
 
     let userReservationIds: number[] = [];
     if (user) {
@@ -165,11 +187,7 @@ export async function GET(
 
     const data = calculateSlotAvailability(
       timeSlots,
-      reservationSlots.filter(
-        (rs) =>
-          rs.reservations?.status === "confirmed" ||
-          rs.reservations?.status === "pending"
-      ),
+      activeReservationSlots,
       { qr_type: service.qr_type, capacity: service.capacity },
       date,
       userReservationIds
@@ -178,7 +196,11 @@ export async function GET(
     return NextResponse.json<ApiResponse<ServiceSlot[]>>({ 
       data: data.map(slot => ({
         ...slot,
-        userHasReservation: userReservationIds.includes(slot.time_slot_id)
+        userHasReservation: userReservationIds.includes(slot.time_slot_id),
+        remaining_capacity:
+          service.qr_type === "group"
+            ? Math.max(0, 1 - (reservationsBySlot.get(slot.time_slot_id) ?? 0))
+            : slot.remaining_capacity
       })) 
     });
   } catch (error) {

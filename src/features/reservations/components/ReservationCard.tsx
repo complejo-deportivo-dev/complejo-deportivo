@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { CalendarDays, ChevronDown, Clock3, Users } from "lucide-react";
+import Link from "next/link";
+import { CalendarDays, ChevronDown, Clock3, CreditCard, Users } from "lucide-react";
 
 import Badge, { type BadgeVariant } from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
@@ -44,7 +45,11 @@ export default function ReservationCard({
     : [];
 
   return (
-    <Card as="article" className="space-y-5" padding="lg">
+    <Card
+      as="article"
+      className="group relative flex flex-col space-y-5 overflow-hidden !rounded-2xl !border-white/10 !bg-white/[0.03] p-5 !shadow-none !backdrop-blur-xl transition-all duration-300 hover:!border-white/20 hover:!bg-white/[0.05]"
+      padding="none"
+    >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-xs font-medium uppercase text-text-secondary">
@@ -84,6 +89,17 @@ export default function ReservationCard({
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          {reservation.status === "pending" && (
+            <Link href={`/client/payment/${reservation.reservation_id}`}>
+              <Button
+                size="sm"
+                className="!h-9 !gap-2 !rounded-lg !bg-sky-500 !px-4 !text-xs !font-semibold !text-white !shadow-none transition-colors hover:!bg-sky-400"
+              >
+                <CreditCard size={15} />
+                <span>Pagar ahora</span>
+              </Button>
+            </Link>
+          )}
           {qrCodes.map((qr, index) => (
             <Button
               key={qr.qr_id}

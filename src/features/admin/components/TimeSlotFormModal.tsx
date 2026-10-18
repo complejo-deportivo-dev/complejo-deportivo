@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { CalendarClock } from "lucide-react";
 
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
@@ -32,7 +33,10 @@ interface TimeSlotFormModalProps {
 
 const toMinutes = (value: string) => {
   const [hours, minutes] = value.split(":").map(Number);
-  return (Number.isNaN(hours) ? 0 : hours) * 60 + (Number.isNaN(minutes) ? 0 : minutes);
+  return (
+    (Number.isNaN(hours) ? 0 : hours) * 60 +
+    (Number.isNaN(minutes) ? 0 : minutes)
+  );
 };
 
 export default function TimeSlotFormModal({
@@ -82,7 +86,9 @@ export default function TimeSlotFormModal({
     });
 
     if (hasOverlap) {
-      setFormError("La franja seleccionada cruza con otra franja existente del mismo servicio.");
+      setFormError(
+        "La franja seleccionada cruza con otra franja existente del mismo servicio.",
+      );
       return;
     }
 
@@ -103,7 +109,12 @@ export default function TimeSlotFormModal({
       closeOnOverlayClick={!isSubmitting}
     >
       <form className="space-y-5" onSubmit={handleSubmit}>
-        <p className="text-sm text-slate-400">{currentServiceLabel}</p>
+        <div className="flex items-center gap-2.5 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 w-fit text-sm text-slate-300">
+          <CalendarClock size={16} className="text-sky-400" />
+          <span className="font-medium">
+            Servicio: <span className="text-white">{currentServiceLabel}</span>
+          </span>
+        </div>
 
         <div className="grid gap-4 md:grid-cols-2">
           <Input
@@ -126,16 +137,16 @@ export default function TimeSlotFormModal({
         </div>
 
         {formError && (
-          <div className="rounded-xl border border-red-500/20 bg-red-500/10 px-3 py-2 text-sm text-red-200">
+          <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm font-medium text-rose-300">
             {formError}
           </div>
         )}
 
-        <div className="flex justify-end gap-3 pt-2">
+        <div className="flex justify-end gap-3 pt-4">
           <Button
             type="button"
             variant="secondary"
-            className="border-0 bg-transparent !border-transparent text-sky-400 shadow-none hover:bg-transparent hover:text-blue-300 focus-visible:ring-0"
+            className="h-10 px-5 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10"
             onClick={onClose}
             disabled={isSubmitting}
           >
@@ -143,12 +154,11 @@ export default function TimeSlotFormModal({
           </Button>
           <Button
             type="submit"
-            variant="primary"
-            className="rounded-lg bg-sky-500 text-white hover:bg-sky-400"
+            className="h-10 px-6 rounded-xl bg-sky-500 text-white font-bold hover:bg-sky-400"
             loading={isSubmitting}
             disabled={isSubmitting}
           >
-            {isEditing ? "Guardar cambios" : "Crear"}
+            {isEditing ? "Guardar cambios" : "Crear franja"}
           </Button>
         </div>
       </form>

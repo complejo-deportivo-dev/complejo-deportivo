@@ -27,7 +27,9 @@ const emptyFormValues = (): EmployeeFormValues => ({
   is_active: true,
 });
 
-const normalizeEmployee = (employee: Partial<AdminEmployee>): AdminEmployeeRow => ({
+const normalizeEmployee = (
+  employee: Partial<AdminEmployee>,
+): AdminEmployeeRow => ({
   id: employee.id ?? 0,
   name: employee.name ?? "",
   email: employee.email ?? "",
@@ -58,8 +60,10 @@ export default function EmployeesPage() {
   const [error, setError] = useState<string | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-  const [editingEmployee, setEditingEmployee] = useState<AdminEmployeeRow | null>(null);
-  const [employeeToDelete, setEmployeeToDelete] = useState<EmployeeDeleteTarget | null>(null);
+  const [editingEmployee, setEditingEmployee] =
+    useState<AdminEmployeeRow | null>(null);
+  const [employeeToDelete, setEmployeeToDelete] =
+    useState<EmployeeDeleteTarget | null>(null);
 
   const loadEmployees = async () => {
     setIsLoading(true);
@@ -70,7 +74,9 @@ export default function EmployeesPage() {
       setEmployees(result);
     } catch (caughtError) {
       const message =
-        caughtError instanceof Error ? caughtError.message : "No se pudo cargar la lista.";
+        caughtError instanceof Error
+          ? caughtError.message
+          : "No se pudo cargar la lista.";
       setError(message);
     } finally {
       setIsLoading(false);
@@ -127,7 +133,9 @@ export default function EmployeesPage() {
 
     try {
       const response = await fetch(
-        editingEmployee ? `/api/admin/employees/${editingEmployee.id}` : "/api/admin/employees",
+        editingEmployee
+          ? `/api/admin/employees/${editingEmployee.id}`
+          : "/api/admin/employees",
         {
           method: editingEmployee ? "PATCH" : "POST",
           headers: {
@@ -150,7 +158,9 @@ export default function EmployeesPage() {
       closeFormModal();
     } catch (caughtError) {
       const message =
-        caughtError instanceof Error ? caughtError.message : "No se pudo guardar el empleado.";
+        caughtError instanceof Error
+          ? caughtError.message
+          : "No se pudo guardar el empleado.";
       setError(message);
     } finally {
       setIsSubmitting(false);
@@ -178,7 +188,9 @@ export default function EmployeesPage() {
       await loadEmployees();
     } catch (caughtError) {
       const message =
-        caughtError instanceof Error ? caughtError.message : "No se pudo cambiar el estado.";
+        caughtError instanceof Error
+          ? caughtError.message
+          : "No se pudo cambiar el estado.";
       setError(message);
     } finally {
       setIsSubmitting(false);
@@ -196,21 +208,27 @@ export default function EmployeesPage() {
       const hasAccessRecords = (employeeToDelete.access_logs_count ?? 0) > 0;
 
       if (hasAccessRecords) {
-        const response = await fetch(`/api/admin/employees/${employeeToDelete.id}`, {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
+        const response = await fetch(
+          `/api/admin/employees/${employeeToDelete.id}`,
+          {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ is_active: false }),
           },
-          body: JSON.stringify({ is_active: false }),
-        });
+        );
 
         if (!response.ok) {
           throw new Error("No se pudo desactivar el empleado.");
         }
       } else {
-        const response = await fetch(`/api/admin/employees/${employeeToDelete.id}`, {
-          method: "DELETE",
-        });
+        const response = await fetch(
+          `/api/admin/employees/${employeeToDelete.id}`,
+          {
+            method: "DELETE",
+          },
+        );
 
         if (!response.ok) {
           throw new Error("No se pudo eliminar el empleado.");
@@ -222,7 +240,9 @@ export default function EmployeesPage() {
       setEmployeeToDelete(null);
     } catch (caughtError) {
       const message =
-        caughtError instanceof Error ? caughtError.message : "No se pudo completar la acción.";
+        caughtError instanceof Error
+          ? caughtError.message
+          : "No se pudo completar la acción.";
       setError(message);
     } finally {
       setIsSubmitting(false);
@@ -232,11 +252,14 @@ export default function EmployeesPage() {
   const renderEmptyState = () => {
     if (isLoading) {
       return (
-        <Card className="mt-6 border border-white/10 bg-[#101827]" padding="md">
+        <Card
+          className="mt-6 !rounded-3xl !border-white/10 !bg-white/[0.03] !shadow-lg backdrop-blur-xl"
+          padding="md"
+        >
           <div className="grid gap-3">
-            <div className="h-12 animate-pulse rounded-xl bg-slate-800/80" />
-            <div className="h-12 animate-pulse rounded-xl bg-slate-800/80" />
-            <div className="h-12 animate-pulse rounded-xl bg-slate-800/80" />
+            <div className="h-12 animate-pulse rounded-xl bg-white/5" />
+            <div className="h-12 animate-pulse rounded-xl bg-white/5" />
+            <div className="h-12 animate-pulse rounded-xl bg-white/5" />
           </div>
         </Card>
       );
@@ -244,15 +267,21 @@ export default function EmployeesPage() {
 
     if (employees.length === 0) {
       return (
-        <Card className="mt-6 border border-white/10 bg-[#101827]" padding="md">
-          <p className="text-center text-slate-300">No hay empleados aún</p>
+        <Card
+          className="mt-6 !rounded-3xl !border-white/10 !bg-white/[0.03] !shadow-lg backdrop-blur-xl"
+          padding="md"
+        >
+          <p className="text-center text-slate-400">No hay empleados aún</p>
         </Card>
       );
     }
 
     return (
-      <Card className="mt-6 border border-white/10 bg-[#101827]" padding="md">
-        <p className="text-center text-slate-300">
+      <Card
+        className="mt-6 !rounded-3xl !border-white/10 !bg-white/[0.03] !shadow-lg backdrop-blur-xl"
+        padding="md"
+      >
+        <p className="text-center text-slate-400">
           No existen empleados que coincidan con la búsqueda
         </p>
       </Card>
@@ -260,116 +289,142 @@ export default function EmployeesPage() {
   };
 
   return (
-    <>
+    <div className="relative min-h-screen flex flex-col">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none fixed inset-0 -z-10 overflow-hidden bg-[#060b17]"
+      >
+        <div
+          className="absolute inset-0 opacity-[0.08]"
+          style={{
+            backgroundImage:
+              "linear-gradient(to right, rgba(255,255,255,.5) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,.5) 1px, transparent 1px)",
+            backgroundSize: "44px 44px",
+            backgroundPosition: "right top",
+          }}
+        />
+        <div className="absolute -top-40 left-1/2 h-[500px] w-[800px] -translate-x-1/2 rounded-full bg-sky-500/10 blur-[120px]" />
+      </div>
+
       <Header role="admin" userName="Admin" userInitials="AD" />
 
-      <main className="min-h-screen bg-transparent px-4 py-6 md:px-6">
-        <div className="mx-auto max-w-7xl">
+      <main className="mx-auto w-full max-w-6xl space-y-8 px-4 pb-20 pt-28 md:px-6">
+        <div>
           <Link
-            className="inline-flex mt-4 items-center gap-2 text-sm font-medium text-blue-300 transition-colors hover:text-blue-200"
+            className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-[#0c1322]/50 px-4 py-1.5 text-xs font-medium text-slate-300 shadow-sm backdrop-blur-md transition-all hover:border-white/20 hover:bg-[#0c1322]/80 hover:text-white"
             href="/admin"
           >
             <ArrowLeft className="h-4 w-4" />
             Volver al dashboard
           </Link>
 
-          <div className="mt-6">
-            <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.25em] text-slate-400">
-              GESTIÓN
-            </p>
-            <h1 className="font-heading text-3xl font-bold text-white">Empleados</h1>
-            <p className="mt-2 text-sm text-slate-400">
-              Administra las cuentas de los empleados del complejo.
-            </p>
-          </div>
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
+            GESTIÓN
+          </p>
+          <h1 className="font-heading text-3xl font-bold text-white sm:text-4xl">
+            Empleados
+          </h1>
+          <p className="mt-2 text-sm text-slate-300">
+            Administra las cuentas de los empleados del complejo.
+          </p>
+        </div>
 
-          {error && (
-            <Banner variant="error" className="mt-6">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <span>{error}</span>
-                <Button size="sm" variant="secondary" onClick={() => void loadEmployees()}>
-                  Reintentar
-                </Button>
-              </div>
-            </Banner>
-          )}
-
-          <Card className="mt-6 border border-white/10 bg-[#101827]" padding="md">
-            <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-              <div className="w-full xl:max-w-xl">
-                <Input
-                  className="bg-transparent"
-                  icon={<Search className="h-4 w-4" />}
-                  onChange={(event) => setSearch(event.target.value)}
-                  placeholder="Buscar por nombre, email o cédula..."
-                  value={search}
-                />
-              </div>
-
-              <Button onClick={handleOpenCreateModal}>
-                <Plus className="h-4 w-4" />
-                Nuevo empleado
+        {error && (
+          <Banner variant="error">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <span>{error}</span>
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => void loadEmployees()}
+              >
+                Reintentar
               </Button>
             </div>
-          </Card>
+          </Banner>
+        )}
 
-          {isLoading && !error && renderEmptyState()}
-
-          {!isLoading && !error && filteredEmployees.length === 0 && renderEmptyState()}
-
-          {!isLoading && !error && filteredEmployees.length > 0 && (
-            <div className="mt-6">
-              <EmployeesTable
-                employees={filteredEmployees}
-                onDelete={(employee) => {
-                  setEmployeeToDelete({
-                    id: employee.id,
-                    name: employee.name,
-                    access_logs_count: employee.access_logs_count,
-                  });
-                  setIsDeleteOpen(true);
-                }}
-                onEdit={handleOpenEditModal}
-                onToggle={handleToggleEmployee}
+        <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-lg backdrop-blur-xl">
+          <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+            <div className="w-full xl:max-w-xl">
+              <Input
+                className="!bg-white/[0.02] !border-white/10 hover:!bg-white/[0.05] focus:!bg-white/[0.05] transition-colors !rounded-xl"
+                icon={<Search className="h-4 w-4 text-slate-400" />}
+                onChange={(event) => setSearch(event.target.value)}
+                placeholder="Buscar por nombre, email o cédula..."
+                value={search}
               />
             </div>
-          )}
 
-          <EmployeeFormModal
-            key={
-              isFormOpen
-                ? `employee-form-${editingEmployee?.id ?? "new"}`
-                : "employee-form-closed"
-            }
-            initialValues={
-              editingEmployee
-                ? {
-                    name: editingEmployee.name,
-                    email: editingEmployee.email,
-                    number_document: editingEmployee.number_document,
-                    is_active: editingEmployee.is_active,
-                  }
-                : emptyFormValues()
-            }
-            isEditing={Boolean(editingEmployee)}
-            isOpen={isFormOpen}
-            isSubmitting={isSubmitting}
-            onClose={closeFormModal}
-            onSubmit={handleSubmitEmployee}
-          />
+            <Button
+              className="h-11 bg-sky-500 hover:bg-sky-400 text-sm font-semibold rounded-xl px-6"
+              onClick={handleOpenCreateModal}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Nuevo empleado
+            </Button>
+          </div>
+        </section>
 
-          <ConfirmDeleteEmployeeModal
-            employee={employeeToDelete}
-            isOpen={isDeleteOpen}
-            isSubmitting={isSubmitting}
-            onClose={() => {
-              setIsDeleteOpen(false);
-              setEmployeeToDelete(null);
-            }}
-            onConfirm={() => void handleDeleteEmployee()}
-          />
-        </div>
+        {isLoading && !error && renderEmptyState()}
+
+        {!isLoading &&
+          !error &&
+          filteredEmployees.length === 0 &&
+          renderEmptyState()}
+
+        {!isLoading && !error && filteredEmployees.length > 0 && (
+          <div className="mt-2">
+            <EmployeesTable
+              employees={filteredEmployees}
+              onDelete={(employee) => {
+                setEmployeeToDelete({
+                  id: employee.id,
+                  name: employee.name,
+                  access_logs_count: employee.access_logs_count,
+                });
+                setIsDeleteOpen(true);
+              }}
+              onEdit={handleOpenEditModal}
+              onToggle={handleToggleEmployee}
+            />
+          </div>
+        )}
+
+        <EmployeeFormModal
+          key={
+            isFormOpen
+              ? `employee-form-${editingEmployee?.id ?? "new"}`
+              : "employee-form-closed"
+          }
+          initialValues={
+            editingEmployee
+              ? {
+                  name: editingEmployee.name,
+                  email: editingEmployee.email,
+                  number_document: editingEmployee.number_document,
+                  is_active: editingEmployee.is_active,
+                }
+              : emptyFormValues()
+          }
+          isEditing={Boolean(editingEmployee)}
+          isOpen={isFormOpen}
+          isSubmitting={isSubmitting}
+          onClose={closeFormModal}
+          onSubmit={handleSubmitEmployee}
+        />
+
+        <ConfirmDeleteEmployeeModal
+          employee={employeeToDelete}
+          isOpen={isDeleteOpen}
+          isSubmitting={isSubmitting}
+          onClose={() => {
+            setIsDeleteOpen(false);
+            setEmployeeToDelete(null);
+          }}
+          onConfirm={() => void handleDeleteEmployee()}
+        />
       </main>
-    </>
+    </div>
   );
 }

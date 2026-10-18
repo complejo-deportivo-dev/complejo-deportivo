@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { ChevronDown } from "lucide-react";
 
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
@@ -41,8 +42,12 @@ export default function ServiceFormModal({
   const [name, setName] = useState(initialValues.name);
   const [categoryId, setCategoryId] = useState(initialValues.category_id);
   const [capacity, setCapacity] = useState(String(initialValues.capacity));
-  const [maxCompanions, setMaxCompanions] = useState(String(initialValues.max_companions));
-  const [qrType, setQrType] = useState<ServiceFormValues["qr_type"]>(initialValues.qr_type);
+  const [maxCompanions, setMaxCompanions] = useState(
+    String(initialValues.max_companions),
+  );
+  const [qrType, setQrType] = useState<ServiceFormValues["qr_type"]>(
+    initialValues.qr_type,
+  );
   const [hourPrice, setHourPrice] = useState(String(initialValues.hour_price));
   const [isActive, setIsActive] = useState(initialValues.is_active);
 
@@ -56,25 +61,11 @@ export default function ServiceFormModal({
     const nextMaxCompanions = Number(maxCompanions);
     const nextHourPrice = Number(hourPrice);
 
-    if (!trimmedName) {
-      return;
-    }
-
-    if (Number.isNaN(nextCapacity) || nextCapacity < 0) {
-      return;
-    }
-
-    if (Number.isNaN(nextMaxCompanions) || nextMaxCompanions < 0) {
-      return;
-    }
-
-    if (Number.isNaN(nextHourPrice) || nextHourPrice < 0) {
-      return;
-    }
-
-    if (!categoryId || categoryId <= 0) {
-      return;
-    }
+    if (!trimmedName) return;
+    if (Number.isNaN(nextCapacity) || nextCapacity < 0) return;
+    if (Number.isNaN(nextMaxCompanions) || nextMaxCompanions < 0) return;
+    if (Number.isNaN(nextHourPrice) || nextHourPrice < 0) return;
+    if (!categoryId || categoryId <= 0) return;
 
     await onSubmit({
       name: trimmedName,
@@ -107,20 +98,36 @@ export default function ServiceFormModal({
         />
 
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-text-primary">Categoría</label>
-          <select
-            className="h-11 w-full rounded-md border border-border bg-surface px-3 text-sm text-text-primary outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary-soft disabled:cursor-not-allowed disabled:opacity-50"
-            disabled={isSubmitting}
-            value={categoryId}
-            onChange={(event) => setCategoryId(Number(event.target.value))}
-          >
-            {categories.length === 0 && <option value={0}>Sin categorías</option>}
-            {categories.map((category) => (
-              <option key={category.id} value={category.id}>
-                {category.name}
-              </option>
-            ))}
-          </select>
+          <label className="block text-sm font-medium text-slate-300">
+            Categoría
+          </label>
+          <div className="relative">
+            <select
+              className="w-full appearance-none rounded-xl border border-white/10 bg-white/[0.02] px-4 py-3 text-sm text-white outline-none transition-colors hover:bg-white/[0.05] focus:border-sky-500 focus:ring-1 focus:ring-sky-500 disabled:cursor-not-allowed disabled:opacity-50"
+              disabled={isSubmitting}
+              value={categoryId}
+              onChange={(event) => setCategoryId(Number(event.target.value))}
+            >
+              {categories.length === 0 && (
+                <option value={0} className="bg-[#0c1322]">
+                  Sin categorías
+                </option>
+              )}
+              {categories.map((category) => (
+                <option
+                  key={category.id}
+                  value={category.id}
+                  className="bg-[#0c1322]"
+                >
+                  {category.name}
+                </option>
+              ))}
+            </select>
+            <ChevronDown
+              size={16}
+              className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-400"
+            />
+          </div>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">
@@ -147,16 +154,30 @@ export default function ServiceFormModal({
 
         <div className="grid gap-4 md:grid-cols-2">
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-text-primary">Tipo QR</label>
-            <select
-              className="h-11 w-full rounded-md border border-border bg-surface px-3 text-sm text-text-primary outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary-soft disabled:cursor-not-allowed disabled:opacity-50"
-              disabled={isSubmitting || qrTypeIsLocked}
-              value={qrType}
-              onChange={(event) => setQrType(event.target.value as ServiceFormValues["qr_type"])}
-            >
-              <option value="group">Grupal</option>
-              <option value="individual">Individual</option>
-            </select>
+            <label className="block text-sm font-medium text-slate-300">
+              Tipo QR
+            </label>
+            <div className="relative">
+              <select
+                className="w-full appearance-none rounded-xl border border-white/10 bg-white/[0.02] px-4 py-3 text-sm text-white outline-none transition-colors hover:bg-white/[0.05] focus:border-sky-500 focus:ring-1 focus:ring-sky-500 disabled:cursor-not-allowed disabled:opacity-50"
+                disabled={isSubmitting || qrTypeIsLocked}
+                value={qrType}
+                onChange={(event) =>
+                  setQrType(event.target.value as ServiceFormValues["qr_type"])
+                }
+              >
+                <option value="group" className="bg-[#0c1322]">
+                  Grupal
+                </option>
+                <option value="individual" className="bg-[#0c1322]">
+                  Individual
+                </option>
+              </select>
+              <ChevronDown
+                size={16}
+                className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-400"
+              />
+            </div>
           </div>
 
           <Input
@@ -171,16 +192,20 @@ export default function ServiceFormModal({
         </div>
 
         {qrTypeIsLocked && (
-          <div className="rounded-xl border border-yellow-500/20 bg-yellow-500/5 px-3 py-2 text-xs text-yellow-200">
+          <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-xs font-medium text-amber-300">
             No se puede modificar el tipo QR mientras haya reservas activas.
           </div>
         )}
 
         {isEditing && (
-          <div className="flex items-center justify-between gap-4 rounded-xl border border-white/10 bg-[#0F172A] px-3 py-3">
+          <div className="flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3.5">
             <div>
-              <p className="text-sm font-medium text-white">Activo</p>
-              <p className="text-xs text-slate-400">Define si el servicio está disponible.</p>
+              <p className="text-sm font-semibold text-white">
+                Estado del servicio
+              </p>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Define si el servicio está visible para reservar.
+              </p>
             </div>
             <Toggle
               checked={isActive}
@@ -191,12 +216,23 @@ export default function ServiceFormModal({
           </div>
         )}
 
-        <div className="flex justify-end gap-3 pt-2">
-          <Button type="button" variant="secondary" onClick={onClose} disabled={isSubmitting}>
+        <div className="flex justify-end gap-3 pt-4">
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={onClose}
+            disabled={isSubmitting}
+            className="h-10 px-5 rounded-xl"
+          >
             Cancelar
           </Button>
-          <Button type="submit" loading={isSubmitting} disabled={isSubmitting}>
-            {isEditing ? "Guardar cambios" : "Crear"}
+          <Button
+            type="submit"
+            loading={isSubmitting}
+            disabled={isSubmitting}
+            className="h-10 px-6 rounded-xl bg-sky-500 hover:bg-sky-400 text-white font-bold"
+          >
+            {isEditing ? "Guardar cambios" : "Crear servicio"}
           </Button>
         </div>
       </form>
