@@ -19,4 +19,4 @@ services:
 
 networks:
   edge-shared:
-    external: true
+    driver: bridge
