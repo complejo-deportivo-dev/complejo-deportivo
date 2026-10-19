@@ -94,16 +94,16 @@ export default function RecentReservationsTable({
                   >
                     <td className="py-3 pr-4">
                       <p className="font-medium text-text-primary">
-                        {reservation.user.name}
+                        {reservation.user?.name ?? "Desconocido"}
                       </p>
-                      {reservation.user.document_last4 && (
+                      {reservation.user?.document_last4 && (
                         <span className="block text-xs text-text-secondary">
                           CC •••• {reservation.user.document_last4}
                         </span>
                       )}
                     </td>
                     <td className="py-3 pr-4 text-text-secondary">
-                      {reservation.service.name}
+                      {reservation.service?.name ?? "—"}
                     </td>
                     <td className="py-3 pr-4 text-text-secondary">
                       {formatReservationDate(reservation.reservation_date)} ·{" "}
