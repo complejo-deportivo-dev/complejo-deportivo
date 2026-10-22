@@ -80,7 +80,7 @@ export default function ReservationSummary({
           </span>
         </div>
 
-        <h3 className="mt-4 font-heading text-xl font-bold tracking-tight text-white">
+        <h3 className="mt-4 font-heading text-xl font-bold tracking-tight text-white dark:text-white text-slate-900">
           {serviceName || "Resumen de reserva"}
         </h3>
         <p className="mt-0.5 text-xs text-slate-400">

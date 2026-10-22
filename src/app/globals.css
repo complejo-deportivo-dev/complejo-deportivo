@@ -7,6 +7,10 @@
   --color-surface-elevated: rgba(255, 255, 255, 0.1);
   --color-border: rgba(255, 255, 255, 0.1);
 
+  --color-text-primary: #f1f5f9;
+  --color-text-secondary: #94a3b8;
+  --color-text-disabled: #64748b;
+
   --color-primary: #3a83bf;
   --color-primary-hover: #2b6ba3;
   --color-primary-soft: rgba(58, 131, 191, 0.15);
@@ -24,10 +28,6 @@
   --color-warning: #facc15;
   --color-warning-soft: rgba(250, 204, 21, 0.15);
   --color-warning-text: #fde68a;
-
-  --color-text-primary: #f1f5f9;
-  --color-text-secondary: #94a3b8;
-  --color-text-disabled: #64748b;
 
   /* ============ TIPOGRAFÍA ============ */
   --font-heading: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
@@ -56,6 +56,121 @@
   --shadow-lg: 0 16px 36px rgba(0, 0, 0, 0.14);
 }
 
+.light {
+  --color-background: #f8fafc;
+  --color-surface: #ffffff;
+  --color-surface-elevated: #f1f5f9;
+  --color-border: #e2e8f0;
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #475569;
+  --color-text-disabled: #94a3b8;
+}
+
+/* Mapeo de clases legacy de Tailwind para modo claro */
+.light .bg-white\/5, .light .bg-white\/10, .light .bg-white\/20, .light .bg-white\/\[0\.03\], .light .bg-white\/\[0\.02\], .light .bg-white\/\[0\.06\] {
+  background-color: var(--color-surface) !important;
+}
+
+/* Forzamos que los fondos semitransparentes blancos en modo claro sean ligeramente más oscuros o contrastados 
+   para que el texto blanco/claro sea legible si se usa, o que el fondo sea sólido */
+.light .bg-white\/5, .light .bg-white\/10, .light .bg-white\/20 {
+  background-color: var(--color-surface-elevated) !important;
+}
+
+.light .border-white\/5, .light .border-white\/10, .light .border-white\/20 {
+  border-color: var(--color-border) !important;
+}
+
+/* Ajuste para textos con opacidad (text-white/30, text-white/40) en modo claro */
+.light [class*='text-white\/'] {
+  color: var(--color-text-disabled) !important;
+}
+
+/* Aseguramos que los iconos decorativos que usan text-white sean oscuros en modo claro, 
+   excepto cuando están dentro de una tarjeta (.group) donde el fondo es oscuro */
+.light :not(.group).text-white svg, .light :not(.group).text-slate-300 svg {
+  color: var(--color-text-primary) !important;
+  stroke: var(--color-text-primary) !important;
+}
+
+/* Solo cambiamos el texto blanco a oscuro en elementos que NO estén dentro de una tarjeta (.group) 
+   y que NO sean encabezados principales o elementos destacados que deban mantener el contraste del modo oscuro */
+.light :not(.group):not(h1):not(h2):not(h3).text-white, .light :not(.group):not(h1):not(h2):not(h3).text-slate-300 {
+  color: var(--color-text-primary) !important;
+}
+
+/* Forzamos el texto blanco dentro de las tarjetas en modo claro */
+.light .group .text-white {
+  color: var(--color-text-secondary) !important;
+}
+
+/* Ajustamos el texto de las tarjetas en modo claro para que tenga una tonalidad oscura 
+   pero legible sobre el vignette (usando un blanco roto o gris muy claro si es necesario, 
+   pero el usuario pide "tonalidad oscura"). 
+   Sin embargo, como el fondo de la tarjeta (vignette) es OSCURO, el texto debe ser CLARO.
+   Si el usuario pide "tonalidad oscura", probablemente se refiere a que el fondo de la tarjeta 
+   SÍ sea claro en modo claro, pero hemos decidido mantener el vignette oscuro.
+   
+   RE-EVALUACIÓN: El usuario dice "haz que sean de una tonalidad oscura en el modo claro" 
+   refiriéndose a los elementos de la tarjeta (Precio, Título, etc).
+   Si mantenemos el vignette oscuro, el texto DEBE ser blanco.
+   Si queremos que el texto sea oscuro, debemos hacer que la tarjeta sea clara.
+   
+   PERO, el usuario pidió previamente "cambia el Vignette por el oscuro".
+   Esto es contradictorio: Vignette Oscuro + Texto Oscuro = Invisible.
+   
+   Interpretación más probable: El usuario quiere que el texto de la tarjeta en modo claro 
+   no sea un blanco puro brillante, sino un tono más suave o que el CONTRASTE sea distinto.
+   O bien, que el texto sea oscuro porque el fondo de la tarjeta ahora es claro.
+   
+   Mirando el HTML: la tarjeta tiene `bg-white/[0.03]`. En modo claro, esto es casi invisible.
+   El vignette es lo que da el color. 
+   
+   Si el usuario quiere el texto OSCURO en modo claro dentro de las tarjetas, 
+   debemos eliminar el vignette oscuro para esas tarjetas en modo claro.
+*/
+.light .group .text-white {
+  color: var(--color-text-primary) !important;
+}
+
+/* Aseguramos que los inputs que usan text-white también cambien a oscuro en modo claro */
+.light input.text-white {
+  color: var(--color-text-primary) !important;
+}
+
+/* Exceptuamos los iconos decorativos pequeños (como la flecha del botón) para que sean oscuros en modo claro si es necesario, 
+   pero el usuario quiere que el icono de la flecha sea negro en modo claro.
+   Dado que el icono está dentro de un contenedor con .text-white, la regla anterior lo hace blanco.
+   Añadimos una regla específica para los iconos de acción en las tarjetas en modo claro. */
+.light .group .flex.size-10.text-white svg {
+  color: var(--color-text-primary) !important;
+  stroke: var(--color-text-primary) !important;
+}
+
+/* Mapeo de fondos oscuros para modo claro usando selectores de atributo para evitar errores de parsing */
+.light [class*='bg-[#0a0f1e]'], 
+.light [class*='bg-[#0c1322]'], 
+.light [class*='bg-[#0F172A]'], 
+.light [class*='bg-[#101827]'], 
+.light [class*='bg-[#1d2a38]'],
+.light [class*='bg-[#060b17]'],
+.light [class*='bg-slate-900'],
+.light [class*='bg-slate-800'] {
+  background-color: var(--color-surface-elevated) !important;
+}
+
+/* Sobreescritura de gradientes oscuros en modo claro */
+.light [class*='from-[#060b17]'],
+.light [class*='via-[#060b17]'],
+.light [class*='to-[#060b17]'],
+.light [class*='from-[#0c162d]'],
+.light [class*='via-[#0c162d]'],
+.light [class*='to-[#0c162d]'] {
+  /* Mantenemos el vignette oscuro incluso en modo claro para resaltar el contenido sobre la imagen */
+  --tw-gradient-from: #060b17 !important;
+  --tw-gradient-to: transparent !important;
+}
+
 body {
   background-color: var(--color-background);
   color: var(--color-text-primary);
@@ -71,15 +186,20 @@ body {
   scrollbar-width: none;
 }
 
-/* Fix autofill de Chrome/Edge en tema oscuro */
+/* Ajuste de imágenes para modo claro */
+.light img {
+  filter: brightness(0.9);
+}
+
+/* Fix autofill de Chrome/Edge en tema oscuro y claro */
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
 input:-webkit-autofill:active {
-  -webkit-text-fill-color: white;
-  -webkit-box-shadow: 0 0 0 1000px #343f4c inset;
-  box-shadow: 0 0 0 1000px #343f4c inset;
-  caret-color: white;
+  -webkit-text-fill-color: var(--color-text-primary);
+  -webkit-box-shadow: 0 0 0 1000px var(--color-background) inset;
+  box-shadow: 0 0 0 1000px var(--color-background) inset;
+  caret-color: var(--color-text-primary);
   transition: background-color 5000s ease-in-out 0s;
   border-radius: var(--radius-xl);
 }

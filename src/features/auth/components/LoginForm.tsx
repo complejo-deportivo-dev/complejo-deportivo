@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, type FormEvent } from "react";
+import { useRef, useState, useEffect, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowRight, Check, LockKeyhole, Mail } from "lucide-react";
@@ -59,6 +59,20 @@ export default function LoginForm({ passwordUpdated = false }: LoginFormProps) {
   );
   const [fieldErrors, setFieldErrors] = useState({ email: "", password: "" });
   const isBusy = isSubmitting || isGoogleLoading;
+
+  useEffect(() => {
+    async function checkSession() {
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        const role = session.user.user_metadata?.role as UserRole;
+        if (role && roleHomes[role]) {
+          router.replace(roleHomes[role]);
+        }
+      }
+    }
+    checkSession();
+  }, [router]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
