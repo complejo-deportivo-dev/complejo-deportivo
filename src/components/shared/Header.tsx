@@ -5,6 +5,8 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { LogIn, Menu, UserPlus, X, LogOut, User } from "lucide-react";
 import Avatar from "@/components/ui/Avatar";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
+import { useTheme } from "next-themes";
 import Image from "next/image";
 
 export interface HeaderProps {
@@ -60,6 +62,7 @@ export default function Header({
   className = "",
   publicMode = false,
 }: HeaderProps) {
+  const { theme } = useTheme();
   const router = useRouter();
   const pathname = usePathname();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -145,7 +148,7 @@ export default function Header({
         >
           <div className="relative flex">
             <Image
-              src="/brand/imagotipo-dark.svg"
+              src={theme === "dark" ? "/brand/imagotipo-dark.svg" : "/brand/imagotipo-light.svg"}
               alt="Logo de Otium"
               width={98}
               height={98}
@@ -184,6 +187,7 @@ export default function Header({
         )}
 
         <div className="flex items-center gap-3">
+          {!publicMode && <ThemeToggle />}
           {publicMode ? (
             <>
               <div className="hidden items-center gap-3 md:flex">
