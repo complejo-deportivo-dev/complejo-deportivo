@@ -152,7 +152,7 @@ cp .env.example .env.local
 | `RESEND_API_KEY` | Clave de Resend para emails | Resend → API Keys |
 | `NEXT_PUBLIC_APP_URL` | URL base de la app | `http://localhost:3000` en local |
 
-> ⚠️ Nunca subir `.env.local` al repositorio. Ya está en `.gitignore`.
+> ⚠️ *Nunca subir `.env.local` al repositorio. Ya está en* `.gitignore`.
 
 ---
 
@@ -213,6 +213,5 @@ feature/*     → Desarrollo individual por feature.
 - Merge con `develop` cada mañana
 
 ---
-
 
 *Última actualización: Septiembre 2026*
